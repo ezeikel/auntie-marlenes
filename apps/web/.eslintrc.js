@@ -20,6 +20,8 @@ module.exports = {
       },
     ],
     'no-console': [2, { allow: ['warn', 'error'] }],
+    '@typescript-eslint/lines-between-class-members': 0,
+    '@typescript-eslint/no-throw-literal': 0,
   },
   overrides: [
     {
@@ -31,6 +33,8 @@ module.exports = {
       plugins: ['@typescript-eslint/eslint-plugin'],
       extends: ['airbnb-typescript', 'plugin:prettier/recommended'],
       rules: {
+        '@typescript-eslint/lines-between-class-members': 0,
+        '@typescript-eslint/no-throw-literal': 0,
         'import/no-extraneous-dependencies': [
           'error',
           {
