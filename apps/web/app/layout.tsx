@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
-import { Inter as FontSans } from 'next/font/google';
+import { Inter, Playfair_Display } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import cn from '@/utils/cn';
 import Header from '@/components/Header/Header';
 import Providers from './providers';
-import '@/global.css';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Afro Hair and Beauty Shop: Premium Black Hair & Beauty Products',
@@ -19,9 +19,15 @@ export const metadata: Metadata = {
   },
 };
 
-const fontSans = FontSans({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-sans',
+  variable: '--font-inter',
+});
+
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  weight: ['400', '700'],
 });
 
 export default function RootLayout({
@@ -31,15 +37,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className={cn(inter.variable, playfairDisplay.variable)}>
         <Providers>
           <Header className="mb-12" />
-          <main
-            className={cn(
-              'min-h-screen bg-background font-sans antialiased',
-              fontSans.variable,
-            )}
-          >
+          <main className="min-h-screen bg-background font-inter antialiased">
             {children}
           </main>
         </Providers>
