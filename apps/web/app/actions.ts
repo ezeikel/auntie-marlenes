@@ -8,6 +8,7 @@ import {
   GET_CART_QUERY,
   CREATE_CART_MUTATION,
   GET_PRODUCT_QUERY,
+  GET_PRODUCT_BY_HANDLE_QUERY,
   GET_PRODUCTS_QUERY,
   ADD_PRODUCTS_TO_CART_MUTATION,
   CART_LINE_REMOVE_MUTATION,
@@ -339,6 +340,38 @@ export const getProduct = async ({
   } = await res.json();
 
   return adaptShopifyProduct(product);
+};
+
+export const getProductByHandle = async ({
+  handle,
+}: {
+  handle: string;
+}): Promise<Product> => {
+  const res = await fetch(
+    process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
+    {
+      method: 'POST',
+      headers: {
+        'X-Shopify-Storefront-Access-Token': process.env
+          .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: print(GET_PRODUCT_BY_HANDLE_QUERY),
+        variables: { handle },
+      }),
+    },
+  );
+
+  const {
+    data: { productByHandle },
+  } = await res.json();
+
+  if (!productByHandle) {
+    throw new Error(`Product with handle "${handle}" not found`);
+  }
+
+  return adaptShopifyProduct(productByHandle);
 };
 
 export const getProducts = async (): Promise<Product[]> => {

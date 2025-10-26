@@ -20,7 +20,7 @@ const ProductCard = ({ product, className }: ProductCardProps) => {
         className,
       )}
     >
-      <Link href={`/products/${product.id}`}>
+      <Link href={`/product/${product.handle}`}>
         <div className="relative aspect-square overflow-hidden bg-warm-beige">
           <Image
             src={product.image}
@@ -47,7 +47,7 @@ const ProductCard = ({ product, className }: ProductCardProps) => {
           </p>
 
           {/* Product Name */}
-          <Link href={`/products/${product.id}`}>
+          <Link href={`/product/${product.handle}`}>
             <h3 className="font-medium line-clamp-2 group-hover:text-primary transition-colors">
               {product.name}
             </h3>

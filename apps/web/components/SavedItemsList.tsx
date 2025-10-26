@@ -183,7 +183,7 @@ export default function SavedItemsList() {
             >
               {/* Product Image */}
               <div className="relative aspect-square group">
-                <Link href={`/product/${item.id}`}>
+                <Link href={`/product/${item.handle}`}>
                   <Image
                     src={item.image || '/placeholder.svg'}
                     alt={item.name}
@@ -219,7 +219,7 @@ export default function SavedItemsList() {
                     {item.brand}
                   </p>
                   <Link
-                    href={`/product/${item.id}`}
+                    href={`/product/${item.handle}`}
                     className="text-sm font-inter font-medium text-cocoa hover:text-terracotta line-clamp-2 transition-colors"
                   >
                     {item.name}

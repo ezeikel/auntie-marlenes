@@ -233,6 +233,58 @@ export const GET_PRODUCT_QUERY = gql`
   query GET_PRODUCT_QUERY($id: ID!) {
     product(id: $id) {
       id
+      handle
+      title
+      descriptionHtml
+      vendor
+      productType
+      images(first: 10) {
+        edges {
+          node {
+            url
+            altText
+          }
+        }
+      }
+      variants(first: 100) {
+        edges {
+          node {
+            id
+            title
+            price {
+              amount
+              currencyCode
+            }
+            availableForSale
+            selectedOptions {
+              name
+              value
+            }
+          }
+        }
+      }
+      options {
+        name
+        values
+      }
+      metafields(
+        identifiers: [
+          { namespace: "custom", key: "rating" }
+          { namespace: "custom", key: "review_count" }
+        ]
+      ) {
+        key
+        value
+      }
+    }
+  }
+`;
+
+export const GET_PRODUCT_BY_HANDLE_QUERY = gql`
+  query GET_PRODUCT_BY_HANDLE_QUERY($handle: String!) {
+    productByHandle(handle: $handle) {
+      id
+      handle
       title
       descriptionHtml
       vendor
@@ -295,6 +347,7 @@ export const GET_PRODUCTS_QUERY = gql`
       edges {
         node {
           id
+          handle
           title
           descriptionHtml
           vendor

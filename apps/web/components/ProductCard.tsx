@@ -20,10 +20,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <div className="group relative">
-      <Link
-        href={`/product/${encodeURIComponent(product.id)}`}
-        className="block"
-      >
+      <Link href={`/product/${product.handle}`} className="block">
         <div className="aspect-square relative bg-gray-100 rounded-lg overflow-hidden mb-3">
           <Image
             src={product.image || '/placeholder.svg'}

@@ -1,4 +1,8 @@
-import { getProduct, searchProducts, getProductSaveCount } from '@/app/actions';
+import {
+  getProductByHandle,
+  searchProducts,
+  getProductSaveCount,
+} from '@/app/actions';
 import ProductDetail from '@/components/ProductDetail';
 import Header from '@/components/HeaderWrapper';
 import Footer from '@/components/Footer';
@@ -6,18 +10,17 @@ import AnnouncementBanner from '@/components/AnnouncementBanner';
 import { notFound } from 'next/navigation';
 
 type ProductPageProps = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ handle: string }>;
 };
 
 const ProductPage = async ({ params }: ProductPageProps) => {
-  const { id } = await params;
-  const decodedId = decodeURIComponent(id);
+  const { handle } = await params;
 
   try {
-    const product = await getProduct({ productId: decodedId });
+    const product = await getProductByHandle({ handle });
 
-    // Fetch save count for this product
-    const saveCount = await getProductSaveCount({ productId: decodedId });
+    // Fetch save count for this product (still uses product.id for DB lookup)
+    const saveCount = await getProductSaveCount({ productId: product.id });
 
     // Shopify's HTML is already sanitized, so we can use it directly
     const sanitizedDescription = product.description;

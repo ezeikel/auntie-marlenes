@@ -5,6 +5,7 @@ import type { Product } from './constants';
  */
 type ShopifyProduct = {
   id: string;
+  handle: string;
   title: string;
   descriptionHtml: string;
   vendor: string;
@@ -127,6 +128,7 @@ export function adaptShopifyProduct(shopifyProduct: ShopifyProduct): Product {
 
   return {
     id: shopifyProduct.id,
+    handle: shopifyProduct.handle,
     name: shopifyProduct.title,
     brand: shopifyProduct.vendor || 'Unknown Brand',
     category: shopifyProduct.productType || 'Uncategorized',

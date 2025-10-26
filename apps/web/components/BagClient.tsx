@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -134,7 +134,7 @@ export default function BagClient({
                     className="flex gap-4 pb-6 border-b border-gray-200 last:border-0"
                   >
                     <Link
-                      href={`/product/${encodeURIComponent(product.id)}`}
+                      href={`/product/${product.handle}`}
                       className="relative w-28 h-28 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden"
                     >
                       <Image
@@ -148,9 +148,7 @@ export default function BagClient({
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between gap-4 mb-2">
                         <div className="flex-1">
-                          <Link
-                            href={`/product/${encodeURIComponent(product.id)}`}
-                          >
+                          <Link href={`/product/${product.handle}`}>
                             <h3 className="font-semibold text-cocoa hover:text-terracotta line-clamp-2 mb-1">
                               {product.title}
                             </h3>

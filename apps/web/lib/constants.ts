@@ -1,5 +1,6 @@
 export type Product = {
   id: string;
+  handle: string;
   name: string;
   brand: string;
   category: string;
@@ -19,6 +20,7 @@ export type Product = {
 export const products: Product[] = [
   {
     id: '1',
+    handle: 'moisturizing-leave-in-conditioner',
     name: 'Moisturizing Leave-In Conditioner',
     brand: 'Cantu',
     category: 'Hair Care',
@@ -36,6 +38,7 @@ export const products: Product[] = [
   },
   {
     id: '2',
+    handle: 'edge-control-gel',
     name: 'Edge Control Gel',
     brand: 'Creme of Nature',
     category: 'Styling',
@@ -48,6 +51,7 @@ export const products: Product[] = [
   },
   {
     id: '3',
+    handle: 'curl-defining-cream',
     name: 'Curl Defining Cream',
     brand: 'SheaMoisture',
     category: 'Hair Care',
@@ -72,6 +76,7 @@ export const products: Product[] = [
   },
   {
     id: '4',
+    handle: 'satin-bonnet',
     name: 'Satin Bonnet',
     brand: 'Generic',
     category: 'Accessories',
@@ -102,6 +107,7 @@ export const products: Product[] = [
   },
   {
     id: '5',
+    handle: 'hair-growth-oil',
     name: 'Hair Growth Oil',
     brand: 'Mielle Organics',
     category: 'Hair Care',
@@ -114,6 +120,7 @@ export const products: Product[] = [
   },
   {
     id: '6',
+    handle: 'twist-and-lock-gel',
     name: 'Twist & Lock Gel',
     brand: 'ORS',
     category: 'Styling',
@@ -126,6 +133,7 @@ export const products: Product[] = [
   },
   {
     id: '7',
+    handle: 'jamaican-black-castor-oil',
     name: 'Jamaican Black Castor Oil',
     brand: 'Sunny Isle',
     category: 'Hair Care',
@@ -138,6 +146,7 @@ export const products: Product[] = [
   },
   {
     id: '8',
+    handle: 'deep-conditioning-mask',
     name: 'Deep Conditioning Mask',
     brand: 'Cantu',
     category: 'Hair Care',
