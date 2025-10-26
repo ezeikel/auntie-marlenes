@@ -11,22 +11,22 @@ const categories: Category[] = [
   {
     name: 'Women',
     href: '/women',
-    image: '/placeholder.svg?height=400&width=400&text=Women',
+    image: '/images/categories/women.png',
   },
   {
     name: 'Men',
     href: '/men',
-    image: '/placeholder.svg?height=400&width=400&text=Men',
+    image: '/images/categories/men.png',
   },
   {
     name: 'Kids',
     href: '/kids',
-    image: '/placeholder.svg?height=400&width=400&text=Kids',
+    image: '/images/categories/kids.png',
   },
   {
     name: 'Accessories',
     href: '/accessories',
-    image: '/placeholder.svg?height=400&width=400&text=Accessories',
+    image: '/images/categories/accessories.png',
   },
 ];
 

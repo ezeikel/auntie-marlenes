@@ -17,7 +17,7 @@ const Hero = () => {
           muted
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
-          poster="/happy-black-family-with-beautiful-textured-hair.jpg"
+          poster="/images/pexels-kampus-6948104.jpg"
         >
           <source
             src="/videos/6940141-uhd_2560_1440_25fps.mp4"
@@ -31,7 +31,7 @@ const Hero = () => {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage:
-              "url('/happy-black-family-with-beautiful-textured-hair.jpg')",
+              "url('/images/pexels-kampus-6948104.jpg')",
             opacity: 0,
           }}
         />

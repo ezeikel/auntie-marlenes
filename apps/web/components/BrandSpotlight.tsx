@@ -15,7 +15,7 @@ const featuredBrands: FeaturedBrand[] = [
     name: 'Camille Rose',
     description:
       "Nourish your natural beauty with Camille Rose—a luxurious blend of nature's finest ingredients.",
-    image: '/placeholder.svg?height=400&width=600&text=Camille+Rose',
+    image: '/images/brand-logos/camille-rose.png',
     href: '/brands/camille-rose',
     bgColor: 'bg-gradient-to-br from-pink-200 to-pink-300',
   },
@@ -23,17 +23,17 @@ const featuredBrands: FeaturedBrand[] = [
     name: 'Mielle Organics',
     description:
       'Discover healthier ingredients with Mielle Organics—premium natural haircare for every texture.',
-    image: '/placeholder.svg?height=400&width=600&text=Mielle+Organics',
+    image: '/images/brand-logos/mielle-organics.png',
     href: '/brands/mielle-organics',
     bgColor: 'bg-gradient-to-br from-sage-green/20 to-sage-green/30',
   },
   {
-    name: 'The Doux',
+    name: "Nala's Baby",
     description:
-      'Turn up the volume with The Doux—a bold, stylist-crafted line for confident, carefree curls.',
-    image: '/placeholder.svg?height=400&width=600&text=The+Doux',
-    href: '/brands/the-doux',
-    bgColor: 'bg-gradient-to-br from-cyan-200 to-cyan-300',
+      'Natural, clean and trusted hair & skin care for the family—scientifically created and paediatrician-approved for newborns through childhood.',
+    image: '/images/brand-logos/nalas-baby.png',
+    href: '/brands/nalas-baby',
+    bgColor: 'bg-gradient-to-br from-orange-100 to-amber-100',
   },
 ];
 
@@ -63,7 +63,7 @@ const BrandSpotlight = () => {
                     src={brand.image || '/placeholder.svg'}
                     alt={brand.name}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="object-contain group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>
                 <h3 className="text-2xl font-playfair font-bold text-cocoa mb-3">

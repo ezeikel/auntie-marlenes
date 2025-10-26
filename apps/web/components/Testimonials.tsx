@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar } from '@fortawesome/pro-regular-svg-icons';
+import { faStar } from '@fortawesome/pro-solid-svg-icons';
 import {
   Carousel,
   CarouselContent,
