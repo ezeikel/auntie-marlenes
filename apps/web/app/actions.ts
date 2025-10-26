@@ -11,9 +11,16 @@ import {
   GET_PRODUCTS_QUERY,
   ADD_PRODUCTS_TO_CART_MUTATION,
   CART_LINE_REMOVE_MUTATION,
+  CART_LINES_UPDATE_MUTATION,
+  CART_BUYER_IDENTITY_UPDATE_MUTATION,
 } from '@/lib/graphql/queries';
 import { ProductEdge } from '@/types';
 import { auth } from '@/auth';
+import {
+  adaptShopifyProduct,
+  adaptShopifyProducts,
+} from '@/lib/shopify-adapter';
+import type { Product } from '@/lib/constants';
 
 export const getCartId = async () => {
   const cookieStore = await cookies();
@@ -55,6 +62,25 @@ export const createCart = async ({
 }: {
   productVariantId: string;
 }) => {
+  console.log('🛒 [SERVER] createCart called with:', productVariantId);
+
+  // Get user session to pre-fill buyer identity
+  const session = await auth();
+  console.log('🛒 [SERVER] Session:', session?.user?.email || 'No user');
+
+  // Build cart input with buyer identity if user is logged in
+  const cartInput: any = {
+    lines: [{ merchandiseId: productVariantId, quantity: 1 }],
+  };
+
+  if (session?.user?.email) {
+    cartInput.buyerIdentity = {
+      email: session.user.email,
+      countryCode: 'GB', // Default to UK, could be made dynamic later
+    };
+  }
+
+  console.log('🛒 [SERVER] Calling Shopify API to create cart...');
   const res = await fetch(
     process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
     {
@@ -67,17 +93,22 @@ export const createCart = async ({
       body: JSON.stringify({
         query: print(CREATE_CART_MUTATION),
         variables: {
-          input: { lines: [{ merchandiseId: productVariantId, quantity: 1 }] },
+          input: cartInput,
         },
       }),
     },
   );
 
+  const result = await res.json();
+  console.log('🛒 [SERVER] Shopify response:', result);
+
   const {
     data: {
       cartCreate: { cart },
     },
-  } = await res.json();
+  } = result;
+
+  console.log('🛒 [SERVER] Cart created:', cart.id);
 
   // TODO: only set for session
   // set cart id in cookie
@@ -87,8 +118,57 @@ export const createCart = async ({
     path: '/',
   });
 
-  // update cache
-  revalidateTag('cart');
+  console.log('🛒 [SERVER] Cookie set, revalidating cache...');
+  // update cache - immediate invalidation (no profile for instant expiration)
+  revalidateTag('cart', undefined as any);
+
+  console.log('✅ [SERVER] createCart complete!');
+  return cart;
+};
+
+export const updateCartBuyerIdentity = async ({
+  cartId,
+  email,
+  countryCode = 'GB',
+}: {
+  cartId: string;
+  email: string;
+  countryCode?: string;
+}) => {
+  const res = await fetch(
+    process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
+    {
+      method: 'POST',
+      headers: {
+        'X-Shopify-Storefront-Access-Token': process.env
+          .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: print(CART_BUYER_IDENTITY_UPDATE_MUTATION),
+        variables: {
+          cartId,
+          buyerIdentity: {
+            email,
+            countryCode,
+          },
+        },
+      }),
+    },
+  );
+
+  const {
+    data: {
+      cartBuyerIdentityUpdate: { cart, userErrors },
+    },
+  } = await res.json();
+
+  if (userErrors && userErrors.length > 0) {
+    console.error('Failed to update buyer identity:', userErrors);
+    throw new Error('Failed to update buyer identity');
+  }
+
+  revalidateTag('cart', undefined as any);
 
   return cart;
 };
@@ -131,8 +211,18 @@ export const addProductsToCart = async ({
     throw new Error('Failed to add product to cart');
   }
 
-  // update cache
-  revalidateTag('cart');
+  // If user is logged in, ensure buyer identity is set on the cart
+  const session = await auth();
+  if (session?.user?.email && !updatedCart.buyerIdentity?.email) {
+    await updateCartBuyerIdentity({
+      cartId,
+      email: session.user.email,
+      countryCode: 'GB',
+    });
+  }
+
+  // update cache - immediate invalidation (no profile for instant expiration)
+  revalidateTag('cart', undefined as any);
 
   return updatedCart;
 };
@@ -172,13 +262,62 @@ export const removeProductFromCart = async ({
     throw new Error('Failed to remove product from cart');
   }
 
-  // update cache
-  revalidateTag('cart');
+  // update cache - immediate invalidation (no profile for instant expiration)
+  revalidateTag('cart', undefined as any);
 
   return updatedCart;
 };
 
-export const getProduct = async ({ productId }: { productId: string }) => {
+export const updateCartLineQuantity = async ({
+  cartId,
+  lineId,
+  quantity,
+}: {
+  cartId: string;
+  lineId: string;
+  quantity: number;
+}) => {
+  const res = await fetch(
+    process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
+    {
+      method: 'POST',
+      headers: {
+        'X-Shopify-Storefront-Access-Token': process.env
+          .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: print(CART_LINES_UPDATE_MUTATION),
+        variables: {
+          cartId,
+          lines: [{ id: lineId, quantity }],
+        },
+      }),
+    },
+  );
+
+  const {
+    data: {
+      cartLinesUpdate: { cart: updatedCart, userErrors },
+    },
+  } = await res.json();
+
+  if (userErrors && userErrors.length > 0) {
+    console.error('Failed to update quantity:', userErrors);
+    throw new Error('Failed to update cart line quantity');
+  }
+
+  // update cache - immediate invalidation (no profile for instant expiration)
+  revalidateTag('cart', undefined as any);
+
+  return updatedCart;
+};
+
+export const getProduct = async ({
+  productId,
+}: {
+  productId: string;
+}): Promise<Product> => {
   const res = await fetch(
     process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
     {
@@ -199,21 +338,10 @@ export const getProduct = async ({ productId }: { productId: string }) => {
     data: { product },
   } = await res.json();
 
-  const parsedProduct = {
-    id: product.id,
-    title: product.title,
-    description: product.description,
-    image:
-      product.images.edges.length > 0
-        ? product.images.edges[0].node.originalSrc
-        : null,
-    variants: product.variants,
-  };
-
-  return parsedProduct;
+  return adaptShopifyProduct(product);
 };
 
-export const getProducts = async () => {
+export const getProducts = async (): Promise<Product[]> => {
   const res = await fetch(
     process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
     {
@@ -231,17 +359,9 @@ export const getProducts = async () => {
     data: { products },
   } = await res.json();
 
-  const parsedProducts = products.edges.map((edge: ProductEdge) => ({
-    id: edge.node.id,
-    title: edge.node.title,
-    description: edge.node.description,
-    image:
-      edge.node.images.edges.length > 0
-        ? edge.node.images.edges[0].node.originalSrc
-        : null,
-  }));
+  const shopifyProducts = products.edges.map((edge: ProductEdge) => edge.node);
 
-  return parsedProducts;
+  return adaptShopifyProducts(shopifyProducts);
 };
 
 export const addProductToSaved = async ({
@@ -250,41 +370,41 @@ export const addProductToSaved = async ({
   productId: string;
 }) => {
   const session = await auth();
-  const userId = session?.userId;
 
-  if (!userId) {
+  if (!session?.user?.email) {
     throw new Error('You must be logged in to save a product.');
   }
 
-  // retrieve the user from the database
-  const user = await db.user.findUnique({ where: { id: userId } });
+  // Get user by email
+  const user = await db.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true },
+  });
 
   if (!user) {
-    throw new Error('You must be logged in to save a product.');
+    throw new Error('User not found.');
   }
 
-  // check for existing saved items list
-  const saved = await db.saved.findUnique({ where: { userId: user.id } });
+  const userId = user.id;
 
-  if (saved) {
-    // update the existing saved items list
-    await db.saved.update({
-      where: { userId: user.id },
-      data: { items: { push: productId } },
-    });
-  } else {
-    // create a new saved items list if none exists
-    await db.saved.create({
-      data: {
-        userId: user.id,
-        // TODO: fix this so we just add an item to the existing arrary
-        items: [productId],
+  // Create saved item (upsert to handle duplicates gracefully)
+  await db.savedItem.upsert({
+    where: {
+      userId_productId: {
+        userId,
+        productId,
       },
-    });
-  }
+    },
+    update: {}, // No-op if already exists
+    create: {
+      userId,
+      productId,
+    },
+  });
 
-  revalidateTag('saved');
-  revalidateTag('/');
+  // Revalidate save counts and user's saved items
+  revalidateTag('saved-counts', undefined as any);
+  revalidateTag(`saved-${userId}`, undefined as any);
 };
 
 export const removeProductFromSaved = async ({
@@ -293,58 +413,307 @@ export const removeProductFromSaved = async ({
   productId: string;
 }) => {
   const session = await auth();
-  const userId = session?.userId;
 
-  if (!userId) {
+  if (!session?.user?.email) {
     throw new Error('You must be logged in to remove a product.');
   }
 
-  // retrieve the user from the database
-  const user = await db.user.findUnique({ where: { id: userId } });
+  // Get user by email
+  const user = await db.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true },
+  });
 
   if (!user) {
-    throw new Error('You must be logged in to remove a product.');
+    throw new Error('User not found.');
   }
 
-  // check for existing saved items list
-  const saved = await db.saved.findUnique({ where: { userId: user.id } });
+  const userId = user.id;
 
-  if (saved) {
-    // update the existing saved items list
-    await db.saved.update({
-      where: { userId: user.id },
-      data: {
-        items: { set: saved.items.filter((item) => item !== productId) },
-      },
-    });
-  }
+  // Delete saved item
+  await db.savedItem.deleteMany({
+    where: {
+      userId,
+      productId,
+    },
+  });
 
-  revalidateTag('saved');
-  revalidateTag('/');
+  // Revalidate save counts and user's saved items
+  revalidateTag('saved-counts', undefined as any);
+  revalidateTag(`saved-${userId}`, undefined as any);
 };
 
-export const getSaved = async (): Promise<string[] | undefined> => {
+export const getSaved = async (): Promise<string[]> => {
   const session = await auth();
-  const userId = session?.userId;
 
-  if (!userId) {
+  if (!session?.user?.email) {
     return [];
   }
 
-  const saved = await db.saved.findUnique({ where: { userId } });
+  // Get user by email
+  const user = await db.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true },
+  });
 
-  return saved?.items;
+  if (!user) {
+    return [];
+  }
+
+  const savedItems = await db.savedItem.findMany({
+    where: { userId: user.id },
+    select: { productId: true },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return savedItems.map((item) => item.productId);
 };
 
 export const getUser = async () => {
   const session = await auth();
-  const userId = session?.userId;
 
-  if (!userId) {
+  if (!session?.user?.email) {
     return null;
   }
 
-  const user = await db.user.findUnique({ where: { id: userId } });
+  const user = await db.user.findUnique({
+    where: { email: session.user.email },
+  });
 
   return user;
+};
+
+export const searchProducts = async ({
+  query,
+  productType,
+  vendor,
+  sortKey,
+  reverse,
+  first = 20,
+  onSale,
+}: {
+  query?: string;
+  productType?: string;
+  vendor?: string;
+  sortKey?: 'TITLE' | 'PRICE' | 'CREATED_AT' | 'BEST_SELLING' | 'RELEVANCE';
+  reverse?: boolean;
+  first?: number;
+  onSale?: boolean;
+}): Promise<Product[]> => {
+  // Build Shopify search query string
+  let searchQuery = '';
+
+  if (query) {
+    searchQuery = query;
+  }
+
+  if (productType) {
+    searchQuery += searchQuery
+      ? ` AND product_type:${productType}`
+      : `product_type:${productType}`;
+  }
+
+  if (vendor) {
+    searchQuery += searchQuery ? ` AND vendor:${vendor}` : `vendor:${vendor}`;
+  }
+
+  const res = await fetch(
+    process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
+    {
+      method: 'POST',
+      headers: {
+        'X-Shopify-Storefront-Access-Token': process.env
+          .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: print(GET_PRODUCTS_QUERY),
+        variables: {
+          query: searchQuery || undefined,
+          sortKey,
+          reverse,
+          first,
+        },
+      }),
+    },
+  );
+
+  const {
+    data: { products },
+  } = await res.json();
+
+  const shopifyProducts = products.edges.map((edge: ProductEdge) => edge.node);
+  let adaptedProducts = adaptShopifyProducts(shopifyProducts);
+
+  // Client-side filter for onSale if needed (compareAtPrice > price)
+  if (onSale) {
+    adaptedProducts = adaptedProducts.filter(
+      (product) =>
+        product.compareAtPrice && product.compareAtPrice > product.price,
+    );
+  }
+
+  return adaptedProducts;
+};
+
+export const getCategories = async (): Promise<string[]> => {
+  const products = await getProducts();
+  const categories = new Set(products.map((p) => p.category));
+  return Array.from(categories).filter(Boolean);
+};
+
+export const getProductVariantId = async ({
+  productId,
+  selectedOptions,
+}: {
+  productId: string;
+  selectedOptions?: Record<string, string>;
+}): Promise<string | null> => {
+  const res = await fetch(
+    process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
+    {
+      method: 'POST',
+      headers: {
+        'X-Shopify-Storefront-Access-Token': process.env
+          .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: print(GET_PRODUCT_QUERY),
+        variables: { id: productId },
+      }),
+    },
+  );
+
+  const {
+    data: { product },
+  } = await res.json();
+
+  if (!product || !product.variants || product.variants.edges.length === 0) {
+    return null;
+  }
+
+  // If no options provided, return first variant
+  if (!selectedOptions) {
+    return product.variants.edges[0].node.id;
+  }
+
+  // Find variant matching selected options
+  const variant = product.variants.edges.find(({ node }: any) => {
+    if (!node.selectedOptions) return false;
+
+    return node.selectedOptions.every(
+      (option: any) =>
+        selectedOptions[option.name.toLowerCase()] ===
+        option.value.toLowerCase(),
+    );
+  });
+
+  return variant?.node.id || product.variants.edges[0].node.id;
+};
+
+/**
+ * Get the save count for a single product
+ */
+export const getProductSaveCount = async ({
+  productId,
+}: {
+  productId: string;
+}): Promise<number> => {
+  const count = await db.savedItem.count({
+    where: { productId },
+  });
+
+  return count;
+};
+
+/**
+ * Get save counts for multiple products (batch query)
+ */
+export const getProductsSaveCounts = async ({
+  productIds,
+}: {
+  productIds: string[];
+}): Promise<Record<string, number>> => {
+  const savedItems = await db.savedItem.groupBy({
+    by: ['productId'],
+    where: {
+      productId: { in: productIds },
+    },
+    _count: {
+      productId: true,
+    },
+  });
+
+  const counts: Record<string, number> = {};
+  savedItems.forEach((item) => {
+    counts[item.productId] = item._count.productId;
+  });
+
+  return counts;
+};
+
+/**
+ * Sync localStorage saved items to database
+ * Called after sign in/up to migrate guest saves
+ */
+export const syncLocalSavesToDB = async ({
+  productIds,
+}: {
+  productIds: string[];
+}): Promise<{ success: boolean; synced: number }> => {
+  const session = await auth();
+
+  if (!session?.user?.email) {
+    return { success: false, synced: 0 };
+  }
+
+  // Get user by email
+  const user = await db.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true },
+  });
+
+  if (!user) {
+    return { success: false, synced: 0 };
+  }
+
+  const userId = user.id;
+
+  if (productIds.length === 0) {
+    return { success: true, synced: 0 };
+  }
+
+  try {
+    // Get existing saved items to avoid duplicates
+    const existing = await db.savedItem.findMany({
+      where: {
+        userId,
+        productId: { in: productIds },
+      },
+      select: { productId: true },
+    });
+
+    const existingIds = new Set(existing.map((item) => item.productId));
+    const newIds = productIds.filter((id) => !existingIds.has(id));
+
+    // Batch create new saved items
+    if (newIds.length > 0) {
+      await db.savedItem.createMany({
+        data: newIds.map((productId) => ({
+          userId,
+          productId,
+        })),
+      });
+    }
+
+    // Revalidate caches
+    revalidateTag('saved-counts', undefined as any);
+    revalidateTag(`saved-${userId}`, undefined as any);
+
+    return { success: true, synced: newIds.length };
+  } catch (error) {
+    console.error('Failed to sync localStorage saves to DB:', error);
+    return { success: false, synced: 0 };
+  }
 };

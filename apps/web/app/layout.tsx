@@ -3,8 +3,11 @@ import { Inter, Playfair_Display } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import cn from '@/utils/cn';
-import Header from '@/components/Header/Header';
 import Providers from './providers';
+import { ThemeProvider } from '@/components/theme-provider';
+import SavedItemsSync from '@/components/SavedItemsSync';
+import { SavedProvider } from '@/contexts/SavedContext';
+import { getSaved } from './actions';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -30,20 +33,29 @@ const playfairDisplay = Playfair_Display({
   weight: ['400', '700'],
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const savedItems = await getSaved();
+
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.variable, playfairDisplay.variable)}>
-        <Providers>
-          <Header className="mb-12" />
-          <main className="min-h-screen bg-background font-inter antialiased">
-            {children}
-          </main>
-        </Providers>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          forcedTheme="light"
+          disableTransitionOnChange
+        >
+          <Providers>
+            <SavedProvider initialDbSaves={savedItems}>
+              <SavedItemsSync />
+              {children}
+            </SavedProvider>
+          </Providers>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

@@ -67,46 +67,6 @@
   --font-family-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  @theme {
-    /* Dark Mode Colors */
-    --color-background: oklch(9% 0 0);
-    --color-foreground: oklch(98% 0 0);
-
-    --color-card: oklch(9% 0 0);
-    --color-card-foreground: oklch(98% 0 0);
-
-    --color-popover: oklch(9% 0 0);
-    --color-popover-foreground: oklch(98% 0 0);
-
-    --color-primary: oklch(98% 0 0);
-    --color-primary-foreground: oklch(9% 0 0);
-
-    --color-secondary: oklch(14.9% 0 0);
-    --color-secondary-foreground: oklch(98% 0 0);
-
-    --color-muted: oklch(14.9% 0 0);
-    --color-muted-foreground: oklch(63.9% 0 0);
-
-    --color-accent: oklch(14.9% 0 0);
-    --color-accent-foreground: oklch(98% 0 0);
-
-    --color-destructive: oklch(30.6% 0.132 29.234);
-    --color-destructive-foreground: oklch(98% 0 0);
-
-    --color-border: oklch(14.9% 0 0);
-    --color-input: oklch(14.9% 0 0);
-    --color-ring: oklch(83.1% 0 0);
-
-    /* Dark Mode Charts */
-    --color-chart-1: oklch(50% 0.14 263.246);
-    --color-chart-2: oklch(45% 0.12 192.174);
-    --color-chart-3: oklch(55% 0.16 56.259);
-    --color-chart-4: oklch(60% 0.13 307.216);
-    --color-chart-5: oklch(55% 0.15 2.889);
-  }
-}
-
 @layer base {
   * {
     @apply border-border;
@@ -128,5 +88,36 @@
 
   .font-playfair {
     font-family: var(--font-family-playfair);
+  }
+}
+
+@layer components {
+  /* Product description HTML styles */
+  .prose {
+    @apply text-gray-600;
+  }
+
+  .prose p {
+    @apply mb-4 leading-relaxed;
+  }
+
+  .prose h4 {
+    @apply text-base font-semibold text-gray-900 mb-3 mt-6 first:mt-0;
+  }
+
+  .prose ul {
+    @apply list-disc pl-6 space-y-2 mb-4;
+  }
+
+  .prose li {
+    @apply leading-relaxed;
+  }
+
+  .prose strong {
+    @apply font-semibold text-gray-900;
+  }
+
+  .prose em {
+    @apply italic;
   }
 }

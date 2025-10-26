@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import type { User } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import { neonConfig } from '@neondatabase/serverless';
 import ws from 'ws';
@@ -18,15 +19,27 @@ const adapter = new PrismaNeon({ connectionString });
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-const prismaClientSingleton = () =>
-  new PrismaClient({
+const prismaClientSingleton = () => {
+  const client = new PrismaClient({
     adapter,
     log:
       process.env.NODE_ENV === 'development'
-        ? [{ emit: 'event', level: 'query' }]
+        ? [
+            {
+              emit: 'event',
+              level: 'query',
+            },
+          ]
         : undefined,
   });
 
-export const prisma = globalForPrisma.prisma || prismaClientSingleton();
+  return client;
+};
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+export const db = globalForPrisma.prisma || prismaClientSingleton();
+
+export type { Prisma };
+
+export type { User as DbUserType };
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;

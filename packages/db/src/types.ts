@@ -8,5 +8,5 @@ export { Prisma } from '@prisma/client';
 // Re-export specific model types with custom names
 export type {
   User as DbUserType,
-  Saved as DbSavedType,
+  SavedItem as DbSavedItemType,
 } from '@prisma/client';
