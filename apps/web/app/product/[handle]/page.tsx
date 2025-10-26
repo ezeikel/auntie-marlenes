@@ -2,12 +2,36 @@ import {
   getProductByHandle,
   searchProducts,
   getProductSaveCount,
+  getProducts,
 } from '@/app/actions';
 import ProductDetail from '@/components/ProductDetail';
 import Header from '@/components/HeaderWrapper';
 import Footer from '@/components/Footer';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import { notFound } from 'next/navigation';
+
+// Pre-render popular/recent products at build time
+export async function generateStaticParams() {
+  try {
+    // Fetch all products to pre-render at build time
+    // You can limit this if you have hundreds of products
+    const products = await getProducts();
+    return products.map((product) => ({
+      handle: product.handle,
+    }));
+  } catch (error) {
+    console.error('Failed to generate static params:', error);
+    // Return empty array so build doesn't fail
+    return [];
+  }
+}
+
+// Allow dynamic params for new products added after build
+export const dynamicParams = true;
+
+// ISR: Revalidate every hour (3600 seconds)
+// This keeps pages static but fresh. Can be overridden by webhook revalidation.
+export const revalidate = 3600;
 
 type ProductPageProps = {
   params: Promise<{ handle: string }>;

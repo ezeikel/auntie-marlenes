@@ -360,6 +360,10 @@ export const getProductByHandle = async ({
         query: print(GET_PRODUCT_BY_HANDLE_QUERY),
         variables: { handle },
       }),
+      // Add cache tags for webhook-based revalidation
+      next: {
+        tags: ['products', `product:${handle}`],
+      },
     },
   );
 
