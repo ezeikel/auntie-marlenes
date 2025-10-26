@@ -40,41 +40,53 @@ type ProductPageProps = {
 const ProductPage = async ({ params }: ProductPageProps) => {
   const { handle } = await params;
 
+  let product;
   try {
-    const product = await getProductByHandle({ handle });
+    product = await getProductByHandle({ handle });
+  } catch (error) {
+    console.error(`Failed to fetch product with handle "${handle}":`, error);
+    notFound();
+  }
 
-    // Fetch save count for this product (still uses product.id for DB lookup)
-    const saveCount = await getProductSaveCount({ productId: product.id });
+  // Gracefully handle optional data - don't fail the whole page
+  let saveCount = 0;
+  try {
+    saveCount = await getProductSaveCount({ productId: product.id });
+  } catch (error) {
+    console.error('Failed to fetch save count:', error);
+  }
 
-    // Shopify's HTML is already sanitized, so we can use it directly
-    const sanitizedDescription = product.description;
+  // Shopify's HTML is already sanitized, so we can use it directly
+  const sanitizedDescription = product.description;
 
-    // Fetch related products from the same category
-    const relatedProducts = await searchProducts({
+  // Fetch related products - don't fail if this doesn't work
+  let relatedProducts: Awaited<ReturnType<typeof searchProducts>> = [];
+  try {
+    relatedProducts = await searchProducts({
       productType: product.category,
       first: 9,
     });
-
-    // Filter out the current product and limit to 8
-    const filteredRelatedProducts = relatedProducts
-      .filter((p) => p.id !== product.id)
-      .slice(0, 8);
-
-    return (
-      <div className="bg-white min-h-screen">
-        <AnnouncementBanner />
-        <Header />
-        <ProductDetail
-          product={{ ...product, saveCount }}
-          relatedProducts={filteredRelatedProducts}
-          sanitizedDescription={sanitizedDescription}
-        />
-        <Footer />
-      </div>
-    );
   } catch (error) {
-    notFound();
+    console.error('Failed to fetch related products:', error);
   }
+
+  // Filter out the current product and limit to 8
+  const filteredRelatedProducts = relatedProducts
+    .filter((p) => p.id !== product.id)
+    .slice(0, 8);
+
+  return (
+    <div className="bg-white min-h-screen">
+      <AnnouncementBanner />
+      <Header />
+      <ProductDetail
+        product={{ ...product, saveCount }}
+        relatedProducts={filteredRelatedProducts}
+        sanitizedDescription={sanitizedDescription}
+      />
+      <Footer />
+    </div>
+  );
 };
 
 export default ProductPage;
