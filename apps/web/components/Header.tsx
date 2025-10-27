@@ -51,6 +51,14 @@ const Header = ({ bagSlot }: HeaderProps) => {
     router.push('/');
   };
 
+  const handleAccountClick = (e: React.MouseEvent) => {
+    // On desktop (>= 768px), prevent navigation and let popover handle interaction
+    if (window.innerWidth >= 768) {
+      e.preventDefault();
+    }
+    // On mobile, allow default link behavior
+  };
+
   return (
     <header className="bg-white sticky top-0 z-50 shadow-sm">
       {/* Top Row: Logo, Search, and Actions */}
@@ -104,14 +112,14 @@ const Header = ({ bagSlot }: HeaderProps) => {
                 <CurrencySwitcher />
               </div>
 
-              {/* User Account with Hover */}
+              {/* User Account - popover on desktop hover, link on mobile */}
               <Popover open={accountOpen} onOpenChange={setAccountOpen}>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative h-10 w-10"
+                  <Link
+                    href={isAuthenticated ? '/account' : '/sign-in'}
+                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-10 w-10 relative"
                     onMouseEnter={() => setAccountOpen(true)}
+                    onClick={handleAccountClick}
                   >
                     <FontAwesomeIcon
                       icon={faUser}
@@ -119,10 +127,10 @@ const Header = ({ bagSlot }: HeaderProps) => {
                       className="text-gray-600"
                     />
                     <span className="sr-only">User Account</span>
-                  </Button>
+                  </Link>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="p-0 border-0 shadow-none"
+                  className="p-0 border-0 shadow-none hidden md:block"
                   align="end"
                   onMouseLeave={() => setAccountOpen(false)}
                 >
