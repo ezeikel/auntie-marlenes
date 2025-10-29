@@ -10,6 +10,7 @@ import Testimonials from '@/components/Testimonials';
 import FeaturedIn from '@/components/FeaturedIn';
 import BlogSection from '@/components/BlogSection';
 import Footer from '@/components/Footer';
+import SocialMediaShowcase from '@/components/SocialMediaShowcase';
 
 const HomePage = () => {
   return (
@@ -23,6 +24,7 @@ const HomePage = () => {
         <ShopByCategory />
         <BundleDeals />
         <BrandSpotlight />
+        <SocialMediaShowcase />
         <Testimonials />
         <FeaturedIn />
         <BlogSection />
