@@ -1,8 +1,7 @@
-/* eslint-disable import/prefer-default-export */
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export const middleware = async (request: NextRequest) => {
+export const proxy = async (request: NextRequest) => {
   const { pathname } = request.nextUrl;
 
   // skip middleware for API routes, images, static files, and specific assets

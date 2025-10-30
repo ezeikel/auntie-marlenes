@@ -4,11 +4,12 @@ import { Analytics } from '@vercel/analytics/react';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import cn from '@/utils/cn';
 import Providers from './providers';
-import { ThemeProvider } from '@/components/theme-provider';
 import SavedItemsSync from '@/components/SavedItemsSync';
-import { SavedProvider } from '@/contexts/SavedContext';
-import { getSaved } from './actions';
+import AnnouncementBanner from '@/components/AnnouncementBanner';
+import Header from '@/components/HeaderWrapper';
+import Footer from '@/components/Footer';
 import './globals.css';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Afro Hair and Beauty Shop: Premium Black Hair & Beauty Products',
@@ -33,31 +34,25 @@ const playfairDisplay = Playfair_Display({
   weight: ['400', '700'],
 });
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const savedItems = await getSaved();
-
+const RootLayout = async ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.variable, playfairDisplay.variable)}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          forcedTheme="light"
-          disableTransitionOnChange
-        >
-          <Providers>
-            <SavedProvider initialDbSaves={savedItems}>
-              <SavedItemsSync />
-              {children}
-            </SavedProvider>
-          </Providers>
-        </ThemeProvider>
+        <Providers>
+          <SavedItemsSync />
+          <AnnouncementBanner />
+          <Suspense fallback={<div className="h-20" />}>
+            <Header />
+          </Suspense>
+          <main>{children}</main>
+          <Suspense fallback={<div className="h-64 bg-deep-earth" />}>
+            <Footer />
+          </Suspense>
+        </Providers>
         <Analytics />
       </body>
     </html>
   );
-}
+};
+
+export default RootLayout;

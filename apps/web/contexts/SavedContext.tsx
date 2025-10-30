@@ -12,14 +12,8 @@ type SavedContextType = {
 
 const SavedContext = createContext<SavedContextType | null>(null);
 
-export function SavedProvider({
-  children,
-  initialDbSaves = [],
-}: {
-  children: ReactNode;
-  initialDbSaves?: string[];
-}) {
-  const savedContext = useSavedHook(initialDbSaves);
+export function SavedProvider({ children }: { children: ReactNode }) {
+  const savedContext = useSavedHook();
 
   return (
     <SavedContext.Provider value={savedContext}>

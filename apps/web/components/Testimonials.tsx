@@ -54,65 +54,61 @@ const testimonials: Testimonial[] = [
   },
 ];
 
-const Testimonials = () => {
-  return (
-    <section className="py-16 sm:py-24 bg-warm-beige">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-playfair font-bold text-cocoa mb-4">
-            What Our Customers Say!
-          </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Real stories from our family. ❤️
-          </p>
-        </div>
+const Testimonials = () => (
+  <section className="py-16 sm:py-24 bg-warm-beige">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl md:text-4xl font-playfair font-bold text-cocoa mb-4">
+          What Our Customers Say!
+        </h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Real stories from our family. ❤️
+        </p>
+      </div>
 
-        <Carousel
-          opts={{
-            align: 'start',
-            loop: true,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-6">
-            {testimonials.map((testimonial, index) => (
-              <CarouselItem
-                key={index}
-                className="pl-6 basis-full md:basis-1/2 lg:basis-1/3"
-              >
-                <div className="bg-white p-6 rounded-xl shadow-md h-full flex flex-col">
-                  <div className="flex items-center gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <FontAwesomeIcon
-                        key={i}
-                        icon={faStar}
-                        className="text-amber-400"
-                        size="sm"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-gray-700 mb-4 flex-grow">
-                    {testimonial.text}
-                  </p>
-                  <div className="border-t border-gray-200 pt-4">
-                    <p className="font-semibold text-cocoa">
-                      {testimonial.name}
-                    </p>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span>{testimonial.location}</span>
-                      <span>{testimonial.date}</span>
-                    </div>
+      <Carousel
+        opts={{
+          align: 'start',
+          loop: true,
+        }}
+        className="w-full"
+      >
+        <CarouselContent className="-ml-6">
+          {testimonials.map((testimonial, index) => (
+            <CarouselItem
+              key={index}
+              className="pl-6 basis-full md:basis-1/2 lg:basis-1/3"
+            >
+              <div className="bg-white p-6 rounded-xl shadow-md h-full flex flex-col">
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <FontAwesomeIcon
+                      key={i}
+                      icon={faStar}
+                      className="text-amber-400"
+                      size="sm"
+                    />
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-4 flex-grow">
+                  {testimonial.text}
+                </p>
+                <div className="border-t border-gray-200 pt-4">
+                  <p className="font-semibold text-cocoa">{testimonial.name}</p>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span>{testimonial.location}</span>
+                    <span>{testimonial.date}</span>
                   </div>
                 </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="hidden sm:flex left-4" />
-          <CarouselNext className="hidden sm:flex right-4" />
-        </Carousel>
-      </div>
-    </section>
-  );
-};
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="hidden sm:flex left-4" />
+        <CarouselNext className="hidden sm:flex right-4" />
+      </Carousel>
+    </div>
+  </section>
+);
 
 export default Testimonials;

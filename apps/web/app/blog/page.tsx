@@ -1,6 +1,3 @@
-import Header from '@/components/HeaderWrapper';
-import Footer from '@/components/Footer';
-import AnnouncementBanner from '@/components/AnnouncementBanner';
 import BlogList from '@/components/BlogList';
 import { getFeaturedPosts } from '@/lib/blog-data';
 
@@ -9,9 +6,6 @@ const BlogPage = () => {
 
   return (
     <div className="bg-warm-beige min-h-screen">
-      <AnnouncementBanner />
-      <Header />
-
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-cocoa to-deep-earth text-white py-16 sm:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,8 +22,6 @@ const BlogPage = () => {
       </section>
 
       <BlogList featuredPosts={featuredPosts} />
-
-      <Footer />
     </div>
   );
 };

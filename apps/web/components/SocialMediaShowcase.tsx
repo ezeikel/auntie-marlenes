@@ -128,6 +128,7 @@ const SocialMediaShowcase = () => {
                       loop
                       muted={isMuted}
                       playsInline
+                      preload="true"
                       poster={video.thumbnailUrl}
                     >
                       <source src={video.videoUrl} type="video/mp4" />
@@ -183,7 +184,7 @@ const SocialMediaShowcase = () => {
                               onClick={(e) => e.stopPropagation()}
                             >
                               <Link href={video.productLink}>
-                                <FontAwesomeIcon icon={faPlus} />
+                                <FontAwesomeIcon icon={faPlus} size="sm" />
                               </Link>
                             </Button>
                           )}

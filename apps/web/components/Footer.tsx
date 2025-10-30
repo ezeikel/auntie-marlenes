@@ -9,8 +9,11 @@ import {
   faYoutube,
 } from '@fortawesome/free-brands-svg-icons';
 import { faArrowRight } from '@fortawesome/pro-regular-svg-icons';
+import { connection } from 'next/server';
 
-const Footer = () => {
+const Footer = async () => {
+  await connection();
+
   return (
     <footer className="bg-deep-earth text-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -207,7 +210,7 @@ const Footer = () => {
               Made with{' '}
               <span className="text-terracotta font-bold text-lg">♡</span> in{' '}
               <span className="text-white font-bold">South London</span> for
-              beautiful skin & hair
+              beautiful skin &amp; hair
             </p>
           </div>
         </div>

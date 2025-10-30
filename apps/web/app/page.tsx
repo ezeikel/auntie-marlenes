@@ -1,5 +1,4 @@
-import AnnouncementBanner from '@/components/AnnouncementBanner';
-import Header from '@/components/HeaderWrapper';
+import { Suspense } from 'react';
 import Hero from '@/components/Hero';
 import ProductCarousel from '@/components/ProductCarousel';
 import ShopByCategory from '@/components/ShopByCategory';
@@ -9,27 +8,25 @@ import BrandSpotlight from '@/components/BrandSpotlight';
 import Testimonials from '@/components/Testimonials';
 import FeaturedIn from '@/components/FeaturedIn';
 import BlogSection from '@/components/BlogSection';
-import Footer from '@/components/Footer';
 import SocialMediaShowcase from '@/components/SocialMediaShowcase';
 
 const HomePage = () => {
   return (
     <div className="bg-gray-50">
-      <AnnouncementBanner />
-      <Header />
-      <main>
-        <Hero />
-        <TrustBadges />
+      <Hero />
+      <TrustBadges />
+      <Suspense fallback={<div>Loading...</div>}>
         <ProductCarousel />
-        <ShopByCategory />
+      </Suspense>
+      <ShopByCategory />
+      <Suspense fallback={<div>Loading...</div>}>
         <BundleDeals />
-        <BrandSpotlight />
-        <SocialMediaShowcase />
-        <Testimonials />
-        <FeaturedIn />
-        <BlogSection />
-      </main>
-      <Footer />
+      </Suspense>
+      <BrandSpotlight />
+      <SocialMediaShowcase />
+      <Testimonials />
+      <FeaturedIn />
+      <BlogSection />
     </div>
   );
 };

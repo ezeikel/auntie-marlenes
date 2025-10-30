@@ -8,23 +8,36 @@ import {
   useTransition,
 } from 'react';
 import { useSession } from './useSession';
-import { addProductToSaved, removeProductFromSaved } from '@/app/actions';
+import {
+  addProductToSaved,
+  removeProductFromSaved,
+  getSaved,
+} from '@/app/actions';
 import {
   getLocalSaves,
   addLocalSave,
   removeLocalSave,
 } from '@/lib/localStorage-saves';
 
-export function useSaved(initialDbSaves: string[] = []) {
+export function useSaved() {
   const { isAuthenticated } = useSession();
   const [isPending, startTransition] = useTransition();
   const [localSaves, setLocalSaves] = useState<string[]>([]);
-  const [dbSaves, setDbSaves] = useState<string[]>(initialDbSaves);
+  const [dbSaves, setDbSaves] = useState<string[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // Load localStorage saves on mount
+  // Wait for client-side mount before accessing localStorage
   useEffect(() => {
+    setIsMounted(true);
     setLocalSaves(getLocalSaves());
   }, []);
+
+  // // Fetch DB saves when authenticated
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     getSaved().then(setDbSaves);
+  //   }
+  // }, [isAuthenticated]);
 
   // Merge and deduplicate DB + localStorage saves
   const savedItems = useMemo(

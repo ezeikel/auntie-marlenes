@@ -5,10 +5,8 @@ import {
   getProducts,
 } from '@/app/actions';
 import ProductDetail from '@/components/ProductDetail';
-import Header from '@/components/HeaderWrapper';
-import Footer from '@/components/Footer';
-import AnnouncementBanner from '@/components/AnnouncementBanner';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 
 // Pre-render popular/recent products at build time
 export async function generateStaticParams() {
@@ -26,16 +24,15 @@ export async function generateStaticParams() {
   }
 }
 
-// Allow dynamic params for new products added after build
-export const dynamicParams = true;
-
-// ISR: Revalidate every hour (3600 seconds)
-// This keeps pages static but fresh. Can be overridden by webhook revalidation.
-export const revalidate = 3600;
-
 type ProductPageProps = {
   params: Promise<{ handle: string }>;
 };
+
+// Async component for dynamic save count (PPR)
+async function SaveCountLoader({ productId }: { productId: string }) {
+  const saveCount = await getProductSaveCount({ productId });
+  return <>{saveCount}</>;
+}
 
 const ProductPage = async ({ params }: ProductPageProps) => {
   const { handle } = await params;
@@ -46,14 +43,6 @@ const ProductPage = async ({ params }: ProductPageProps) => {
   } catch (error) {
     console.error(`Failed to fetch product with handle "${handle}":`, error);
     notFound();
-  }
-
-  // Gracefully handle optional data - don't fail the whole page
-  let saveCount = 0;
-  try {
-    saveCount = await getProductSaveCount({ productId: product.id });
-  } catch (error) {
-    console.error('Failed to fetch save count:', error);
   }
 
   // Shopify's HTML is already sanitized, so we can use it directly
@@ -77,14 +66,17 @@ const ProductPage = async ({ params }: ProductPageProps) => {
 
   return (
     <div className="bg-white min-h-screen">
-      <AnnouncementBanner />
-      <Header />
       <ProductDetail
-        product={{ ...product, saveCount }}
+        product={product}
         relatedProducts={filteredRelatedProducts}
         sanitizedDescription={sanitizedDescription}
+        // PPR: Wrap dynamic save count in Suspense
+        saveCountSlot={
+          <Suspense fallback={<span>0</span>}>
+            <SaveCountLoader productId={product.id} />
+          </Suspense>
+        }
       />
-      <Footer />
     </div>
   );
 };

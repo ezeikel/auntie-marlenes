@@ -36,12 +36,14 @@ type ProductDetailProps = {
   product: Product;
   relatedProducts?: Product[];
   sanitizedDescription: string;
+  saveCountSlot?: React.ReactNode; // PPR: Dynamic save count slot
 };
 
 const ProductDetail = ({
   product,
   relatedProducts = [],
   sanitizedDescription,
+  saveCountSlot,
 }: ProductDetailProps) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0]);
@@ -108,7 +110,7 @@ const ProductDetail = ({
                   priority
                 />
                 <div className="absolute bottom-4 right-4 bg-cocoa/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-semibold text-white flex items-center gap-1.5 shadow-lg">
-                  <span>{product.saveCount || 0}</span>
+                  <span>{saveCountSlot ?? product.saveCount ?? 0}</span>
                   <FontAwesomeIcon
                     icon={faHeartSolid}
                     className="text-white"

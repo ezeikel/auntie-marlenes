@@ -4,6 +4,7 @@ import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 import { print } from 'graphql';
 import { db } from '@auntie-marlenes/db';
+import { cache } from 'react';
 import {
   GET_CART_QUERY,
   CREATE_CART_MUTATION,
@@ -342,43 +343,42 @@ export const getProduct = async ({
   return adaptShopifyProduct(product);
 };
 
-export const getProductByHandle = async ({
-  handle,
-}: {
-  handle: string;
-}): Promise<Product> => {
-  const res = await fetch(
-    process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
-    {
-      method: 'POST',
-      headers: {
-        'X-Shopify-Storefront-Access-Token': process.env
-          .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
-        'Content-Type': 'application/json',
+export const getProductByHandle = cache(
+  async ({ handle }: { handle: string }): Promise<Product> => {
+    const res = await fetch(
+      process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
+      {
+        method: 'POST',
+        headers: {
+          'X-Shopify-Storefront-Access-Token': process.env
+            .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: print(GET_PRODUCT_BY_HANDLE_QUERY),
+          variables: { handle },
+        }),
+        // Add cache tags for webhook-based revalidation and static pre-rendering
+        next: {
+          tags: ['products', `product:${handle}`],
+          revalidate: 3600, // Revalidate every hour
+        },
       },
-      body: JSON.stringify({
-        query: print(GET_PRODUCT_BY_HANDLE_QUERY),
-        variables: { handle },
-      }),
-      // Add cache tags for webhook-based revalidation
-      next: {
-        tags: ['products', `product:${handle}`],
-      },
-    },
-  );
+    );
 
-  const {
-    data: { productByHandle },
-  } = await res.json();
+    const {
+      data: { productByHandle },
+    } = await res.json();
 
-  if (!productByHandle) {
-    throw new Error(`Product with handle "${handle}" not found`);
-  }
+    if (!productByHandle) {
+      throw new Error(`Product with handle "${handle}" not found`);
+    }
 
-  return adaptShopifyProduct(productByHandle);
-};
+    return adaptShopifyProduct(productByHandle);
+  },
+);
 
-export const getProducts = async (): Promise<Product[]> => {
+export const getProducts = cache(async (): Promise<Product[]> => {
   const res = await fetch(
     process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
     {
@@ -389,6 +389,10 @@ export const getProducts = async (): Promise<Product[]> => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ query: print(GET_PRODUCTS_QUERY) }),
+      next: {
+        tags: ['products'],
+        revalidate: 3600, // Revalidate every hour
+      },
     },
   );
 
@@ -399,7 +403,7 @@ export const getProducts = async (): Promise<Product[]> => {
   const shopifyProducts = products.edges.map((edge: ProductEdge) => edge.node);
 
   return adaptShopifyProducts(shopifyProducts);
-};
+});
 
 export const addProductToSaved = async ({
   productId,
@@ -520,78 +524,116 @@ export const getUser = async () => {
   return user;
 };
 
-export const searchProducts = async ({
-  query,
-  productType,
-  vendor,
-  sortKey,
-  reverse,
-  first = 20,
-  onSale,
-}: {
-  query?: string;
-  productType?: string;
-  vendor?: string;
-  sortKey?: 'TITLE' | 'PRICE' | 'CREATED_AT' | 'BEST_SELLING' | 'RELEVANCE';
-  reverse?: boolean;
-  first?: number;
-  onSale?: boolean;
-}): Promise<Product[]> => {
-  // Build Shopify search query string
-  let searchQuery = '';
+export const getUserAccountData = async () => {
+  const session = await auth();
 
-  if (query) {
-    searchQuery = query;
+  if (!session?.user?.email) {
+    return null;
   }
 
-  if (productType) {
-    searchQuery += searchQuery
-      ? ` AND product_type:${productType}`
-      : `product_type:${productType}`;
-  }
-
-  if (vendor) {
-    searchQuery += searchQuery ? ` AND vendor:${vendor}` : `vendor:${vendor}`;
-  }
-
-  const res = await fetch(
-    process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
-    {
-      method: 'POST',
-      headers: {
-        'X-Shopify-Storefront-Access-Token': process.env
-          .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
-        'Content-Type': 'application/json',
+  const user = await db.user.findUnique({
+    where: { email: session.user.email },
+    include: {
+      savedItems: {
+        select: { id: true },
       },
-      body: JSON.stringify({
-        query: print(GET_PRODUCTS_QUERY),
-        variables: {
-          query: searchQuery || undefined,
-          sortKey,
-          reverse,
-          first,
-        },
-      }),
     },
-  );
+  });
 
-  const {
-    data: { products },
-  } = await res.json();
-
-  const shopifyProducts = products.edges.map((edge: ProductEdge) => edge.node);
-  let adaptedProducts = adaptShopifyProducts(shopifyProducts);
-
-  // Client-side filter for onSale if needed (compareAtPrice > price)
-  if (onSale) {
-    adaptedProducts = adaptedProducts.filter(
-      (product) =>
-        product.compareAtPrice && product.compareAtPrice > product.price,
-    );
+  if (!user) {
+    return null;
   }
 
-  return adaptedProducts;
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    image: user.image,
+    createdAt: user.createdAt,
+    savedItemsCount: user.savedItems.length,
+  };
 };
+
+export const searchProducts = cache(
+  async ({
+    query,
+    productType,
+    vendor,
+    sortKey,
+    reverse,
+    first = 20,
+    onSale,
+  }: {
+    query?: string;
+    productType?: string;
+    vendor?: string;
+    sortKey?: 'TITLE' | 'PRICE' | 'CREATED_AT' | 'BEST_SELLING' | 'RELEVANCE';
+    reverse?: boolean;
+    first?: number;
+    onSale?: boolean;
+  }): Promise<Product[]> => {
+    // Build Shopify search query string
+    let searchQuery = '';
+
+    if (query) {
+      searchQuery = query;
+    }
+
+    if (productType) {
+      searchQuery += searchQuery
+        ? ` AND product_type:${productType}`
+        : `product_type:${productType}`;
+    }
+
+    if (vendor) {
+      searchQuery += searchQuery ? ` AND vendor:${vendor}` : `vendor:${vendor}`;
+    }
+
+    const res = await fetch(
+      process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
+      {
+        method: 'POST',
+        headers: {
+          'X-Shopify-Storefront-Access-Token': process.env
+            .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: print(GET_PRODUCTS_QUERY),
+          variables: {
+            query: searchQuery || undefined,
+            sortKey,
+            reverse,
+            first,
+          },
+        }),
+        next: {
+          tags: ['products'],
+          revalidate: 3600, // Revalidate every hour
+        },
+      },
+    );
+
+    const {
+      data: { products },
+    } = await res.json();
+
+    const shopifyProducts = products.edges.map(
+      (edge: ProductEdge) => edge.node,
+    );
+    let adaptedProducts = adaptShopifyProducts(shopifyProducts);
+
+    // Client-side filter for onSale if needed (compareAtPrice > price)
+    if (onSale) {
+      adaptedProducts = adaptedProducts.filter(
+        (product) =>
+          product.compareAtPrice && product.compareAtPrice > product.price,
+      );
+    }
+
+    return adaptedProducts;
+  },
+);
 
 export const getCategories = async (): Promise<string[]> => {
   const products = await getProducts();
@@ -657,11 +699,21 @@ export const getProductSaveCount = async ({
 }: {
   productId: string;
 }): Promise<number> => {
-  const count = await db.savedItem.count({
-    where: { productId },
-  });
+  // During build time, return 0 since database isn't available
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return 0;
+  }
 
-  return count;
+  try {
+    const count = await db.savedItem.count({
+      where: { productId },
+    });
+
+    return count;
+  } catch (error) {
+    console.error('Failed to fetch save count:', error);
+    return 0;
+  }
 };
 
 /**
