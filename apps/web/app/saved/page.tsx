@@ -1,4 +1,13 @@
 import SavedItemsList from '@/components/SavedItemsList';
+import { generatePageMetadata } from '@/lib/metadata';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = generatePageMetadata({
+  title: 'Saved Items',
+  description: 'View and manage your saved items and wishlist.',
+  path: '/saved',
+  noIndex: true, // Private user pages should not be indexed
+});
 
 export default function SavedPage() {
   return (

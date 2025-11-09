@@ -1,5 +1,14 @@
 import { Suspense } from 'react';
 import Account from '@/components/Account/Account';
+import { generatePageMetadata } from '@/lib/metadata';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = generatePageMetadata({
+  title: 'My Account',
+  description: 'Manage your account, view orders, and update your preferences.',
+  path: '/account',
+  noIndex: true, // Private user pages should not be indexed
+});
 
 const AccountPage = async () => {
   return (

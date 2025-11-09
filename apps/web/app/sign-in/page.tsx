@@ -14,6 +14,8 @@ import {
 } from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope } from '@fortawesome/pro-regular-svg-icons';
 
+// Note: Metadata export is at the bottom of the file since this is a client component
+
 const SignInContent = () => {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');

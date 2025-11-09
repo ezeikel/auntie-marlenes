@@ -1,5 +1,23 @@
 import BlogList from '@/components/BlogList';
 import { getFeaturedPosts } from '@/lib/blog-data';
+import { generatePageMetadata } from '@/lib/metadata';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = generatePageMetadata({
+  title: 'Hair Care Tips & Beauty Advice',
+  description:
+    'Expert advice for Black hair care. Product reviews, styling tutorials, protective styles guides, and tips for healthy natural hair. Your trusted beauty supply resource for afro, coily, and textured hair.',
+  path: '/blog',
+  keywords: [
+    'black hair care tips',
+    'natural hair advice',
+    'afro hair care',
+    'protective styles',
+    '4c hair tips',
+    'hair care blog',
+    'textured hair guide',
+  ],
+});
 
 const BlogPage = () => {
   const featuredPosts = getFeaturedPosts();
