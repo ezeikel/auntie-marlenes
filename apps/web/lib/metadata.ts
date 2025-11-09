@@ -94,7 +94,6 @@ export function generateProductMetadata({
   const metaDescription = `${description.substring(0, 150)}... Shop ${productName} at ${siteName} - your trusted Black beauty supply store online. Fast worldwide shipping.`;
 
   const url = `${siteUrl}/product/${handle}`;
-  const imageUrl = image || '/og-image.png';
 
   const metadata: Metadata = {
     title,
@@ -109,20 +108,13 @@ export function generateProductMetadata({
       siteName,
       title,
       description: metaDescription,
-      images: [
-        {
-          url: imageUrl,
-          width: 1200,
-          height: 630,
-          alt: productName,
-        },
-      ],
+      // Images will be automatically provided by opengraph-image.tsx
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description: metaDescription,
-      images: [imageUrl],
+      // Images will be automatically provided by opengraph-image.tsx (Twitter falls back to og:image)
     },
   };
 

@@ -79,7 +79,7 @@ export default async function Image() {
               lineHeight: 1.4,
             }}
           >
-            Your modern Black beauty supply store
+            Your modern afro hair & beauty store
           </p>
 
           {/* Trust Badges */}

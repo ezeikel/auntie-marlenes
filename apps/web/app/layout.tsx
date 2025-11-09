@@ -35,7 +35,7 @@ export const metadata: Metadata = {
       'Your modern Black beauty supply store. Shop braiding hair, wigs, hair extensions, treatments & styling essentials. Premium products, fast shipping, trusted service. Family-run & Black-owned.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
         alt: "Auntie Marlene's - Black Beauty Supply Store Online",
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     title: "Auntie Marlene's | Black Beauty Supply Store Online",
     description:
       'Your modern Black beauty supply store. Shop braiding hair, wigs, hair extensions & more. Family-run & Black-owned.',
-    images: ['/og-image.png'],
+    images: ['/opengraph-image'],
   },
 };
 

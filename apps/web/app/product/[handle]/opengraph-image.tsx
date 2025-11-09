@@ -260,7 +260,7 @@ export default async function Image({
                 marginTop: 4,
               }}
             >
-              Black Beauty Supply Store
+              Afro Hair & Beauty Store
             </div>
           </div>
         </div>
