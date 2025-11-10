@@ -141,7 +141,7 @@ export default async function Image() {
                 alignItems: 'center',
               }}
             >
-              <span style={{ fontSize: 28, color: '#8FBC8F' }}>✓</span>
+              <span style={{ fontSize: 28, color: '#8FBC8F' }}>🌍</span>
               <span style={{ fontSize: 20, color: '#E0D4C3' }}>
                 Worldwide Ship
               </span>
