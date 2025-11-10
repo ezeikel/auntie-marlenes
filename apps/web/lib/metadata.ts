@@ -21,7 +21,7 @@ export function generatePageMetadata({
   title,
   description,
   path = '/',
-  image = '/og-image.png',
+  image = '/opengraph-image',
   imageAlt = `${siteName} - Black Beauty Supply Store Online`,
   noIndex = false,
   keywords = [],
