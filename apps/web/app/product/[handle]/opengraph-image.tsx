@@ -1,6 +1,9 @@
 import { ImageResponse } from 'next/og';
 import { getProductByHandle } from '@/app/actions';
 
+// Force Node.js runtime to support Prisma database queries
+export const runtime = 'nodejs';
+
 export const alt = "Product from Auntie Marlene's";
 export const size = {
   width: 1200,
