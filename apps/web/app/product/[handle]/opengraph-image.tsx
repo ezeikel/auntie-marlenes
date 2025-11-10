@@ -46,18 +46,33 @@ export default async function Image({
     );
   }
 
-  // Fetch custom fonts from Google Fonts
+  // Fetch custom fonts from Google Fonts (fetch CSS first, then extract font URL)
   const playfairBold = fetch(
-    'https://fonts.gstatic.com/s/playfairdisplay/v36/nuFRD-vYSZviVYUb_rj3ij__anPXDTnCjmHKM4nYO7KN_qiTXtPA.woff',
-  ).then((res) => res.arrayBuffer());
+    'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap',
+  ).then(async (res) => {
+    const css = await res.text();
+    const fontUrl = css.match(/url\(([^)]+)\)/)?.[1]?.replace(/["']/g, '');
+    if (!fontUrl) throw new Error('Could not extract Playfair font URL');
+    return fetch(fontUrl).then((fontRes) => fontRes.arrayBuffer());
+  });
 
   const interRegular = fetch(
-    'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff',
-  ).then((res) => res.arrayBuffer());
+    'https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap',
+  ).then(async (res) => {
+    const css = await res.text();
+    const fontUrl = css.match(/url\(([^)]+)\)/)?.[1]?.replace(/["']/g, '');
+    if (!fontUrl) throw new Error('Could not extract Inter Regular font URL');
+    return fetch(fontUrl).then((fontRes) => fontRes.arrayBuffer());
+  });
 
   const interSemiBold = fetch(
-    'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hiA.woff',
-  ).then((res) => res.arrayBuffer());
+    'https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap',
+  ).then(async (res) => {
+    const css = await res.text();
+    const fontUrl = css.match(/url\(([^)]+)\)/)?.[1]?.replace(/["']/g, '');
+    if (!fontUrl) throw new Error('Could not extract Inter SemiBold font URL');
+    return fetch(fontUrl).then((fontRes) => fontRes.arrayBuffer());
+  });
 
   // Get product image (first image or fallback to main image)
   const productImage = product.images?.[0] || product.image;
