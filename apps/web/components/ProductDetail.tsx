@@ -17,6 +17,7 @@ import {
   faRotateLeft,
   faChevronLeft,
   faChevronRight,
+  faShareNodes,
 } from '@fortawesome/pro-regular-svg-icons';
 import { faHeart as faHeartSolid } from '@fortawesome/pro-solid-svg-icons';
 import type { Product } from '@/lib/constants';
@@ -31,6 +32,7 @@ import {
 } from '@/components/ui/carousel';
 import AddToBagButton from './buttons/AddToBagButton/AddToBagButton';
 import { useSaved } from '@/contexts/SavedContext';
+import { toast } from 'sonner';
 
 type ProductDetailProps = {
   product: Product;
@@ -52,6 +54,30 @@ const ProductDetail = ({
 
   const images = product.images || [product.image];
   const productIsSaved = isSaved(product.id);
+
+  const handleShare = async () => {
+    const shareData = {
+      title: product.name,
+      text: `${product.brand} - ${product.name} - ${formatCurrency(product.price, 'GBP')}`,
+      url: `${window.location.origin}/product/${product.handle}`,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast.success('Product shared successfully!');
+      } else {
+        // Fallback: Copy URL to clipboard
+        await navigator.clipboard.writeText(shareData.url);
+        toast.success('Product link copied to clipboard!');
+      }
+    } catch (error) {
+      // User cancelled or error occurred
+      if (error instanceof Error && error.name !== 'AbortError') {
+        toast.error('Failed to share product');
+      }
+    }
+  };
 
   return (
     <>
@@ -257,6 +283,15 @@ const ProductDetail = ({
                   size="lg"
                 />
                 <span className="sr-only">Save</span>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-14 w-14 rounded-lg bg-transparent"
+                onClick={handleShare}
+              >
+                <FontAwesomeIcon icon={faShareNodes} size="lg" />
+                <span className="sr-only">Share</span>
               </Button>
             </div>
 
