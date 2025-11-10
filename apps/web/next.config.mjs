@@ -8,6 +8,10 @@ const nextConfig = {
       { protocol: 'https', hostname: 'cdn.shopify.com', pathname: '**' },
     ],
   },
+  // Include Prisma binaries in serverless functions
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client', '@prisma/engines'],
+  },
 };
 
 const sentryOptions = {
