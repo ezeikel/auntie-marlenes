@@ -33,6 +33,7 @@ import {
 import AddToBagButton from './buttons/AddToBagButton/AddToBagButton';
 import { useSaved } from '@/contexts/SavedContext';
 import { toast } from 'sonner';
+import { track } from '@vercel/analytics';
 
 type ProductDetailProps = {
   product: Product;
@@ -65,15 +66,47 @@ const ProductDetail = ({
     try {
       if (navigator.share) {
         await navigator.share(shareData);
+
+        // Track successful native share
+        track('Product Shared', {
+          product_id: product.id,
+          product_name: product.name,
+          product_handle: product.handle,
+          brand: product.brand,
+          price: product.price,
+          category: product.category,
+          share_method: 'native',
+        });
+
         toast.success('Product shared successfully!');
       } else {
         // Fallback: Copy URL to clipboard
         await navigator.clipboard.writeText(shareData.url);
+
+        // Track clipboard copy
+        track('Product Shared', {
+          product_id: product.id,
+          product_name: product.name,
+          product_handle: product.handle,
+          brand: product.brand,
+          price: product.price,
+          category: product.category,
+          share_method: 'clipboard',
+        });
+
         toast.success('Product link copied to clipboard!');
       }
     } catch (error) {
       // User cancelled or error occurred
       if (error instanceof Error && error.name !== 'AbortError') {
+        // Track share failure
+        track('Product Share Failed', {
+          product_id: product.id,
+          product_name: product.name,
+          error_name: error.name,
+          error_message: error.message,
+        });
+
         toast.error('Failed to share product');
       }
     }
