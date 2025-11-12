@@ -1,0 +1,69 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+
+@import "nativewind/theme";
+
+@theme {
+  /* Fonts - Inter */
+  --font-inter: 'Inter18pt-Regular';
+  --font-inter-bold: 'Inter18pt-Bold';
+  --font-inter-semibold: 'Inter18pt-SemiBold';
+  --font-inter-medium: 'Inter18pt-Medium';
+  --font-inter-light: 'Inter18pt-Light';
+  --font-inter-italic: 'Inter18pt-Italic';
+  --font-inter-black: 'Inter18pt-Black';
+  --font-inter-black-italic: 'Inter18pt-BlackItalic';
+  --font-inter-bold-italic: 'Inter18pt-BoldItalic';
+  --font-inter-extrabold: 'Inter18pt-ExtraBold';
+  --font-inter-extrabold-italic: 'Inter18pt-ExtraBoldItalic';
+  --font-inter-extralight: 'Inter18pt-ExtraLight';
+  --font-inter-extralight-italic: 'Inter18pt-ExtraLightItalic';
+  --font-inter-light-italic: 'Inter18pt-LightItalic';
+  --font-inter-medium-italic: 'Inter18pt-MediumItalic';
+  --font-inter-semibold-italic: 'Inter18pt-SemiBoldItalic';
+  --font-inter-thin: 'Inter18pt-Thin';
+  --font-inter-thin-italic: 'Inter18pt-ThinItalic';
+
+  /* Fonts - Playfair Display */
+  --font-playfair: 'PlayfairDisplay-Regular';
+  --font-playfair-bold: 'PlayfairDisplay-Bold';
+  --font-playfair-semibold: 'PlayfairDisplay-SemiBold';
+  --font-playfair-medium: 'PlayfairDisplay-Medium';
+  --font-playfair-italic: 'PlayfairDisplay-Italic';
+  --font-playfair-black: 'PlayfairDisplay-Black';
+  --font-playfair-black-italic: 'PlayfairDisplay-BlackItalic';
+  --font-playfair-bold-italic: 'PlayfairDisplay-BoldItalic';
+  --font-playfair-extrabold: 'PlayfairDisplay-ExtraBold';
+  --font-playfair-extrabold-italic: 'PlayfairDisplay-ExtraBoldItalic';
+  --font-playfair-medium-italic: 'PlayfairDisplay-MediumItalic';
+  --font-playfair-semibold-italic: 'PlayfairDisplay-SemiBoldItalic';
+
+  /* Brand Colors */
+  --color-warm-sand: #E8DCC4;
+  --color-terracotta: #C5705D;
+  --color-warm-clay: #B8957A;
+  --color-sage-green: #9CAF88;
+  --color-warm-beige: #F5F0E8;
+  --color-cocoa: #5D4037;
+  --color-deep-earth: #3E2723;
+
+  /* UI Colors - Light Mode */
+  --color-background: #FFFFFF;
+  --color-foreground: #171717;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #171717;
+  --color-primary: #171717;
+  --color-primary-foreground: #FAFAFA;
+  --color-secondary: #F5F5F5;
+  --color-secondary-foreground: #171717;
+  --color-muted: #F5F5F5;
+  --color-muted-foreground: #737373;
+  --color-accent: #F5F5F5;
+  --color-accent-foreground: #171717;
+  --color-destructive: #DC2626;
+  --color-destructive-foreground: #FAFAFA;
+  --color-border: #E5E5E5;
+  --color-input: #E5E5E5;
+  --color-ring: #171717;
+}

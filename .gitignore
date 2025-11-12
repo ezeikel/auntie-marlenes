@@ -57,3 +57,6 @@ android/.gradle/
 
 v0/
 .docs/
+
+
+.vscode/

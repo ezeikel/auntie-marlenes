@@ -77,7 +77,7 @@ export const CREATE_CART_MUTATION = gql`
           email
           countryCode
         }
-        lines(first: 5) {
+        lines(first: 50) {
           edges {
             node {
               id
@@ -86,9 +86,32 @@ export const CREATE_CART_MUTATION = gql`
                 ... on ProductVariant {
                   id
                   title
+                  priceV2 {
+                    amount
+                    currencyCode
+                  }
+                  compareAtPriceV2 {
+                    amount
+                    currencyCode
+                  }
                   product {
                     id
                     title
+                    handle
+                    vendor
+                    productType
+                    images(first: 1) {
+                      edges {
+                        node {
+                          url
+                          altText
+                        }
+                      }
+                    }
+                  }
+                  image {
+                    url
+                    altText
                   }
                 }
               }
@@ -96,6 +119,10 @@ export const CREATE_CART_MUTATION = gql`
           }
         }
         cost {
+          subtotalAmount {
+            amount
+            currencyCode
+          }
           totalAmount {
             amount
             currencyCode
@@ -114,7 +141,7 @@ export const ADD_PRODUCTS_TO_CART_MUTATION = gql`
     cartLinesAdd(cartId: $cartId, lines: $lines) {
       cart {
         id
-        lines(first: 5) {
+        lines(first: 50) {
           edges {
             node {
               id
@@ -123,9 +150,47 @@ export const ADD_PRODUCTS_TO_CART_MUTATION = gql`
                 ... on ProductVariant {
                   id
                   title
+                  priceV2 {
+                    amount
+                    currencyCode
+                  }
+                  compareAtPriceV2 {
+                    amount
+                    currencyCode
+                  }
+                  product {
+                    id
+                    title
+                    handle
+                    vendor
+                    productType
+                    images(first: 1) {
+                      edges {
+                        node {
+                          url
+                          altText
+                        }
+                      }
+                    }
+                  }
+                  image {
+                    url
+                    altText
+                  }
                 }
               }
             }
+          }
+        }
+        checkoutUrl
+        cost {
+          subtotalAmount {
+            amount
+            currencyCode
+          }
+          totalAmount {
+            amount
+            currencyCode
           }
         }
       }
@@ -142,23 +207,53 @@ export const CART_LINE_REMOVE_MUTATION = gql`
     cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
       cart {
         id
-        lines(first: 10) {
+        lines(first: 50) {
           edges {
             node {
               id
+              quantity
               merchandise {
                 ... on ProductVariant {
                   id
                   title
+                  priceV2 {
+                    amount
+                    currencyCode
+                  }
+                  compareAtPriceV2 {
+                    amount
+                    currencyCode
+                  }
                   product {
+                    id
                     title
+                    handle
+                    vendor
+                    productType
+                    images(first: 1) {
+                      edges {
+                        node {
+                          url
+                          altText
+                        }
+                      }
+                    }
+                  }
+                  image {
+                    url
+                    altText
                   }
                 }
               }
             }
           }
         }
+        checkoutUrl
         cost {
+          subtotalAmount {
+            amount
+            currencyCode
+          }
           totalAmount {
             amount
             currencyCode
@@ -186,9 +281,43 @@ export const CART_LINES_UPDATE_MUTATION = gql`
             node {
               id
               quantity
+              merchandise {
+                ... on ProductVariant {
+                  id
+                  title
+                  priceV2 {
+                    amount
+                    currencyCode
+                  }
+                  compareAtPriceV2 {
+                    amount
+                    currencyCode
+                  }
+                  product {
+                    id
+                    title
+                    handle
+                    vendor
+                    productType
+                    images(first: 1) {
+                      edges {
+                        node {
+                          url
+                          altText
+                        }
+                      }
+                    }
+                  }
+                  image {
+                    url
+                    altText
+                  }
+                }
+              }
             }
           }
         }
+        checkoutUrl
         cost {
           subtotalAmount {
             amount

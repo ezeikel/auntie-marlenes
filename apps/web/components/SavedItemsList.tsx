@@ -18,7 +18,7 @@ import {
   faHeart,
 } from '@fortawesome/pro-regular-svg-icons';
 import { formatCurrency } from '@/lib/currency';
-import { useSaved } from '@/contexts/SavedContext';
+import { useSaved } from '@/contexts/saved';
 import { getProduct } from '@/app/actions';
 import AddToBagButton from './buttons/AddToBagButton/AddToBagButton';
 

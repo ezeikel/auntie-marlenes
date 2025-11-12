@@ -29,9 +29,11 @@ export const getCartId = async () => {
   return cookieStore.get('cartId')?.value;
 };
 
-export const getCart = async () => {
-  // TODO: not sure why this needs an await to work but doesnt if calling cookies.get() directly
-  const cartId = await getCartId();
+export const getCart = async ({
+  cartId: providedCartId,
+}: { cartId?: string } = {}) => {
+  // Use provided cartId (from API call) or fall back to cookie (web app)
+  const cartId = providedCartId || (await getCartId());
 
   if (!cartId) {
     return null;
@@ -252,16 +254,33 @@ export const removeProductFromCart = async ({
     },
   );
 
+  const responseData = await res.json();
+
+  console.log(
+    '[removeProductFromCart] Response:',
+    JSON.stringify(responseData, null, 2),
+  );
+
+  if (!responseData.data?.cartLinesRemove) {
+    console.error(
+      '[removeProductFromCart] Invalid response structure:',
+      responseData,
+    );
+    throw new Error('Invalid response from Shopify API');
+  }
+
   const {
     data: {
-      cartLinesRemove: { cart: updatedCart, errors },
+      cartLinesRemove: { cart: updatedCart, userErrors },
     },
-  } = await res.json();
+  } = responseData;
 
-  if (errors) {
+  if (userErrors && userErrors.length > 0) {
     // handle any errors
-    console.error(errors);
-    throw new Error('Failed to remove product from cart');
+    console.error('[removeProductFromCart] User errors:', userErrors);
+    throw new Error(
+      userErrors[0]?.message || 'Failed to remove product from cart',
+    );
   }
 
   // update cache - immediate invalidation (no profile for instant expiration)

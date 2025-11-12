@@ -3,7 +3,7 @@
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
 import { UIContextProvider } from '@/contexts/ui';
-import { SavedProvider } from '@/contexts/SavedContext';
+import { SavedProvider } from '@/contexts/saved';
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
   return (

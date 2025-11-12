@@ -8,7 +8,7 @@ import { faHeart as faHeartSolid } from '@fortawesome/pro-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/pro-regular-svg-icons';
 import type { Product } from '@/lib/constants';
 import { formatCurrency } from '@/lib/currency';
-import { useSaved } from '@/contexts/SavedContext';
+import { useSaved } from '@/contexts/saved';
 
 type ProductCardProps = {
   product: Product;

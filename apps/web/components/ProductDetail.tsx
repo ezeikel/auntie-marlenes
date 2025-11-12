@@ -31,7 +31,7 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import AddToBagButton from './buttons/AddToBagButton/AddToBagButton';
-import { useSaved } from '@/contexts/SavedContext';
+import { useSaved } from '@/contexts/saved';
 import { toast } from 'sonner';
 import { track } from '@vercel/analytics';
 
