@@ -24,7 +24,7 @@ const getAuthHeaders = async () => {
 export const getSavedItems = async (): Promise<{ productIds: string[] }> => {
   try {
     const headers = await getAuthHeaders();
-    const response = await axios.get(`${apiUrl}/api/saved`, { headers });
+    const response = await axios.get(`${apiUrl}/saved`, { headers });
     return response.data;
   } catch (error) {
     console.error('[API] Get saved items error:', error);
@@ -41,7 +41,7 @@ export const addProductToSaved = async (
   try {
     const headers = await getAuthHeaders();
     const response = await axios.post(
-      `${apiUrl}/api/saved`,
+      `${apiUrl}/saved`,
       { productId },
       { headers }
     );
@@ -61,7 +61,7 @@ export const removeProductFromSaved = async (
   try {
     const headers = await getAuthHeaders();
     const response = await axios.delete(
-      `${apiUrl}/api/saved?productId=${productId}`,
+      `${apiUrl}/saved?productId=${productId}`,
       { headers }
     );
     return response.data;
@@ -81,7 +81,7 @@ export const syncSavedItems = async (
   try {
     const headers = await getAuthHeaders();
     const response = await axios.post(
-      `${apiUrl}/api/saved/sync`,
+      `${apiUrl}/saved/sync`,
       { productIds },
       { headers }
     );

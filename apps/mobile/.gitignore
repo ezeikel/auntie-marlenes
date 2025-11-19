@@ -50,5 +50,3 @@ android/
 .cursor/
 
 google-service-account.json
-
-.env.local

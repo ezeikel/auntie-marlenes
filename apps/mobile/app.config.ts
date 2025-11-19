@@ -17,6 +17,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       bundleIdentifier: "com.chewybytes.auntiemarlenes.app",
       supportsTablet: true,
       usesAppleSignIn: true,
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false
+      }
     },
     android: {
       package: "com.chewybytes.auntiemarlenes.app",
@@ -85,9 +88,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           ios: {
             useFrameworks: "static",
             deploymentTarget: "15.5.0",
-            infoPlist: {
-              ITSAppUsesNonExemptEncryption: false
-            }
           },
           android: {
             minSdkVersion: 23,

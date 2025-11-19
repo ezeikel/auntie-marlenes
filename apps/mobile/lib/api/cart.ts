@@ -20,7 +20,7 @@ export const createCart = async (productVariantId: string) => {
   try {
     const headers = await getAuthHeaders();
     const response = await axios.post(
-      `${apiUrl}/api/cart`,
+      `${apiUrl}/cart`,
       { productVariantId },
       { headers }
     );
@@ -37,7 +37,7 @@ export const createCart = async (productVariantId: string) => {
 export const getCart = async (cartId: string) => {
   try {
     const headers = await getAuthHeaders();
-    const response = await axios.get(`${apiUrl}/api/cart?cartId=${cartId}`, {
+    const response = await axios.get(`${apiUrl}/cart?cartId=${cartId}`, {
       headers,
     });
     // API returns { cart }, unwrap to get the cart object directly
@@ -58,7 +58,7 @@ export const addProductToCart = async (
   try {
     const headers = await getAuthHeaders();
     const response = await axios.post(
-      `${apiUrl}/api/cart/items`,
+      `${apiUrl}/cart/items`,
       { cartId, productVariantId },
       { headers }
     );
@@ -75,7 +75,7 @@ export const addProductToCart = async (
 export const removeProductFromCart = async (cartId: string, lineId: string) => {
   try {
     const headers = await getAuthHeaders();
-    const response = await axios.delete(`${apiUrl}/api/cart/items`, {
+    const response = await axios.delete(`${apiUrl}/cart/items`, {
       headers,
       data: { cartId, lineId },
     });
@@ -97,7 +97,7 @@ export const updateCartLineQuantity = async (
   try {
     const headers = await getAuthHeaders();
     const response = await axios.patch(
-      `${apiUrl}/api/cart/items`,
+      `${apiUrl}/cart/items`,
       { cartId, lineId, quantity },
       { headers }
     );
@@ -119,7 +119,7 @@ export const updateCartBuyerIdentity = async (
   try {
     const headers = await getAuthHeaders();
     const response = await axios.patch(
-      `${apiUrl}/api/cart/buyer-identity`,
+      `${apiUrl}/cart/buyer-identity`,
       { cartId, email, countryCode },
       { headers }
     );

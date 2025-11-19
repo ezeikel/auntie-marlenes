@@ -24,7 +24,7 @@ export const signInWithGoogle = async (): Promise<{
       throw new Error('No ID token received from Google Sign-In');
     }
 
-    const response = await axios.post(`${apiUrl}/api/auth/mobile/google`, {
+    const response = await axios.post(`${apiUrl}/auth/mobile/google`, {
       idToken: userInfo.data.idToken,
     });
 
@@ -89,7 +89,7 @@ export const signInWithFacebook = async (): Promise<{
       throw new Error('No access token received from Facebook Sign-In');
     }
 
-    const response = await axios.post(`${apiUrl}/api/auth/mobile/facebook`, {
+    const response = await axios.post(`${apiUrl}/auth/mobile/facebook`, {
       accessToken: data.accessToken,
     });
 
@@ -105,7 +105,7 @@ export const signInWithFacebook = async (): Promise<{
  */
 export const sendMagicLink = async (email: string): Promise<void> => {
   try {
-    await axios.post(`${apiUrl}/api/auth/mobile/magic-link`, { email });
+    await axios.post(`${apiUrl}/auth/mobile/magic-link`, { email });
   } catch (error) {
     console.error('[Auth] Send Magic Link error:', error);
     throw error;
@@ -121,7 +121,7 @@ export const verifyMagicLink = async (
 ): Promise<{ sessionToken: string }> => {
   try {
     const response = await axios.post(
-      `${apiUrl}/api/auth/mobile/magic-link/verify`,
+      `${apiUrl}/auth/mobile/magic-link/verify`,
       { token }
     );
     return response.data;
@@ -142,7 +142,7 @@ export const getCurrentUser = async (): Promise<{ user: User } | null> => {
       return null;
     }
 
-    const response = await axios.get(`${apiUrl}/api/auth/mobile/me`, {
+    const response = await axios.get(`${apiUrl}/auth/mobile/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
