@@ -25,13 +25,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       package: "com.chewybytes.auntiemarlenes.app",
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
-        backgroundColor: "#ffffff"
+        backgroundColor: "#492C26"
       },
     },
     splash: {
       image: "./assets/images/splash-icon.png",
       resizeMode: "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#492C26"
     },
     plugins: [
       "expo-router",
