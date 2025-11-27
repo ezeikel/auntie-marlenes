@@ -1,5 +1,4 @@
 import Sale from '@/components/Sale/Sale';
-import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import { generatePageMetadata } from '@/lib/metadata';
 import type { Metadata } from 'next';
@@ -35,11 +34,7 @@ const SalePage = async ({ params, searchParams }: SalePageProps) => {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return (
-    <Suspense fallback={<div className="h-20" />}>
-      <Sale searchParams={searchParams} />
-    </Suspense>
-  );
+  return <Sale searchParams={searchParams} />;
 };
 
 export default SalePage;

@@ -1,15 +1,24 @@
 import DynamicProductListing from '@/components/DynamicProductListing';
 import { searchProducts } from '@/app/actions';
+import { cacheLife, cacheTag } from 'next/cache';
+import { getServerCountry } from '@/lib/server-location';
 
 type SaleProps = {
   searchParams: Promise<{ sort?: string }>;
 };
 
-const Sale = async ({ searchParams }: SaleProps) => {
-  const params = await searchParams;
-
-  // Use default country for static pre-rendering
-  const DEFAULT_COUNTRY = 'GB';
+// Cached component that fetches sale products based on sort and country
+// Both sort and country become part of the cache key automatically
+async function CachedSaleProducts({
+  sort,
+  country,
+}: {
+  sort?: string;
+  country: string;
+}) {
+  'use cache';
+  cacheLife('days'); // Cache for 1 day - products don't change often
+  cacheTag('sale-products'); // Tag for webhook invalidation
 
   // Map sort parameter to Shopify sortKey
   let sortKey:
@@ -21,7 +30,7 @@ const Sale = async ({ searchParams }: SaleProps) => {
     | undefined;
   let reverse = false;
 
-  switch (params.sort) {
+  switch (sort) {
     case 'price-low':
       sortKey = 'PRICE';
       reverse = false;
@@ -38,13 +47,13 @@ const Sale = async ({ searchParams }: SaleProps) => {
       sortKey = 'BEST_SELLING';
   }
 
-  // Fetch products on sale (compareAtPrice > price) with default country for static rendering
+  // Fetch products on sale (compareAtPrice > price) with user's country for pricing
   const products = await searchProducts({
     sortKey,
     reverse,
     first: 50,
     onSale: true, // Filter for products with compareAtPrice
-    countryCode: DEFAULT_COUNTRY,
+    countryCode: country,
   });
 
   return (
@@ -56,12 +65,21 @@ const Sale = async ({ searchParams }: SaleProps) => {
           { label: 'Home', href: '/' },
           { label: 'Sale', href: '/sale' },
         ]}
+        staticCountry={country}
         onSale={true}
         sortKey={sortKey}
         reverse={reverse}
       />
     </div>
   );
+}
+
+// Main component that extracts searchParams and gets user country
+const Sale = async ({ searchParams }: SaleProps) => {
+  const params = await searchParams;
+  const country = await getServerCountry();
+
+  return <CachedSaleProducts sort={params.sort} country={country} />;
 };
 
 export default Sale;

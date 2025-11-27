@@ -190,7 +190,7 @@ async function handleOrderPaid(order: any) {
 
 /**
  * Handle product creation
- * Revalidates the shop-products cache tag to refresh product listings
+ * Revalidates all product-related cache tags
  */
 async function handleProductCreate(product: any) {
   console.log('✨ [Shopify Webhook] Product created:', {
@@ -199,14 +199,18 @@ async function handleProductCreate(product: any) {
     handle: product.handle,
   });
 
-  // Revalidate the shop products cache with stale-while-revalidate
+  // Revalidate all product-related caches with stale-while-revalidate
   revalidateTag('shop-products', 'max');
-  console.log('🔄 [Shopify Webhook] Revalidated shop-products cache');
+  revalidateTag('featured-products', 'max');
+  revalidateTag('bundle-deals', 'max');
+  revalidateTag('category-products', 'max');
+  revalidateTag('sale-products', 'max');
+  console.log('🔄 [Shopify Webhook] Revalidated all product caches');
 }
 
 /**
  * Handle product updates
- * Revalidates the shop-products cache tag to refresh product listings
+ * Revalidates all product-related cache tags
  */
 async function handleProductUpdate(product: any) {
   console.log('📝 [Shopify Webhook] Product updated:', {
@@ -215,21 +219,29 @@ async function handleProductUpdate(product: any) {
     handle: product.handle,
   });
 
-  // Revalidate the shop products cache with stale-while-revalidate
+  // Revalidate all product-related caches with stale-while-revalidate
   revalidateTag('shop-products', 'max');
-  console.log('🔄 [Shopify Webhook] Revalidated shop-products cache');
+  revalidateTag('featured-products', 'max');
+  revalidateTag('bundle-deals', 'max');
+  revalidateTag('category-products', 'max');
+  revalidateTag('sale-products', 'max');
+  console.log('🔄 [Shopify Webhook] Revalidated all product caches');
 }
 
 /**
  * Handle product deletion
- * Revalidates the shop-products cache tag to refresh product listings
+ * Revalidates all product-related cache tags
  */
 async function handleProductDelete(product: any) {
   console.log('🗑️  [Shopify Webhook] Product deleted:', {
     id: product.id,
   });
 
-  // Revalidate the shop products cache with stale-while-revalidate
+  // Revalidate all product-related caches with stale-while-revalidate
   revalidateTag('shop-products', 'max');
-  console.log('🔄 [Shopify Webhook] Revalidated shop-products cache');
+  revalidateTag('featured-products', 'max');
+  revalidateTag('bundle-deals', 'max');
+  revalidateTag('category-products', 'max');
+  revalidateTag('sale-products', 'max');
+  console.log('🔄 [Shopify Webhook] Revalidated all product caches');
 }

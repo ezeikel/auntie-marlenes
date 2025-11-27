@@ -8,9 +8,15 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { getServerCountry } from '@/lib/server-location';
+import { cacheLife, cacheTag } from 'next/cache';
 
-const ProductCarousel = async () => {
-  const country = await getServerCountry();
+// Cached component that fetches featured products
+// Country becomes part of the cache key automatically
+async function CachedProductCarousel({ country }: { country: string }) {
+  'use cache';
+  cacheLife('days'); // Cache for 1 day
+  cacheTag('featured-products'); // Tag for webhook invalidation
+
   const products = await getProducts(country);
 
   return (
@@ -46,6 +52,13 @@ const ProductCarousel = async () => {
       </div>
     </section>
   );
+}
+
+// Main component that extracts country and passes to cached component
+const ProductCarousel = async () => {
+  const country = await getServerCountry();
+
+  return <CachedProductCarousel country={country} />;
 };
 
 export default ProductCarousel;

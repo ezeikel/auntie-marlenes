@@ -1,6 +1,7 @@
 import DynamicProductListing from '@/components/DynamicProductListing';
 import { searchProducts } from '@/app/actions';
 import { cacheLife, cacheTag } from 'next/cache';
+import { getServerCountry } from '@/lib/server-location';
 
 type ShopProps = {
   searchParams: Promise<{
@@ -12,15 +13,18 @@ type ShopProps = {
   }>;
 };
 
-// Cached component that fetches products based on sort parameters
-// The sort parameter becomes part of the cache key automatically
-async function CachedProductList({ sort }: { sort?: string }) {
+// Cached component that fetches products based on sort and country
+// Both sort and country become part of the cache key automatically
+async function CachedProductList({
+  sort,
+  country,
+}: {
+  sort?: string;
+  country: string;
+}) {
   'use cache';
   cacheLife('days'); // Cache for 1 day - products don't change often
   cacheTag('shop-products'); // Tag for on-demand revalidation via webhooks
-
-  // Use default country for static pre-rendering
-  const DEFAULT_COUNTRY = 'GB';
 
   // Map sort parameter to Shopify sortKey
   let sortKey:
@@ -49,12 +53,12 @@ async function CachedProductList({ sort }: { sort?: string }) {
       sortKey = 'BEST_SELLING';
   }
 
-  // Fetch all products from Shopify with default country for static rendering
+  // Fetch all products from Shopify with user's country for pricing
   const products = await searchProducts({
     sortKey,
     reverse,
     first: 50, // Fetch more products for shop page
-    countryCode: DEFAULT_COUNTRY,
+    countryCode: country,
   });
 
   return (
@@ -65,20 +69,22 @@ async function CachedProductList({ sort }: { sort?: string }) {
         { label: 'Home', href: '/' },
         { label: 'Shop', href: '/shop' },
       ]}
+      staticCountry={country}
       sortKey={sortKey}
       reverse={reverse}
     />
   );
 }
 
-// Main component that extracts searchParams and passes to cached component
+// Main component that extracts searchParams and gets user country
 const Shop = async ({ searchParams }: ShopProps) => {
-  // Extract searchParams outside the cached scope
+  // Extract searchParams and get country outside the cached scope
   const params = await searchParams;
+  const country = await getServerCountry();
 
   return (
     <div className="bg-white min-h-screen">
-      <CachedProductList sort={params.sort} />
+      <CachedProductList sort={params.sort} country={country} />
     </div>
   );
 };

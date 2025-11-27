@@ -185,3 +185,37 @@ export const navLinks: NavLink[] = [
   { nameKey: 'navigation.blog', href: '/blog' },
   { nameKey: 'navigation.sale', href: '/sale', isHighlight: true },
 ];
+
+export type SocialLink = {
+  name: string;
+  href: string;
+  icon: 'whatsapp' | 'tiktok' | 'instagram' | 'facebook' | 'youtube';
+};
+
+export const socialLinks: SocialLink[] = [
+  {
+    name: 'TikTok',
+    href: 'https://tiktok.com/@auntiemarlenes', // Update with actual TikTok URL
+    icon: 'tiktok',
+  },
+  {
+    name: 'Instagram',
+    href: 'https://instagram.com/auntiemarlenes', // Update with actual Instagram URL
+    icon: 'instagram',
+  },
+  {
+    name: 'Facebook',
+    href: 'https://facebook.com/auntiemarlenes', // Update with actual Facebook URL
+    icon: 'facebook',
+  },
+  {
+    name: 'YouTube',
+    href: 'https://youtube.com/@auntiemarlenes', // Update with actual YouTube URL
+    icon: 'youtube',
+  },
+  {
+    name: 'WhatsApp',
+    href: 'https://wa.me/1234567890', // Update with actual WhatsApp number
+    icon: 'whatsapp',
+  },
+];

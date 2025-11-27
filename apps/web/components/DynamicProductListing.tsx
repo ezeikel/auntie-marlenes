@@ -9,6 +9,7 @@ type DynamicProductListingProps = {
   initialProducts: Product[];
   title: string;
   breadcrumb: { label: string; href: string }[];
+  staticCountry: string; // The country used for initial server-side fetch
   category?: string;
   query?: string;
   onSale?: boolean;
@@ -25,13 +26,15 @@ type DynamicProductListingProps = {
 /**
  * PPR-friendly component that shows localized product listings.
  *
- * - On initial render (SSR/static), shows the static products (default GB/GBP)
- * - On client, if user's country differs, fetches localized products from API
+ * - On initial render (SSR/static), shows the static products (user's country from cookie)
+ * - On client, if user switches to a different country, fetches localized products from API
+ * - When switching back to the static country, clears localized state and shows static
  */
 const DynamicProductListing = ({
   initialProducts,
   title,
   breadcrumb,
+  staticCountry,
   category,
   query,
   onSale = false,
@@ -40,17 +43,39 @@ const DynamicProductListing = ({
 }: DynamicProductListingProps) => {
   const { country, isLoading: locationLoading } = useLocation();
   const [localizedProducts, setLocalizedProducts] = useState<Product[] | null>(
-    null
+    null,
   );
   const [isLoading, setIsLoading] = useState(false);
 
   // Fetch localized products if user's country differs from static
   useEffect(() => {
-    // Skip if location is still loading or if country matches default
-    if (locationLoading || country.code === 'GB') {
+    console.log('[DynamicProductListing] useEffect:', {
+      title,
+      locationLoading,
+      currentCountry: country.code,
+      staticCountry,
+      hasLocalizedProducts: localizedProducts !== null,
+    });
+
+    // Skip if location is still loading
+    if (locationLoading) {
       return;
     }
 
+    // If user's country matches the static country, clear any localized products and use static
+    if (country.code === staticCountry) {
+      if (localizedProducts !== null) {
+        console.log(
+          '[DynamicProductListing] Country matches static, clearing localized',
+        );
+        setLocalizedProducts(null);
+      }
+      return;
+    }
+
+    console.log(
+      '[DynamicProductListing] Country differs, fetching localized products',
+    );
     const fetchLocalizedProducts = async () => {
       setIsLoading(true);
       try {
@@ -67,6 +92,11 @@ const DynamicProductListing = ({
         const response = await fetch(`/api/products/search?${params}`);
         if (response.ok) {
           const data = await response.json();
+          console.log(
+            '[DynamicProductListing] Fetched localized products:',
+            data.length,
+            'products',
+          );
           setLocalizedProducts(data);
         }
       } catch (error) {
@@ -81,6 +111,7 @@ const DynamicProductListing = ({
   }, [
     country.code,
     locationLoading,
+    staticCountry,
     category,
     query,
     onSale,

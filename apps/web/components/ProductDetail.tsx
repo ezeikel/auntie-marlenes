@@ -247,11 +247,14 @@ const ProductDetail = ({
                 {product.name}
               </h1>
               {/* PPR: Use dynamic price slot if provided, otherwise format inline */}
-              {priceSlot || (
-                <p className="text-3xl font-bold text-cocoa">
-                  {staticPriceFallback || formatCurrency(product.price, product.currencyCode)}
-                </p>
-              )}
+              <div>
+                {priceSlot || (
+                  <p className="text-3xl font-bold text-cocoa">
+                    {staticPriceFallback ||
+                      formatCurrency(product.price, product.currencyCode)}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Color Selection */}
@@ -341,7 +344,11 @@ const ProductDetail = ({
             </div>
 
             {/* Shipping Info */}
-            <ShippingInfo zone={shippingZone} variant="compact" className="text-center py-3 bg-gray-50 rounded-lg" />
+            <ShippingInfo
+              zone={shippingZone}
+              variant="compact"
+              className="text-center py-3 bg-gray-50 rounded-lg"
+            />
 
             {/* Seller Info */}
             <div className="bg-gray-50 rounded-lg p-4 text-sm">

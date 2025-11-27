@@ -14,9 +14,10 @@ type DynamicProductPriceProps = {
 
 /**
  * PPR-friendly component that shows localized pricing.
- * 
- * - On initial render (SSR/static), shows the static price (default GB/GBP)
- * - On client, if user's country differs, fetches localized price from API
+ *
+ * - On initial render (SSR/static), shows the static price (user's country from cookie)
+ * - On client, if user switches to a different currency, fetches localized price from API
+ * - When switching back to the static currency, clears localized state and shows static
  */
 const DynamicProductPrice = ({
   productHandle,
@@ -35,19 +36,42 @@ const DynamicProductPrice = ({
 
   // Fetch localized price if user's country differs from static
   useEffect(() => {
-    // Skip if location is still loading or if country matches default
-    if (locationLoading || country.code === 'GB') {
+    console.log('[DynamicProductPrice] useEffect:', {
+      productHandle,
+      locationLoading,
+      countryCurrency: country.currency.code,
+      staticCurrency: staticCurrencyCode,
+      currentLocalizedPrice: localizedPrice,
+    });
+
+    // Skip if location is still loading
+    if (locationLoading) {
       return;
     }
 
+    // If user's currency matches the static currency, clear any localized price and use static
+    if (country.currency.code === staticCurrencyCode) {
+      console.log(
+        '[DynamicProductPrice] Currency matches static, clearing localized',
+      );
+      if (localizedPrice !== null) {
+        setLocalizedPrice(null);
+      }
+      return;
+    }
+
+    console.log(
+      '[DynamicProductPrice] Currency differs, fetching localized price',
+    );
     const fetchLocalizedPrice = async () => {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `/api/product/${productHandle}/price?country=${country.code}`
+          `/api/product/${productHandle}/price?country=${country.code}`,
         );
         if (response.ok) {
           const data = await response.json();
+          console.log('[DynamicProductPrice] Fetched localized price:', data);
           setLocalizedPrice({
             price: data.price,
             currencyCode: data.currencyCode,
@@ -63,12 +87,20 @@ const DynamicProductPrice = ({
     };
 
     fetchLocalizedPrice();
-  }, [country.code, locationLoading, productHandle]);
+  }, [
+    country.code,
+    country.currency.code,
+    locationLoading,
+    productHandle,
+    staticCurrencyCode,
+  ]);
 
   // Use localized price if available, otherwise static
   const displayPrice = localizedPrice?.price ?? staticPrice;
   const displayCurrency = localizedPrice?.currencyCode ?? staticCurrencyCode;
   const displayCompareAt = localizedPrice?.compareAtPrice ?? compareAtPrice;
+
+  const showComparePrice = displayCompareAt && displayCompareAt > displayPrice;
 
   return (
     <div className={className}>
@@ -81,15 +113,15 @@ const DynamicProductPrice = ({
           formatCurrency(displayPrice, displayCurrency)
         )}
       </p>
-      {displayCompareAt && displayCompareAt > displayPrice && (
-        <p className="text-lg text-gray-500 line-through">
-          {formatCurrency(displayCompareAt, displayCurrency)}
-        </p>
-      )}
+      <p
+        className={`text-lg text-gray-500 line-through ${!showComparePrice ? 'hidden' : ''}`}
+      >
+        {showComparePrice
+          ? formatCurrency(displayCompareAt, displayCurrency)
+          : ''}
+      </p>
     </div>
   );
 };
 
 export default DynamicProductPrice;
-
-

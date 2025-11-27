@@ -2,6 +2,8 @@ import DynamicProductListing from '@/components/DynamicProductListing';
 import EmptyCategory from '@/components/EmptyCategory';
 import { searchProducts } from '@/app/actions';
 import { deslugify } from '@/lib/utils/slugify';
+import { cacheLife, cacheTag } from 'next/cache';
+import { getServerCountry } from '@/lib/server-location';
 
 type ProductsProps = {
   params: Promise<{ locale?: string; category: string }>;
@@ -15,12 +17,20 @@ type ProductsProps = {
   }>;
 };
 
-const Products = async ({ params, searchParams }: ProductsProps) => {
-  const { category: categorySlug } = await params;
-  const searchParamsResolved = await searchParams;
-
-  // Use default country for static pre-rendering
-  const DEFAULT_COUNTRY = 'GB';
+// Cached component that fetches category products based on category, sort, and country
+// All three become part of the cache key automatically
+async function CachedCategoryProducts({
+  categorySlug,
+  sort,
+  country,
+}: {
+  categorySlug: string;
+  sort?: string;
+  country: string;
+}) {
+  'use cache';
+  cacheLife('days'); // Cache for 1 day - products don't change often
+  cacheTag('category-products'); // Tag for webhook invalidation
 
   // Get the category name from slug
   const categoryName = deslugify(categorySlug);
@@ -35,7 +45,7 @@ const Products = async ({ params, searchParams }: ProductsProps) => {
     | undefined;
   let reverse = false;
 
-  switch (searchParamsResolved.sort) {
+  switch (sort) {
     case 'price-low':
       sortKey = 'PRICE';
       reverse = false;
@@ -52,13 +62,13 @@ const Products = async ({ params, searchParams }: ProductsProps) => {
       sortKey = 'BEST_SELLING';
   }
 
-  // Fetch products filtered by category with default country for static rendering
+  // Fetch products filtered by category with user's country for pricing
   const products = await searchProducts({
     productType: categoryName,
     sortKey,
     reverse,
     first: 50,
-    countryCode: DEFAULT_COUNTRY,
+    countryCode: country,
   });
 
   return (
@@ -73,12 +83,28 @@ const Products = async ({ params, searchParams }: ProductsProps) => {
             { label: 'Home', href: '/' },
             { label: categoryName, href: `/${categorySlug}` },
           ]}
+          staticCountry={country}
           category={categoryName}
           sortKey={sortKey}
           reverse={reverse}
         />
       )}
     </div>
+  );
+}
+
+// Main component that extracts params and gets user country
+const Products = async ({ params, searchParams }: ProductsProps) => {
+  const { category: categorySlug } = await params;
+  const searchParamsResolved = await searchParams;
+  const country = await getServerCountry();
+
+  return (
+    <CachedCategoryProducts
+      categorySlug={categorySlug}
+      sort={searchParamsResolved.sort}
+      country={country}
+    />
   );
 };
 

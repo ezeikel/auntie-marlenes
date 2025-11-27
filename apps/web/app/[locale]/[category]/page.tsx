@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import Products from '@/components/Products/Products';
 import { generateCategoryMetadata } from '@/lib/metadata';
@@ -94,9 +93,7 @@ export default async function CategoryPage({
     <>
       {/* Breadcrumb Schema */}
       <CategoryBreadcrumbSchema category={category} />
-      <Suspense fallback={<div>Loading...</div>}>
-        <Products params={params} searchParams={searchParams} />
-      </Suspense>
+      <Products params={params} searchParams={searchParams} />
     </>
   );
 }

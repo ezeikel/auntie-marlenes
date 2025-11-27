@@ -49,7 +49,8 @@ export const LocationProvider = ({
           if (savedCountry) {
             setCountryState(savedCountry);
             // If no custom currency is saved, use the country's default currency
-            const savedCurrencyCode = localStorage.getItem(STORAGE_KEY_CURRENCY);
+            const savedCurrencyCode =
+              localStorage.getItem(STORAGE_KEY_CURRENCY);
             if (!savedCurrencyCode) {
               setCurrencyState(savedCountry.currency);
             }
@@ -81,6 +82,12 @@ export const LocationProvider = ({
 
   // Update country and sync with Shopify cart
   const setCountry = async (newCountry: CountryInfo) => {
+    console.log('[LocationContext] Setting country:', {
+      from: country.code,
+      to: newCountry.code,
+      currency: newCountry.currency.code,
+    });
+
     setCountryState(newCountry);
     setCurrencyState(newCountry.currency); // Auto-update currency when country changes
 
@@ -88,6 +95,7 @@ export const LocationProvider = ({
     try {
       localStorage.setItem(STORAGE_KEY_COUNTRY, newCountry.code);
       localStorage.setItem(STORAGE_KEY_CURRENCY, newCountry.currency.code);
+      console.log('[LocationContext] Saved to localStorage:', newCountry.code);
     } catch (error) {
       console.error('Error saving country preference:', error);
     }
@@ -95,6 +103,7 @@ export const LocationProvider = ({
     // Set cookie for server-side country detection
     try {
       await setCountryCookie(newCountry.code);
+      console.log('[LocationContext] Set cookie:', newCountry.code);
     } catch (error) {
       console.error('Error setting country cookie:', error);
     }
@@ -102,11 +111,13 @@ export const LocationProvider = ({
     // Update Shopify cart buyer identity
     try {
       await updateCartCountryCode(newCountry.code);
+      console.log('[LocationContext] Updated cart country:', newCountry.code);
     } catch (error) {
       console.error('Error updating cart buyer identity:', error);
     }
 
     // Refresh server components to re-render with new country
+    console.log('[LocationContext] Calling router.refresh()');
     router.refresh();
   };
 

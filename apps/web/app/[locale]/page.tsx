@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import Hero from '@/components/Hero';
 import ProductCarousel from '@/components/ProductCarousel';
@@ -42,13 +41,9 @@ const HomePage = async ({ params }: HomePageProps) => {
     <div className="bg-gray-50">
       <Hero />
       <TrustBadges />
-      <Suspense fallback={<div>Loading...</div>}>
-        <ProductCarousel />
-      </Suspense>
+      <ProductCarousel />
       <ShopByCategory />
-      <Suspense fallback={<div>Loading...</div>}>
-        <BundleDeals />
-      </Suspense>
+      <BundleDeals />
       <BrandSpotlight />
       <SocialMediaShowcase />
       <Testimonials />

@@ -9,11 +9,20 @@ import {
   faTiktok,
   faFacebook,
   faYoutube,
+  faWhatsapp,
 } from '@fortawesome/free-brands-svg-icons';
 import { faArrowRight } from '@fortawesome/pro-regular-svg-icons';
+import { socialLinks } from '@/lib/constants';
+
+const iconMap = {
+  whatsapp: faWhatsapp,
+  tiktok: faTiktok,
+  instagram: faInstagram,
+  facebook: faFacebook,
+  youtube: faYoutube,
+};
 
 const Footer = () => {
-
   return (
     <footer className="bg-deep-earth text-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -127,34 +136,18 @@ const Footer = () => {
                   Follow Auntie Marlene's
                 </p>
                 <div className="flex space-x-4">
-                  <a
-                    href="#"
-                    aria-label="TikTok"
-                    className="hover:text-warm-clay transition-colors text-xl w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-warm-clay"
-                  >
-                    <FontAwesomeIcon icon={faTiktok} />
-                  </a>
-                  <a
-                    href="#"
-                    aria-label="Instagram"
-                    className="hover:text-warm-clay transition-colors text-xl w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-warm-clay"
-                  >
-                    <FontAwesomeIcon icon={faInstagram} />
-                  </a>
-                  <a
-                    href="#"
-                    aria-label="Facebook"
-                    className="hover:text-warm-clay transition-colors text-xl w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-warm-clay"
-                  >
-                    <FontAwesomeIcon icon={faFacebook} />
-                  </a>
-                  <a
-                    href="#"
-                    aria-label="YouTube"
-                    className="hover:text-warm-clay transition-colors text-xl w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-warm-clay"
-                  >
-                    <FontAwesomeIcon icon={faYoutube} />
-                  </a>
+                  {socialLinks.map((link) => (
+                    <a
+                      key={link.name}
+                      href={link.href}
+                      aria-label={link.name}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-warm-clay transition-colors text-xl w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-warm-clay"
+                    >
+                      <FontAwesomeIcon icon={iconMap[link.icon]} />
+                    </a>
+                  ))}
                 </div>
               </div>
               <div>

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import DynamicProductListing from '@/components/DynamicProductListing';
 import { searchProducts } from '@/app/actions';
+import { getServerCountry } from '@/lib/server-location';
 
 type SearchProps = {
   searchParams: Promise<{
@@ -17,9 +18,7 @@ type SearchProps = {
 const Search = async ({ searchParams }: SearchProps) => {
   const params = await searchParams;
   const query = params.q;
-
-  // Use default country for static pre-rendering
-  const DEFAULT_COUNTRY = 'GB';
+  const country = await getServerCountry();
 
   // Redirect to /shop if no query
   if (!query) {
@@ -53,13 +52,13 @@ const Search = async ({ searchParams }: SearchProps) => {
       sortKey = 'RELEVANCE';
   }
 
-  // Search products from Shopify with default country for static rendering
+  // Search products from Shopify with user's country for pricing
   const products = await searchProducts({
     query,
     sortKey,
     reverse,
     first: 50,
-    countryCode: DEFAULT_COUNTRY,
+    countryCode: country,
   });
 
   return (
@@ -71,6 +70,7 @@ const Search = async ({ searchParams }: SearchProps) => {
           { label: 'Home', href: '/' },
           { label: `Search: "${query}"`, href: `/search?q=${query}` },
         ]}
+        staticCountry={country}
         query={query}
         sortKey={sortKey}
         reverse={reverse}

@@ -10,9 +10,14 @@ import {
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getServerCountry } from '@/lib/server-location';
+import { cacheLife, cacheTag } from 'next/cache';
 
-const BundleDeals = async () => {
-  const country = await getServerCountry();
+// Cached component that fetches bundle/sale products
+// Country becomes part of the cache key automatically
+async function CachedBundleDeals({ country }: { country: string }) {
+  'use cache';
+  cacheLife('days'); // Cache for 1 day
+  cacheTag('bundle-deals'); // Tag for webhook invalidation
 
   // Get products on sale (with compareAtPrice)
   const saleProducts = await searchProducts({
@@ -92,6 +97,13 @@ const BundleDeals = async () => {
       </div>
     </section>
   );
+}
+
+// Main component that extracts country and passes to cached component
+const BundleDeals = async () => {
+  const country = await getServerCountry();
+
+  return <CachedBundleDeals country={country} />;
 };
 
 export default BundleDeals;
