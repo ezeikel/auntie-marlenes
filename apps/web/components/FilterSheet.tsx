@@ -24,6 +24,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSliders } from '@fortawesome/pro-regular-svg-icons';
 import { filterSections } from '@/lib/filters';
 import { formatCurrency } from '@/lib/currency';
+import { useLocation } from '@/contexts/LocationContext';
 
 type Filters = {
   inStockOnly: boolean;
@@ -37,12 +38,13 @@ type FilterSheetProps = {
 };
 
 const FilterSheet = ({ onFilterChange }: FilterSheetProps) => {
+  const { currency } = useLocation();
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     inStockOnly: false,
     categories: [],
     brands: [],
-    priceRange: [0, 25],
+    priceRange: [0, 10000], // High default to support all currencies
   });
 
   const handleToggleChange = (checked: boolean) => {
@@ -71,7 +73,7 @@ const FilterSheet = ({ onFilterChange }: FilterSheetProps) => {
       inStockOnly: false,
       categories: [],
       brands: [],
-      priceRange: [0, 25],
+      priceRange: [0, 10000],
     });
   };
 
@@ -84,7 +86,7 @@ const FilterSheet = ({ onFilterChange }: FilterSheetProps) => {
     (filters.inStockOnly ? 1 : 0) +
     filters.categories.length +
     filters.brands.length +
-    (filters.priceRange[0] > 0 || filters.priceRange[1] < 25 ? 1 : 0);
+    (filters.priceRange[0] > 0 || filters.priceRange[1] < 10000 ? 1 : 0);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -262,7 +264,7 @@ const FilterSheet = ({ onFilterChange }: FilterSheetProps) => {
 
                       <p className="text-xs text-gray-500 text-center">
                         The highest price is{' '}
-                        {formatCurrency(section.max, 'GBP')}
+                        {formatCurrency(section.max, currency.code)}
                       </p>
                     </div>
                   )}

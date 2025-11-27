@@ -1,4 +1,7 @@
 import { withSentryConfig } from '@sentry/nextjs';
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -8,10 +11,8 @@ const nextConfig = {
       { protocol: 'https', hostname: 'cdn.shopify.com', pathname: '**' },
     ],
   },
-  // Include Prisma binaries in serverless functions
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', '@prisma/engines'],
-  },
+  // Include Prisma binaries in serverless functions (moved from experimental in Next.js 16)
+  serverExternalPackages: ['@prisma/client', '@prisma/engines'],
 };
 
 const sentryOptions = {
@@ -28,4 +29,4 @@ const sentryOptions = {
   reactComponentAnnotation: { enabled: true },
 };
 
-export default withSentryConfig(nextConfig, sentryOptions);
+export default withSentryConfig(withNextIntl(nextConfig), sentryOptions);

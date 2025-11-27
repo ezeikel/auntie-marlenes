@@ -3,13 +3,7 @@ import { Inter, Playfair_Display } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import cn from '@/utils/cn';
-import Providers from './providers';
-import SavedItemsSync from '@/components/SavedItemsSync';
-import AnnouncementBanner from '@/components/AnnouncementBanner';
-import Header from '@/components/HeaderWrapper';
-import Footer from '@/components/Footer';
 import './globals.css';
-import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -62,49 +56,11 @@ const playfairDisplay = Playfair_Display({
   weight: ['400', '700'],
 });
 
-const RootLayout = async ({ children }: { children: React.ReactNode }) => {
-  const organizationSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: "Auntie Marlene's",
-    description:
-      'Modern Black beauty supply store offering premium braiding hair, wigs, hair extensions, treatments and styling essentials.',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com',
-    logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com'}/logo.png`,
-    email: 'hello@auntiemarlenes.com',
-    foundingDate: '2024',
-    slogan: 'Where Beautiful Skin Meets Gorgeous Hair',
-    sameAs: [
-      // Add social media URLs when available
-      // 'https://www.instagram.com/auntiemarlenes',
-      // 'https://www.tiktok.com/@auntiemarlenes',
-      // 'https://www.facebook.com/auntiemarlenes',
-      // 'https://www.youtube.com/@auntiemarlenes',
-    ],
-  };
-
+const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationSchema),
-          }}
-        />
-      </head>
+    <html suppressHydrationWarning>
       <body className={cn(inter.variable, playfairDisplay.variable)}>
-        <Providers>
-          <SavedItemsSync />
-          <AnnouncementBanner />
-          <Suspense fallback={<div className="h-20" />}>
-            <Header />
-          </Suspense>
-          <main>{children}</main>
-          <Suspense fallback={<div className="h-64 bg-deep-earth" />}>
-            <Footer />
-          </Suspense>
-        </Providers>
+        {children}
         <Analytics />
       </body>
     </html>

@@ -4,6 +4,7 @@ import type React from 'react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -21,7 +22,7 @@ import {
   faSearch,
 } from '@fortawesome/pro-regular-svg-icons';
 import LanguageSwitcher from './LanguageSwitcher';
-import CurrencySwitcher from './CurrencySwitcher';
+import LocationCurrencySwitcher from './LocationCurrencySwitcher';
 import AccountPopover from './AccountPopover';
 import { navLinks } from '@/lib/constants';
 import { useSession } from '@/hooks/useSession';
@@ -33,6 +34,7 @@ type HeaderProps = {
 
 const Header = ({ bagSlot }: HeaderProps) => {
   const router = useRouter();
+  const t = useTranslations();
   const { isAuthenticated, user } = useSession();
   const userName = user?.firstName || 'Guest';
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -83,7 +85,7 @@ const Header = ({ bagSlot }: HeaderProps) => {
               <div className="relative w-full">
                 <Input
                   type="search"
-                  placeholder="Search for hair care, skincare, wigs & more..."
+                  placeholder={t('navigation.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full h-10 pr-12 bg-gray-50 border-gray-300 focus:bg-white focus:ring-sage-green"
@@ -95,7 +97,7 @@ const Header = ({ bagSlot }: HeaderProps) => {
                   className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                 >
                   <FontAwesomeIcon icon={faSearch} className="text-gray-600" />
-                  <span className="sr-only">Search</span>
+                  <span className="sr-only">{t('common.search')}</span>
                 </Button>
               </div>
             </form>
@@ -107,9 +109,9 @@ const Header = ({ bagSlot }: HeaderProps) => {
                 <LanguageSwitcher />
               </div>
 
-              {/* Currency Switcher - Desktop */}
+              {/* Location/Currency Switcher - Desktop */}
               <div className="hidden lg:block">
-                <CurrencySwitcher />
+                <LocationCurrencySwitcher />
               </div>
 
               {/* User Account - popover on desktop hover, link on mobile */}
@@ -126,7 +128,7 @@ const Header = ({ bagSlot }: HeaderProps) => {
                       size="lg"
                       className="text-gray-600"
                     />
-                    <span className="sr-only">User Account</span>
+                    <span className="sr-only">{t('navigation.userAccount')}</span>
                   </Link>
                 </PopoverTrigger>
                 <PopoverContent
@@ -151,7 +153,7 @@ const Header = ({ bagSlot }: HeaderProps) => {
                     size="lg"
                     className="text-gray-600"
                   />
-                  <span className="sr-only">Saved Items</span>
+                  <span className="sr-only">{t('navigation.savedItems')}</span>
                 </Link>
               </Button>
 
@@ -183,7 +185,7 @@ const Header = ({ bagSlot }: HeaderProps) => {
               <div className="relative w-full">
                 <Input
                   type="search"
-                  placeholder="Search products..."
+                  placeholder={t('navigation.searchPlaceholderMobile')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full h-10 pr-12 bg-gray-50 border-gray-300 focus:bg-white focus:ring-sage-green text-sm"
@@ -199,7 +201,7 @@ const Header = ({ bagSlot }: HeaderProps) => {
                     className="text-gray-600"
                     size="sm"
                   />
-                  <span className="sr-only">Search</span>
+                  <span className="sr-only">{t('common.search')}</span>
                 </Button>
               </div>
             </form>
@@ -213,16 +215,16 @@ const Header = ({ bagSlot }: HeaderProps) => {
           <nav className="flex items-center justify-center space-x-8 h-12">
             {navLinks.map((link) => (
               <Link
-                key={link.name}
+                key={link.nameKey}
                 href={link.href}
                 className={cn(
                   'font-inter text-sm font-medium transition-colors whitespace-nowrap',
                   link.isHighlight
-                    ? 'text-red-600 hover:text-red-700 font-bold'
+                    ? 'text-red-600 hover:text-red-700 font-bold uppercase'
                     : 'text-gray-600 hover:text-cocoa',
                 )}
               >
-                {link.name}
+                {t(link.nameKey)}
               </Link>
             ))}
           </nav>
@@ -239,14 +241,14 @@ const Header = ({ bagSlot }: HeaderProps) => {
         )}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Language and Currency Switchers - Mobile */}
+          {/* Language and Location/Currency Switchers - Mobile */}
           <div className="pb-4 mb-4 border-b border-gray-200">
             <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
-              Preferences
+              {t('navigation.preferences')}
             </div>
             <div className="grid gap-2">
               <LanguageSwitcher />
-              <CurrencySwitcher />
+              <LocationCurrencySwitcher />
             </div>
           </div>
 
@@ -254,17 +256,17 @@ const Header = ({ bagSlot }: HeaderProps) => {
           <nav className="flex flex-col space-y-3">
             {navLinks.map((link) => (
               <Link
-                key={link.name}
+                key={link.nameKey}
                 href={link.href}
                 className={cn(
                   'font-inter text-base font-medium transition-colors flex items-center justify-between py-2',
                   link.isHighlight
-                    ? 'text-red-600 hover:text-red-700 font-bold'
+                    ? 'text-red-600 hover:text-red-700 font-bold uppercase'
                     : 'text-gray-600 hover:text-cocoa',
                 )}
                 onClick={() => setIsMenuOpen(false)}
               >
-                <span>{link.name}</span>
+                <span>{t(link.nameKey)}</span>
               </Link>
             ))}
           </nav>

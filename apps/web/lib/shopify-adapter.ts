@@ -134,6 +134,7 @@ export function adaptShopifyProduct(shopifyProduct: ShopifyProduct): Product {
     category: shopifyProduct.productType || 'Uncategorized',
     description: shopifyProduct.descriptionHtml || '',
     price: firstVariant ? parseFloat(firstVariant.price.amount) : 0,
+    currencyCode: firstVariant?.price.currencyCode || 'GBP',
     compareAtPrice: firstVariant?.compareAtPrice
       ? parseFloat(firstVariant.compareAtPrice.amount)
       : undefined,

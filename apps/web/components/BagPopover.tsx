@@ -41,6 +41,7 @@ type BagPopoverProps = {
   cartId: string;
   lines: CartLine[];
   subtotal: number;
+  currencyCode?: string;
   checkoutUrl?: string;
   onClose: () => void;
   onUpdateQuantity: (lineId: string, newQuantity: number) => Promise<void>;
@@ -51,12 +52,15 @@ const BagPopover = ({
   cartId,
   lines,
   subtotal,
+  currencyCode,
   checkoutUrl,
   onClose,
   onUpdateQuantity,
   onRemoveItem,
 }: BagPopoverProps) => {
   const totalItems = lines.reduce((acc, line) => acc + line.quantity, 0);
+  // Get currency from prop or fallback to first line item's currency
+  const currency = currencyCode || lines[0]?.merchandise.priceV2.currencyCode || 'GBP';
 
   return (
     <div className="w-[380px] bg-white rounded-lg shadow-2xl border border-gray-200">
@@ -157,7 +161,7 @@ const BagPopover = ({
                       </button>
                     </div>
                     <p className="text-base font-bold text-cocoa">
-                      {formatCurrency(price * line.quantity, 'GBP')}
+                      {formatCurrency(price * line.quantity, line.merchandise.priceV2.currencyCode)}
                     </p>
                   </div>
                 </div>
@@ -172,7 +176,7 @@ const BagPopover = ({
         <div className="flex items-center justify-between text-sm">
           <span className="font-semibold text-gray-700">Sub-total</span>
           <span className="font-bold text-lg text-cocoa">
-            {formatCurrency(subtotal, 'GBP')}
+            {formatCurrency(subtotal, currency)}
           </span>
         </div>
 

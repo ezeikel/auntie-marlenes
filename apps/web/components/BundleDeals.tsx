@@ -9,17 +9,23 @@ import {
 } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { getServerCountry } from '@/lib/server-location';
 
 const BundleDeals = async () => {
+  const country = await getServerCountry();
+
   // Get products on sale (with compareAtPrice)
   const saleProducts = await searchProducts({
     onSale: true,
     first: 6,
+    countryCode: country,
   });
 
   // If no sale products, get first 6 products
   const bundleProducts =
-    saleProducts.length > 0 ? saleProducts : await searchProducts({ first: 6 });
+    saleProducts.length > 0
+      ? saleProducts
+      : await searchProducts({ first: 6, countryCode: country });
 
   return (
     <section className="py-16 sm:py-24 bg-white">

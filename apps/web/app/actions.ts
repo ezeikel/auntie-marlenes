@@ -63,8 +63,10 @@ export const getCart = async ({
 
 export const createCart = async ({
   productVariantId,
+  countryCode = 'GB',
 }: {
   productVariantId: string;
+  countryCode?: string;
 }) => {
   console.log('🛒 [SERVER] createCart called with:', productVariantId);
 
@@ -80,7 +82,7 @@ export const createCart = async ({
   if (session?.user?.email) {
     cartInput.buyerIdentity = {
       email: session.user.email,
-      countryCode: 'GB', // Default to UK, could be made dynamic later
+      countryCode: countryCode,
     };
   }
 
@@ -177,6 +179,59 @@ export const updateCartBuyerIdentity = async ({
   return cart;
 };
 
+/**
+ * Update cart buyer country code from client-side (used by LocationContext)
+ * Automatically uses the current cart from cookies
+ */
+export const updateCartCountryCode = async (countryCode: string) => {
+  const cartId = await getCartId();
+
+  if (!cartId) {
+    // No cart exists yet, nothing to update
+    return null;
+  }
+
+  const session = await auth();
+  const email = session?.user?.email;
+
+  const res = await fetch(
+    process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
+    {
+      method: 'POST',
+      headers: {
+        'X-Shopify-Storefront-Access-Token': process.env
+          .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: print(CART_BUYER_IDENTITY_UPDATE_MUTATION),
+        variables: {
+          cartId,
+          buyerIdentity: {
+            email: email || undefined,
+            countryCode,
+          },
+        },
+      }),
+    },
+  );
+
+  const {
+    data: {
+      cartBuyerIdentityUpdate: { cart, userErrors },
+    },
+  } = await res.json();
+
+  if (userErrors && userErrors.length > 0) {
+    console.error('Failed to update cart country code:', userErrors);
+    throw new Error('Failed to update cart country code');
+  }
+
+  revalidateTag('cart', undefined as any);
+
+  return cart;
+};
+
 export const addProductsToCart = async ({
   cartId,
   productVariantId,
@@ -218,10 +273,12 @@ export const addProductsToCart = async ({
   // If user is logged in, ensure buyer identity is set on the cart
   const session = await auth();
   if (session?.user?.email && !updatedCart.buyerIdentity?.email) {
+    // Use existing country code from cart if available, otherwise default to GB
+    const existingCountry = updatedCart.buyerIdentity?.countryCode || 'GB';
     await updateCartBuyerIdentity({
       cartId,
       email: session.user.email,
-      countryCode: 'GB',
+      countryCode: existingCountry,
     });
   }
 
@@ -336,8 +393,10 @@ export const updateCartLineQuantity = async ({
 
 export const getProduct = async ({
   productId,
+  countryCode = 'GB',
 }: {
   productId: string;
+  countryCode?: string;
 }): Promise<Product> => {
   const res = await fetch(
     process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
@@ -350,8 +409,9 @@ export const getProduct = async ({
       },
       body: JSON.stringify({
         query: print(GET_PRODUCT_QUERY),
-        variables: { id: productId },
+        variables: { id: productId, country: countryCode },
       }),
+      cache: 'no-store', // Don't cache - countryCode is in POST body
     },
   );
 
@@ -362,42 +422,13 @@ export const getProduct = async ({
   return adaptShopifyProduct(product);
 };
 
-export const getProductByHandle = cache(
-  async ({ handle }: { handle: string }): Promise<Product> => {
-    const res = await fetch(
-      process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
-      {
-        method: 'POST',
-        headers: {
-          'X-Shopify-Storefront-Access-Token': process.env
-            .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: print(GET_PRODUCT_BY_HANDLE_QUERY),
-          variables: { handle },
-        }),
-        // Add cache tags for webhook-based revalidation and static pre-rendering
-        next: {
-          tags: ['products', `product:${handle}`],
-          revalidate: 3600, // Revalidate every hour
-        },
-      },
-    );
+export const getProductByHandle = async ({ handle, countryCode = 'GB' }: { handle: string; countryCode?: string }): Promise<Product> => {
+  // Use caching for default country (GB) to enable static generation
+  // Use no-store for non-GB countries (dynamic, user-specific)
+  const cacheStrategy = countryCode === 'GB'
+    ? { cache: 'force-cache' as RequestCache, next: { revalidate: 3600 } } // Cache for 1 hour
+    : { cache: 'no-store' as RequestCache }; // Dynamic for other countries
 
-    const {
-      data: { productByHandle },
-    } = await res.json();
-
-    if (!productByHandle) {
-      throw new Error(`Product with handle "${handle}" not found`);
-    }
-
-    return adaptShopifyProduct(productByHandle);
-  },
-);
-
-export const getProducts = cache(async (): Promise<Product[]> => {
   const res = await fetch(
     process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
     {
@@ -407,11 +438,46 @@ export const getProducts = cache(async (): Promise<Product[]> => {
           .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ query: print(GET_PRODUCTS_QUERY) }),
-      next: {
-        tags: ['products'],
-        revalidate: 3600, // Revalidate every hour
+      body: JSON.stringify({
+        query: print(GET_PRODUCT_BY_HANDLE_QUERY),
+        variables: { handle, country: countryCode },
+      }),
+      ...cacheStrategy,
+    },
+  );
+
+  const {
+    data: { productByHandle },
+  } = await res.json();
+
+  if (!productByHandle) {
+    throw new Error(`Product with handle "${handle}" not found`);
+  }
+
+  return adaptShopifyProduct(productByHandle);
+};
+
+export const getProducts = async (countryCode: string = 'GB'): Promise<Product[]> => {
+  // Use caching for default country (GB) to enable static generation
+  // Use no-store for non-GB countries (dynamic, user-specific)
+  const cacheStrategy = countryCode === 'GB'
+    ? { cache: 'force-cache' as RequestCache, next: { revalidate: 3600 } } // Cache for 1 hour
+    : { cache: 'no-store' as RequestCache }; // Dynamic for other countries
+
+  const res = await fetch(
+    process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
+    {
+      method: 'POST',
+      headers: {
+        'X-Shopify-Storefront-Access-Token': process.env
+          .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        query: print(GET_PRODUCTS_QUERY),
+        variables: { country: countryCode },
+      }),
+      ...cacheStrategy,
     },
   );
 
@@ -422,7 +488,7 @@ export const getProducts = cache(async (): Promise<Product[]> => {
   const shopifyProducts = products.edges.map((edge: ProductEdge) => edge.node);
 
   return adaptShopifyProducts(shopifyProducts);
-});
+};
 
 export const addProductToSaved = async ({
   productId,
@@ -573,86 +639,107 @@ export const getUserAccountData = async () => {
   };
 };
 
-export const searchProducts = cache(
-  async ({
-    query,
-    productType,
-    vendor,
+export const searchProducts = async ({
+  query,
+  productType,
+  vendor,
+  sortKey,
+  reverse,
+  first = 20,
+  onSale,
+  countryCode = 'GB',
+}: {
+  query?: string;
+  productType?: string;
+  vendor?: string;
+  sortKey?: 'TITLE' | 'PRICE' | 'CREATED_AT' | 'BEST_SELLING' | 'RELEVANCE';
+  reverse?: boolean;
+  first?: number;
+  onSale?: boolean;
+  countryCode?: string;
+}): Promise<Product[]> => {
+  // Build Shopify search query string
+  let searchQuery = '';
+
+  if (query) {
+    searchQuery = query;
+  }
+
+  if (productType) {
+    searchQuery += searchQuery
+      ? ` AND product_type:${productType}`
+      : `product_type:${productType}`;
+  }
+
+  if (vendor) {
+    searchQuery += searchQuery ? ` AND vendor:${vendor}` : `vendor:${vendor}`;
+  }
+
+  const variables = {
+    query: searchQuery || undefined,
     sortKey,
     reverse,
-    first = 20,
-    onSale,
-  }: {
-    query?: string;
-    productType?: string;
-    vendor?: string;
-    sortKey?: 'TITLE' | 'PRICE' | 'CREATED_AT' | 'BEST_SELLING' | 'RELEVANCE';
-    reverse?: boolean;
-    first?: number;
-    onSale?: boolean;
-  }): Promise<Product[]> => {
-    // Build Shopify search query string
-    let searchQuery = '';
+    first,
+    country: countryCode,
+  };
 
-    if (query) {
-      searchQuery = query;
-    }
+  console.log(
+    '[searchProducts] GraphQL variables:',
+    JSON.stringify(variables, null, 2),
+  );
 
-    if (productType) {
-      searchQuery += searchQuery
-        ? ` AND product_type:${productType}`
-        : `product_type:${productType}`;
-    }
+  // Use caching for default country (GB) to enable static generation
+  // Use no-store for non-GB countries (dynamic, user-specific)
+  const cacheStrategy = countryCode === 'GB'
+    ? { cache: 'force-cache' as RequestCache, next: { revalidate: 3600 } } // Cache for 1 hour
+    : { cache: 'no-store' as RequestCache }; // Dynamic for other countries
 
-    if (vendor) {
-      searchQuery += searchQuery ? ` AND vendor:${vendor}` : `vendor:${vendor}`;
-    }
-
-    const res = await fetch(
-      process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
-      {
-        method: 'POST',
-        headers: {
-          'X-Shopify-Storefront-Access-Token': process.env
-            .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: print(GET_PRODUCTS_QUERY),
-          variables: {
-            query: searchQuery || undefined,
-            sortKey,
-            reverse,
-            first,
-          },
-        }),
-        next: {
-          tags: ['products'],
-          revalidate: 3600, // Revalidate every hour
-        },
+  const res = await fetch(
+    process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
+    {
+      method: 'POST',
+      headers: {
+        'X-Shopify-Storefront-Access-Token': process.env
+          .SHOPIFY_STOREFRONT_ACCESS_TOKEN as string,
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        query: print(GET_PRODUCTS_QUERY),
+        variables,
+      }),
+      ...cacheStrategy,
+    },
+  );
+
+  const {
+    data: { products },
+  } = await res.json();
+
+  console.log(
+    '[searchProducts] Shopify response (first product):',
+    JSON.stringify(products.edges[0]?.node, null, 2),
+  );
+
+  const shopifyProducts = products.edges.map(
+    (edge: ProductEdge) => edge.node,
+  );
+  let adaptedProducts = adaptShopifyProducts(shopifyProducts);
+
+  console.log(
+    '[searchProducts] Adapted product (first):',
+    JSON.stringify(adaptedProducts[0], null, 2),
+  );
+
+  // Client-side filter for onSale if needed (compareAtPrice > price)
+  if (onSale) {
+    adaptedProducts = adaptedProducts.filter(
+      (product) =>
+        product.compareAtPrice && product.compareAtPrice > product.price,
     );
+  }
 
-    const {
-      data: { products },
-    } = await res.json();
-
-    const shopifyProducts = products.edges.map(
-      (edge: ProductEdge) => edge.node,
-    );
-    let adaptedProducts = adaptShopifyProducts(shopifyProducts);
-
-    // Client-side filter for onSale if needed (compareAtPrice > price)
-    if (onSale) {
-      adaptedProducts = adaptedProducts.filter(
-        (product) =>
-          product.compareAtPrice && product.compareAtPrice > product.price,
-      );
-    }
-
-    return adaptedProducts;
-  },
-);
+  return adaptedProducts;
+};
 
 export const getCategories = async (): Promise<string[]> => {
   const products = await getProducts();
@@ -825,3 +912,16 @@ export const syncLocalSavesToDB = async ({
     return { success: false, synced: 0 };
   }
 };
+
+/**
+ * Set the country cookie for server-side country detection
+ * Called by LocationContext when user changes country
+ */
+export async function setCountryCookie(countryCode: string) {
+  const cookieStore = await cookies();
+  cookieStore.set('auntie-marlenes-country', countryCode, {
+    maxAge: 60 * 60 * 24 * 365, // 1 year
+    path: '/',
+    sameSite: 'lax',
+  });
+}

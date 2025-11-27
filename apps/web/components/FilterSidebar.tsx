@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/accordion';
 import { filterSections } from '@/lib/filters';
 import { formatCurrency } from '@/lib/currency';
+import { useLocation } from '@/contexts/LocationContext';
 
 type Filters = {
   inStockOnly: boolean;
@@ -28,11 +29,12 @@ type FilterSidebarProps = {
 };
 
 const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
+  const { currency } = useLocation();
   const [filters, setFilters] = useState<Filters>({
     inStockOnly: false,
     categories: [],
     brands: [],
-    priceRange: [0, 25],
+    priceRange: [0, 10000], // High default to support all currencies
   });
 
   const handleToggleChange = (checked: boolean) => {
@@ -70,7 +72,7 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
       inStockOnly: false,
       categories: [],
       brands: [],
-      priceRange: [0, 25] as [number, number],
+      priceRange: [0, 10000] as [number, number],
     };
     setFilters(newFilters);
     onFilterChange?.(newFilters);
@@ -80,7 +82,7 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
     (filters.inStockOnly ? 1 : 0) +
     filters.categories.length +
     filters.brands.length +
-    (filters.priceRange[0] > 0 || filters.priceRange[1] < 25 ? 1 : 0);
+    (filters.priceRange[0] > 0 || filters.priceRange[1] < 10000 ? 1 : 0);
 
   return (
     <div className="w-full bg-white rounded-lg border border-gray-200 p-6 sticky top-24">
@@ -250,7 +252,7 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
                     />
 
                     <p className="text-xs text-gray-500 text-center">
-                      The highest price is {formatCurrency(section.max, 'GBP')}
+                      The highest price is {formatCurrency(section.max, currency.code)}
                     </p>
                   </div>
                 )}

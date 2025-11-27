@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import ProductListing from '@/components/ProductListing/ProductListing';
+import DynamicProductListing from '@/components/DynamicProductListing';
 import { searchProducts } from '@/app/actions';
 
 type SearchProps = {
@@ -17,6 +17,9 @@ type SearchProps = {
 const Search = async ({ searchParams }: SearchProps) => {
   const params = await searchParams;
   const query = params.q;
+
+  // Use default country for static pre-rendering
+  const DEFAULT_COUNTRY = 'GB';
 
   // Redirect to /shop if no query
   if (!query) {
@@ -50,23 +53,27 @@ const Search = async ({ searchParams }: SearchProps) => {
       sortKey = 'RELEVANCE';
   }
 
-  // Search products from Shopify
+  // Search products from Shopify with default country for static rendering
   const products = await searchProducts({
     query,
     sortKey,
     reverse,
     first: 50,
+    countryCode: DEFAULT_COUNTRY,
   });
 
   return (
     <div className="bg-white min-h-screen">
-      <ProductListing
-        products={products}
+      <DynamicProductListing
+        initialProducts={products}
         title={`Search results for "${query}"`}
         breadcrumb={[
           { label: 'Home', href: '/' },
           { label: `Search: "${query}"`, href: `/search?q=${query}` },
         ]}
+        query={query}
+        sortKey={sortKey}
+        reverse={reverse}
       />
     </div>
   );

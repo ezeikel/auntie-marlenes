@@ -43,7 +43,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             {product.name}
           </h3>
           <p className="text-base font-semibold text-cocoa">
-            {formatCurrency(product.price, 'GBP')}
+            {formatCurrency(product.price, product.currencyCode)}
           </p>
           {product.colors && product.colors.length > 1 && (
             <p className="text-xs text-gray-500">

@@ -198,6 +198,7 @@ export default function BagIconClient({
           cartId={cartId}
           lines={optimisticState.lines}
           subtotal={optimisticState.subtotal}
+          currencyCode={optimisticState.lines[0]?.merchandise.priceV2.currencyCode}
           checkoutUrl={checkoutUrl}
           onClose={() => setBagOpen(false)}
           onUpdateQuantity={handleUpdateQuantity}

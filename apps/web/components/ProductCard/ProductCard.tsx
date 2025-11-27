@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/currency';
 
 type ProductCardProps = {
   product: Product;
@@ -78,7 +79,9 @@ const ProductCard = ({ product, className }: ProductCardProps) => {
           )}
 
           {/* Price */}
-          <p className="text-lg font-semibold">${product.price.toFixed(2)}</p>
+          <p className="text-lg font-semibold">
+            {formatCurrency(product.price, product.currencyCode)}
+          </p>
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex gap-2">

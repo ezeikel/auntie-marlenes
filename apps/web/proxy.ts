@@ -1,23 +1,40 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import createIntlMiddleware from 'next-intl/middleware';
+import { routing } from './i18n/routing';
+
+// Create the next-intl middleware
+const intlMiddleware = createIntlMiddleware(routing);
 
 export const proxy = async (request: NextRequest) => {
   const { pathname } = request.nextUrl;
 
-  // skip middleware for API routes, images, static files, and specific assets
+  // Skip proxy for API routes, images, static files, and specific assets
   if (
     pathname.startsWith('/api') ||
     pathname.startsWith('/images') ||
     pathname.startsWith('/_next/static') ||
     pathname.startsWith('/_next/image') ||
-    pathname === '/favicon.ico'
+    pathname.startsWith('/_vercel') ||
+    pathname === '/favicon.ico' ||
+    pathname.includes('.')
   ) {
     return NextResponse.next();
   }
 
-  // Note: Auth check removed from middleware to avoid Edge Runtime compatibility issues
-  // with Prisma Client. The redirect for authenticated users is now handled in the
-  // sign-in page component itself.
+  // Handle internationalization routing
+  return intlMiddleware(request);
+};
 
-  return NextResponse.next();
+export const config = {
+  // Match only internationalized pathnames
+  matcher: [
+    // Match all pathnames except for:
+    // - API routes
+    // - _next static files
+    // - _next image optimization files
+    // - favicon.ico
+    // - public folder files (images, etc.)
+    '/((?!api|_next|_vercel|.*\\..*).*)',
+  ],
 };

@@ -8,12 +8,14 @@ import {
   faShoppingBag,
 } from '@fortawesome/pro-regular-svg-icons';
 import BagClient from '@/components/BagClient';
+import { getServerCountry } from '@/lib/server-location';
 
 const Bag = async () => {
   const cart = await getCart();
+  const country = await getServerCountry();
 
   // Get recommended products
-  const allProducts = await searchProducts({ first: 12 });
+  const allProducts = await searchProducts({ first: 12, countryCode: country });
 
   // Filter out products that are already in cart
   const cartProductIds =
@@ -27,8 +29,11 @@ const Bag = async () => {
   const subtotal = cart?.cost.subtotalAmount
     ? parseFloat(cart.cost.subtotalAmount.amount)
     : 0;
-  const deliveryFee = subtotal >= 40 ? 0 : 3.95;
-  const total = subtotal + deliveryFee;
+
+  // Note: Actual shipping calculated by Shopify at checkout based on delivery address
+  // These values are just for display purposes in the cart
+  const deliveryFee = 0; // Will be calculated at checkout
+  const total = subtotal; // Actual total will include shipping at checkout
 
   return (
     <div className="bg-warm-beige min-h-screen py-8">
@@ -74,7 +79,7 @@ const Bag = async () => {
                     size="2x"
                   />
                 </div>
-                <h3 className="font-semibold text-cocoa mb-1">Free Delivery</h3>
+                <h3 className="font-semibold text-cocoa mb-1">Free UK Delivery</h3>
                 <p className="text-sm text-gray-600">On orders over £40</p>
               </div>
 

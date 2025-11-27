@@ -30,6 +30,10 @@ import {
 import { removeProductFromCart, updateCartLineQuantity } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 import type { Product } from '@/lib/constants';
+import { useLocation } from '@/contexts/LocationContext';
+import { getShippingZone } from '@/lib/location';
+import { ShippingInfo } from '@/components/ShippingInfo';
+import { ukShipping } from '@/config/shipping';
 
 type BagClientProps = {
   cart: any;
@@ -48,6 +52,11 @@ export default function BagClient({
 }: BagClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const { country } = useLocation();
+  const shippingZone = getShippingZone(country.code);
+
+  // Get currency code from cart
+  const cartCurrency = cart?.cost?.subtotalAmount?.currencyCode || 'GBP';
 
   const handleRemoveItem = async (lineId: string) => {
     try {
@@ -119,6 +128,7 @@ export default function BagClient({
                 const product = node.merchandise.product;
                 const variant = node.merchandise;
                 const price = parseFloat(variant.priceV2.amount);
+                const currencyCode = variant.priceV2.currencyCode;
                 const compareAtPrice = variant.compareAtPriceV2
                   ? parseFloat(variant.compareAtPriceV2.amount)
                   : undefined;
@@ -162,12 +172,12 @@ export default function BagClient({
                             <p className="text-sm text-gray-500 line-through">
                               {formatCurrency(
                                 compareAtPrice * node.quantity,
-                                'GBP',
+                                currencyCode,
                               )}
                             </p>
                           )}
                           <p className="text-lg font-bold text-cocoa">
-                            {formatCurrency(itemTotal, 'GBP')}
+                            {formatCurrency(itemTotal, currencyCode)}
                           </p>
                         </div>
                       </div>
@@ -263,29 +273,7 @@ export default function BagClient({
           )}
 
           {/* Delivery Info */}
-          <div className="bg-sage-green/5 border border-sage-green/20 rounded-xl p-6">
-            <div className="flex items-start gap-3">
-              <FontAwesomeIcon
-                icon={faTruck}
-                className="text-sage-green mt-1"
-                size="lg"
-              />
-              <div>
-                <h3 className="font-semibold text-cocoa mb-1">
-                  FREE* STANDARD DELIVERY
-                </h3>
-                <p className="text-sm text-gray-700">
-                  Faster delivery options available to most countries.
-                </p>
-                <Link
-                  href="/delivery"
-                  className="text-sm text-sage-green font-semibold hover:underline mt-2 inline-block"
-                >
-                  More info
-                </Link>
-              </div>
-            </div>
-          </div>
+          <ShippingInfo zone={shippingZone} variant="detailed" />
         </div>
 
         {/* Right Column - Order Summary */}
@@ -299,7 +287,7 @@ export default function BagClient({
               <div className="flex justify-between text-sm">
                 <span className="text-gray-700">Sub-total</span>
                 <span className="font-semibold text-cocoa">
-                  {formatCurrency(subtotal, 'GBP')}
+                  {formatCurrency(subtotal, cartCurrency)}
                 </span>
               </div>
 
@@ -308,16 +296,22 @@ export default function BagClient({
                   <span className="text-gray-700">Delivery</span>
                 </div>
                 <span className="font-semibold text-cocoa">
-                  {deliveryFee === 0
+                  {shippingZone === 'UK' && subtotal >= ukShipping.freeDeliveryThreshold
                     ? 'FREE'
-                    : formatCurrency(deliveryFee, 'GBP')}
+                    : 'Calculated at checkout'}
                 </span>
               </div>
 
-              {subtotal < 40 && (
+              {shippingZone === 'UK' && subtotal < ukShipping.freeDeliveryThreshold && (
                 <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
-                  Add {formatCurrency(40 - subtotal, 'GBP')} more to qualify for
-                  free delivery
+                  Add {formatCurrency(ukShipping.freeDeliveryThreshold - subtotal, cartCurrency)} more to qualify for
+                  free UK delivery
+                </p>
+              )}
+
+              {shippingZone !== 'UK' && (
+                <p className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                  Shipping cost will be calculated at checkout based on your location
                 </p>
               )}
             </div>
@@ -326,7 +320,7 @@ export default function BagClient({
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-gray-900">Total</span>
                 <span className="text-2xl font-bold text-cocoa">
-                  {formatCurrency(total, 'GBP')}
+                  {formatCurrency(total, cartCurrency)}
                 </span>
               </div>
             </div>

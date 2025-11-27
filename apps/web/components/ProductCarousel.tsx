@@ -7,9 +7,11 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import { getServerCountry } from '@/lib/server-location';
 
 const ProductCarousel = async () => {
-  const products = await getProducts();
+  const country = await getServerCountry();
+  const products = await getProducts(country);
 
   return (
     <section className="py-16 sm:py-24 bg-white">

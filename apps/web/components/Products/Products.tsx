@@ -1,10 +1,10 @@
-import ProductListing from '@/components/ProductListing/ProductListing';
+import DynamicProductListing from '@/components/DynamicProductListing';
 import EmptyCategory from '@/components/EmptyCategory';
 import { searchProducts } from '@/app/actions';
 import { deslugify } from '@/lib/utils/slugify';
 
 type ProductsProps = {
-  params: Promise<{ category: string }>;
+  params: Promise<{ locale?: string; category: string }>;
   searchParams: Promise<{
     sort?: string;
     categories?: string;
@@ -18,6 +18,9 @@ type ProductsProps = {
 const Products = async ({ params, searchParams }: ProductsProps) => {
   const { category: categorySlug } = await params;
   const searchParamsResolved = await searchParams;
+
+  // Use default country for static pre-rendering
+  const DEFAULT_COUNTRY = 'GB';
 
   // Get the category name from slug
   const categoryName = deslugify(categorySlug);
@@ -49,12 +52,13 @@ const Products = async ({ params, searchParams }: ProductsProps) => {
       sortKey = 'BEST_SELLING';
   }
 
-  // Fetch products filtered by category
+  // Fetch products filtered by category with default country for static rendering
   const products = await searchProducts({
     productType: categoryName,
     sortKey,
     reverse,
     first: 50,
+    countryCode: DEFAULT_COUNTRY,
   });
 
   return (
@@ -62,13 +66,16 @@ const Products = async ({ params, searchParams }: ProductsProps) => {
       {products.length === 0 ? (
         <EmptyCategory categoryName={categoryName} />
       ) : (
-        <ProductListing
-          products={products}
+        <DynamicProductListing
+          initialProducts={products}
           title={categoryName}
           breadcrumb={[
             { label: 'Home', href: '/' },
             { label: categoryName, href: `/${categorySlug}` },
           ]}
+          category={categoryName}
+          sortKey={sortKey}
+          reverse={reverse}
         />
       )}
     </div>

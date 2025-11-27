@@ -359,7 +359,7 @@ export const CART_BUYER_IDENTITY_UPDATE_MUTATION = gql`
 `;
 
 export const GET_PRODUCT_QUERY = gql`
-  query GET_PRODUCT_QUERY($id: ID!) {
+  query GET_PRODUCT_QUERY($id: ID!, $country: CountryCode = GB) @inContext(country: $country) {
     product(id: $id) {
       id
       handle
@@ -410,7 +410,7 @@ export const GET_PRODUCT_QUERY = gql`
 `;
 
 export const GET_PRODUCT_BY_HANDLE_QUERY = gql`
-  query GET_PRODUCT_BY_HANDLE_QUERY($handle: String!) {
+  query GET_PRODUCT_BY_HANDLE_QUERY($handle: String!, $country: CountryCode = GB) @inContext(country: $country) {
     productByHandle(handle: $handle) {
       id
       handle
@@ -466,7 +466,8 @@ export const GET_PRODUCTS_QUERY = gql`
     $query: String
     $sortKey: ProductSortKeys
     $reverse: Boolean
-  ) {
+    $country: CountryCode = GB
+  ) @inContext(country: $country) {
     products(
       first: $first
       query: $query

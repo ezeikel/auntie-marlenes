@@ -34,12 +34,17 @@ import AddToBagButton from './buttons/AddToBagButton/AddToBagButton';
 import { useSaved } from '@/contexts/saved';
 import { toast } from 'sonner';
 import { track } from '@vercel/analytics';
+import { useLocation } from '@/contexts/LocationContext';
+import { getShippingZone } from '@/lib/location';
+import { ShippingInfo } from '@/components/ShippingInfo';
 
 type ProductDetailProps = {
   product: Product;
   relatedProducts?: Product[];
   sanitizedDescription: string;
   saveCountSlot?: React.ReactNode; // PPR: Dynamic save count slot
+  priceSlot?: React.ReactNode; // PPR: Dynamic price slot for localized pricing
+  staticPriceFallback?: string; // Fallback price string for SSR
 };
 
 const ProductDetail = ({
@@ -47,11 +52,15 @@ const ProductDetail = ({
   relatedProducts = [],
   sanitizedDescription,
   saveCountSlot,
+  priceSlot,
+  staticPriceFallback,
 }: ProductDetailProps) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0]);
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0]);
   const { isSaved, toggleSave } = useSaved();
+  const { country } = useLocation();
+  const shippingZone = getShippingZone(country.code);
 
   const images = product.images || [product.image];
   const productIsSaved = isSaved(product.id);
@@ -59,7 +68,7 @@ const ProductDetail = ({
   const handleShare = async () => {
     const shareData = {
       title: product.name,
-      text: `${product.brand} - ${product.name} - ${formatCurrency(product.price, 'GBP')}`,
+      text: `${product.brand} - ${product.name} - ${formatCurrency(product.price, product.currencyCode)}`,
       url: `${window.location.origin}/product/${product.handle}`,
     };
 
@@ -237,9 +246,12 @@ const ProductDetail = ({
               <h1 className="text-3xl md:text-4xl font-playfair font-bold text-cocoa mb-4">
                 {product.name}
               </h1>
-              <p className="text-3xl font-bold text-cocoa">
-                {formatCurrency(product.price, 'GBP')}
-              </p>
+              {/* PPR: Use dynamic price slot if provided, otherwise format inline */}
+              {priceSlot || (
+                <p className="text-3xl font-bold text-cocoa">
+                  {staticPriceFallback || formatCurrency(product.price, product.currencyCode)}
+                </p>
+              )}
             </div>
 
             {/* Color Selection */}
@@ -327,6 +339,9 @@ const ProductDetail = ({
                 <span className="sr-only">Share</span>
               </Button>
             </div>
+
+            {/* Shipping Info */}
+            <ShippingInfo zone={shippingZone} variant="compact" className="text-center py-3 bg-gray-50 rounded-lg" />
 
             {/* Seller Info */}
             <div className="bg-gray-50 rounded-lg p-4 text-sm">

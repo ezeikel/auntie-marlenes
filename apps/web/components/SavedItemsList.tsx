@@ -19,6 +19,7 @@ import {
 } from '@fortawesome/pro-regular-svg-icons';
 import { formatCurrency } from '@/lib/currency';
 import { useSaved } from '@/contexts/saved';
+import { useLocation } from '@/contexts/LocationContext';
 import { getProduct } from '@/app/actions';
 import AddToBagButton from './buttons/AddToBagButton/AddToBagButton';
 
@@ -37,6 +38,7 @@ const sortOptions: SortOption[] = [
 
 export default function SavedItemsList() {
   const { savedItems: savedProductIds, toggleSave } = useSaved();
+  const { country } = useLocation();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('recently-added');
@@ -54,7 +56,9 @@ export default function SavedItemsList() {
       try {
         // Fetch all products in parallel
         const productPromises = savedProductIds.map((id) =>
-          getProduct({ productId: id }).catch(() => null),
+          getProduct({ productId: id, countryCode: country.code }).catch(
+            () => null,
+          ),
         );
         const fetchedProducts = await Promise.all(productPromises);
 
@@ -68,7 +72,7 @@ export default function SavedItemsList() {
     };
 
     fetchProducts();
-  }, [savedProductIds]);
+  }, [savedProductIds, country.code]);
 
   const handleRemoveItem = (productId: string) => {
     toggleSave(productId);
@@ -227,7 +231,7 @@ export default function SavedItemsList() {
                 </div>
 
                 <p className="text-lg font-bold text-cocoa">
-                  {formatCurrency(item.price, 'GBP')}
+                  {formatCurrency(item.price, item.currencyCode)}
                 </p>
 
                 {/* Color Options */}

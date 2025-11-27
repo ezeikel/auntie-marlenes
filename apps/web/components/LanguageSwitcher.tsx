@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useTransition } from 'react';
+import { useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,20 +13,43 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faLanguage } from '@fortawesome/pro-regular-svg-icons';
-import { languages, defaultLanguage, type Language } from '@/lib/languages';
+import { useRouter, usePathname } from '@/i18n/navigation';
+import { locales, localeNames, type Locale } from '@/i18n/config';
 
 const LanguageSwitcher = () => {
-  const [currentLanguage, setCurrentLanguage] =
-    useState<Language>(defaultLanguage);
+  const locale = useLocale() as Locale;
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
+  const [isMounted, setIsMounted] = useState(false);
 
-  const handleLanguageChange = (language: Language) => {
-    setCurrentLanguage(language);
-    // In a real app, you would:
-    // 1. Update next-intl locale
-    // 2. Store preference in cookies/localStorage
-    // 3. Potentially update URL path
-    console.log('Language changed to:', language);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const handleLanguageChange = (newLocale: Locale) => {
+    startTransition(() => {
+      router.replace(pathname, { locale: newLocale });
+    });
   };
+
+  const currentLocale = localeNames[locale];
+
+  // Show loading state during SSR and initial client render to prevent hydration mismatch
+  if (!isMounted) {
+    return (
+      <Button
+        variant="outline"
+        className="w-full justify-between text-sm font-inter h-10 px-3 bg-transparent"
+        disabled
+      >
+        <div className="flex items-center gap-2">
+          <FontAwesomeIcon icon={faLanguage} className="text-gray-600" />
+          <span className="truncate">Loading...</span>
+        </div>
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>
@@ -33,14 +57,18 @@ const LanguageSwitcher = () => {
         <Button
           variant="outline"
           className="w-full justify-between text-sm font-inter h-10 px-3 bg-transparent"
+          disabled={isPending}
         >
           <div className="flex items-center gap-2">
-            <FontAwesomeIcon icon={faLanguage} className="text-gray-600" />
-            <span className="truncate">{currentLanguage.name}</span>
+            <span className="text-lg shrink-0">{currentLocale.flag}</span>
+            <span className="truncate hidden lg:inline">
+              {currentLocale.name}
+            </span>
+            <span className="truncate lg:hidden">{locale.toUpperCase()}</span>
           </div>
           <FontAwesomeIcon
             icon={faChevronDown}
-            className="text-xs ml-2 flex-shrink-0"
+            className="text-xs ml-2 shrink-0"
           />
         </Button>
       </DropdownMenuTrigger>
@@ -49,22 +77,26 @@ const LanguageSwitcher = () => {
           Select Language
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {languages.map((language) => (
-          <DropdownMenuItem
-            key={language.code}
-            onClick={() => handleLanguageChange(language)}
-            className="cursor-pointer flex items-center gap-3 py-2"
-          >
-            <span className="text-xl">{language.flag}</span>
-            <div className="flex-1">
-              <p className="font-medium">{language.name}</p>
-              <p className="text-xs text-gray-500">{language.nativeName}</p>
-            </div>
-            {currentLanguage.code === language.code && (
-              <span className="text-sage-green font-bold">✓</span>
-            )}
-          </DropdownMenuItem>
-        ))}
+        {locales.map((localeCode) => {
+          const language = localeNames[localeCode];
+          return (
+            <DropdownMenuItem
+              key={localeCode}
+              onClick={() => handleLanguageChange(localeCode)}
+              className="cursor-pointer flex items-center gap-3 py-2.5 px-3"
+              disabled={isPending}
+            >
+              <span className="text-xl">{language.flag}</span>
+              <div className="flex-1">
+                <p className="font-medium">{language.name}</p>
+                <p className="text-xs text-gray-500">{language.nativeName}</p>
+              </div>
+              {locale === localeCode && (
+                <span className="text-sage-green font-bold">✓</span>
+              )}
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );

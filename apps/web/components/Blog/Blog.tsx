@@ -11,7 +11,7 @@ import {
   faPinterest,
 } from '@fortawesome/free-brands-svg-icons';
 
-const Blog = async ({ params }: { params: Promise<{ slug: string }> }) => {
+const Blog = async ({ params }: { params: Promise<{ locale?: string; slug: string }> }) => {
   const { slug } = await params;
   const post = getPostBySlug(slug);
 

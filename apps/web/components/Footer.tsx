@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -9,10 +11,8 @@ import {
   faYoutube,
 } from '@fortawesome/free-brands-svg-icons';
 import { faArrowRight } from '@fortawesome/pro-regular-svg-icons';
-import { connection } from 'next/server';
 
-const Footer = async () => {
-  await connection();
+const Footer = () => {
 
   return (
     <footer className="bg-deep-earth text-white">

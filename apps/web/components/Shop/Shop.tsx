@@ -1,4 +1,4 @@
-import ProductListing from '@/components/ProductListing/ProductListing';
+import DynamicProductListing from '@/components/DynamicProductListing';
 import { searchProducts } from '@/app/actions';
 
 type ShopProps = {
@@ -13,6 +13,9 @@ type ShopProps = {
 
 const Shop = async ({ searchParams }: ShopProps) => {
   const params = await searchParams;
+
+  // Use default country for static pre-rendering
+  const DEFAULT_COUNTRY = 'GB';
 
   // Map sort parameter to Shopify sortKey
   let sortKey:
@@ -41,22 +44,25 @@ const Shop = async ({ searchParams }: ShopProps) => {
       sortKey = 'BEST_SELLING';
   }
 
-  // Fetch all products from Shopify
+  // Fetch all products from Shopify with default country for static rendering
   const products = await searchProducts({
     sortKey,
     reverse,
     first: 50, // Fetch more products for shop page
+    countryCode: DEFAULT_COUNTRY,
   });
 
   return (
     <div className="bg-white min-h-screen">
-      <ProductListing
-        products={products}
+      <DynamicProductListing
+        initialProducts={products}
         title="Shop All Products"
         breadcrumb={[
           { label: 'Home', href: '/' },
           { label: 'Shop', href: '/shop' },
         ]}
+        sortKey={sortKey}
+        reverse={reverse}
       />
     </div>
   );

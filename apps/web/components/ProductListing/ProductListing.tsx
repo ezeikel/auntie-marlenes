@@ -56,7 +56,7 @@ export default function ProductListing({
     brands: searchParams.get('brands')?.split(',').filter(Boolean) || [],
     priceRange: [
       Number(searchParams.get('minPrice')) || 0,
-      Number(searchParams.get('maxPrice')) || 25,
+      Number(searchParams.get('maxPrice')) || 10000, // High default to support all currencies
     ],
   });
 
@@ -89,7 +89,7 @@ export default function ProductListing({
       params.delete('minPrice');
     }
 
-    if (newFilters.priceRange[1] < 25) {
+    if (newFilters.priceRange[1] < 10000) {
       params.set('maxPrice', String(newFilters.priceRange[1]));
     } else {
       params.delete('maxPrice');
@@ -117,6 +117,12 @@ export default function ProductListing({
   // Client-side filtering for display
   let filteredProducts = [...products];
 
+  console.log('[ProductListing] Before filters:', {
+    total: products.length,
+    priceRange: filters.priceRange,
+    samplePrices: products.slice(0, 3).map(p => ({ name: p.name, price: p.price, currencyCode: p.currencyCode }))
+  });
+
   if (filters.inStockOnly) {
     filteredProducts = filteredProducts.filter((p) => p.inStock);
   }
@@ -137,9 +143,17 @@ export default function ProductListing({
     );
   }
 
+  const beforePriceFilter = filteredProducts.length;
   filteredProducts = filteredProducts.filter(
     (p) => p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1],
   );
+
+  console.log('[ProductListing] After price filter:', {
+    before: beforePriceFilter,
+    after: filteredProducts.length,
+    filtered: beforePriceFilter - filteredProducts.length,
+    priceRange: filters.priceRange
+  });
 
   // Client-side sorting
   switch (sortBy) {

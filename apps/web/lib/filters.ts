@@ -49,6 +49,6 @@ export const filterSections: FilterSection[] = [
     title: "Price",
     type: "price",
     min: 0,
-    max: 25,
+    max: 10000, // High default to support all currencies
   },
 ]

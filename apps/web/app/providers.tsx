@@ -2,23 +2,36 @@
 
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
+import { NextIntlClientProvider } from 'next-intl';
+import type { AbstractIntlMessages } from 'next-intl';
 import { UIContextProvider } from '@/contexts/ui';
 import { SavedProvider } from '@/contexts/saved';
+import { LocationProvider } from '@/contexts/LocationContext';
 
-const Providers = ({ children }: { children: React.ReactNode }) => {
+type ProvidersProps = {
+  children: React.ReactNode;
+  messages?: AbstractIntlMessages;
+  locale: string;
+};
+
+const Providers = ({ children, messages, locale }: ProvidersProps) => {
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="light"
-      forcedTheme="light"
-      disableTransitionOnChange
-    >
-      <SessionProvider>
-        <UIContextProvider>
-          <SavedProvider>{children}</SavedProvider>
-        </UIContextProvider>
-      </SessionProvider>
-    </ThemeProvider>
+    <NextIntlClientProvider messages={messages} locale={locale}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        forcedTheme="light"
+        disableTransitionOnChange
+      >
+        <SessionProvider>
+          <LocationProvider>
+            <UIContextProvider>
+              <SavedProvider>{children}</SavedProvider>
+            </UIContextProvider>
+          </LocationProvider>
+        </SessionProvider>
+      </ThemeProvider>
+    </NextIntlClientProvider>
   );
 };
 
