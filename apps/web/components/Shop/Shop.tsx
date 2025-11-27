@@ -1,5 +1,6 @@
 import DynamicProductListing from '@/components/DynamicProductListing';
 import { searchProducts } from '@/app/actions';
+import { cacheLife, cacheTag } from 'next/cache';
 
 type ShopProps = {
   searchParams: Promise<{
@@ -11,8 +12,12 @@ type ShopProps = {
   }>;
 };
 
-const Shop = async ({ searchParams }: ShopProps) => {
-  const params = await searchParams;
+// Cached component that fetches products based on sort parameters
+// The sort parameter becomes part of the cache key automatically
+async function CachedProductList({ sort }: { sort?: string }) {
+  'use cache';
+  cacheLife('days'); // Cache for 1 day - products don't change often
+  cacheTag('shop-products'); // Tag for on-demand revalidation via webhooks
 
   // Use default country for static pre-rendering
   const DEFAULT_COUNTRY = 'GB';
@@ -27,7 +32,7 @@ const Shop = async ({ searchParams }: ShopProps) => {
     | undefined;
   let reverse = false;
 
-  switch (params.sort) {
+  switch (sort) {
     case 'price-low':
       sortKey = 'PRICE';
       reverse = false;
@@ -53,17 +58,27 @@ const Shop = async ({ searchParams }: ShopProps) => {
   });
 
   return (
+    <DynamicProductListing
+      initialProducts={products}
+      title="Shop All Products"
+      breadcrumb={[
+        { label: 'Home', href: '/' },
+        { label: 'Shop', href: '/shop' },
+      ]}
+      sortKey={sortKey}
+      reverse={reverse}
+    />
+  );
+}
+
+// Main component that extracts searchParams and passes to cached component
+const Shop = async ({ searchParams }: ShopProps) => {
+  // Extract searchParams outside the cached scope
+  const params = await searchParams;
+
+  return (
     <div className="bg-white min-h-screen">
-      <DynamicProductListing
-        initialProducts={products}
-        title="Shop All Products"
-        breadcrumb={[
-          { label: 'Home', href: '/' },
-          { label: 'Shop', href: '/shop' },
-        ]}
-        sortKey={sortKey}
-        reverse={reverse}
-      />
+      <CachedProductList sort={params.sort} />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import crypto from 'crypto';
 
 /**
@@ -30,6 +31,10 @@ async function verifyShopifyWebhook(
  * - orders/create: Order created
  * - orders/updated: Order updated
  * - orders/cancelled: Order cancelled
+ * - orders/paid: Order paid
+ * - products/create: Product created
+ * - products/update: Product updated
+ * - products/delete: Product deleted
  */
 export async function POST(request: Request) {
   try {
@@ -67,6 +72,18 @@ export async function POST(request: Request) {
 
       case 'orders/paid':
         await handleOrderPaid(data);
+        break;
+
+      case 'products/create':
+        await handleProductCreate(data);
+        break;
+
+      case 'products/update':
+        await handleProductUpdate(data);
+        break;
+
+      case 'products/delete':
+        await handleProductDelete(data);
         break;
 
       default:
@@ -169,4 +186,50 @@ async function handleOrderPaid(order: any) {
   // TODO: Mark order as paid in database
   // TODO: Trigger fulfillment process
   // TODO: Send payment confirmation
+}
+
+/**
+ * Handle product creation
+ * Revalidates the shop-products cache tag to refresh product listings
+ */
+async function handleProductCreate(product: any) {
+  console.log('✨ [Shopify Webhook] Product created:', {
+    id: product.id,
+    title: product.title,
+    handle: product.handle,
+  });
+
+  // Revalidate the shop products cache with stale-while-revalidate
+  revalidateTag('shop-products', 'max');
+  console.log('🔄 [Shopify Webhook] Revalidated shop-products cache');
+}
+
+/**
+ * Handle product updates
+ * Revalidates the shop-products cache tag to refresh product listings
+ */
+async function handleProductUpdate(product: any) {
+  console.log('📝 [Shopify Webhook] Product updated:', {
+    id: product.id,
+    title: product.title,
+    handle: product.handle,
+  });
+
+  // Revalidate the shop products cache with stale-while-revalidate
+  revalidateTag('shop-products', 'max');
+  console.log('🔄 [Shopify Webhook] Revalidated shop-products cache');
+}
+
+/**
+ * Handle product deletion
+ * Revalidates the shop-products cache tag to refresh product listings
+ */
+async function handleProductDelete(product: any) {
+  console.log('🗑️  [Shopify Webhook] Product deleted:', {
+    id: product.id,
+  });
+
+  // Revalidate the shop products cache with stale-while-revalidate
+  revalidateTag('shop-products', 'max');
+  console.log('🔄 [Shopify Webhook] Revalidated shop-products cache');
 }

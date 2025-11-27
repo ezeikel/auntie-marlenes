@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import Shop from '@/components/Shop/Shop';
 import { generatePageMetadata } from '@/lib/metadata';
@@ -32,13 +31,12 @@ type ShopPageProps = {
   }>;
 };
 
-export default async function ShopPage({ params, searchParams }: ShopPageProps) {
+export default async function ShopPage({
+  params,
+  searchParams,
+}: ShopPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return (
-    <Suspense fallback={<div className="h-20" />}>
-      <Shop searchParams={searchParams} />
-    </Suspense>
-  );
+  return <Shop searchParams={searchParams} />;
 }
