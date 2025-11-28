@@ -9,6 +9,32 @@ const intlMiddleware = createIntlMiddleware(routing);
 export const proxy = async (request: NextRequest) => {
   const { pathname } = request.nextUrl;
 
+  // PostHog reverse proxy
+  if (pathname.startsWith('/relay-hyx5')) {
+    const url = request.nextUrl.clone();
+
+    // Determine if this is a static asset request
+    const isStaticAsset = pathname.includes('/static/');
+
+    // Set the appropriate PostHog host (EU region)
+    url.host = isStaticAsset ? 'eu-assets.i.posthog.com' : 'eu.i.posthog.com';
+    url.protocol = 'https';
+    url.port = '';
+
+    // Remove the /relay-hyx5 prefix from the pathname
+    url.pathname = pathname.replace('/relay-hyx5', '');
+
+    // Set headers for the proxied request
+    const headers = new Headers(request.headers);
+    headers.set('host', url.host);
+
+    return NextResponse.rewrite(url, {
+      request: {
+        headers,
+      },
+    });
+  }
+
   // Skip proxy for API routes, images, static files, and specific assets
   if (
     pathname.startsWith('/api') ||

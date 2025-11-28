@@ -13,22 +13,7 @@ const nextConfig = {
   },
   // Include Prisma binaries in serverless functions (moved from experimental in Next.js 16)
   serverExternalPackages: ['@prisma/client', '@prisma/engines'],
-  async rewrites() {
-    return [
-      {
-        source: '/relay-hyx5/static/:path*',
-        destination: 'https://eu-assets.i.posthog.com/static/:path*',
-      },
-      {
-        source: '/relay-hyx5/:path*',
-        destination: 'https://eu.i.posthog.com/:path*',
-      },
-      {
-        source: '/relay-hyx5/flags',
-        destination: 'https://eu.i.posthog.com/flags',
-      },
-    ];    
-  }
+  skipTrailingSlashRedirect: true,
 };
 
 const sentryOptions = {
