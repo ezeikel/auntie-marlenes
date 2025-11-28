@@ -9,6 +9,8 @@ import {
   addProductsToCart,
 } from '@/app/actions';
 import { useRouter } from 'next/navigation';
+import { track } from '@/utils/analytics-client';
+import { logger } from '@/lib/logger';
 
 type AddToBagButtonProps = {
   productId: string;
@@ -34,6 +36,13 @@ const AddToBagButton = ({
       productId,
       selectedOptions,
     });
+
+    // Track add to bag initiated
+    track('Add to Bag Clicked', {
+      product_id: productId,
+      selected_options: JSON.stringify(selectedOptions),
+    });
+
     setError(null);
 
     // Wrap the entire async operation in startTransition for immediate UI feedback
@@ -51,6 +60,19 @@ const AddToBagButton = ({
         if (!productVariantId) {
           setError('No variant found for product');
           console.error('❌ [AddToBag] No variant found for product');
+
+          // Track failure
+          track('Add to Bag Failed', {
+            product_id: productId,
+            selected_options: JSON.stringify(selectedOptions),
+            error: 'No variant found for product',
+          });
+
+          logger.warn('No variant found for product', {
+            productId,
+            selectedOptions: JSON.stringify(selectedOptions),
+          });
+
           return;
         }
 
@@ -78,6 +100,20 @@ const AddToBagButton = ({
           console.log('✅ [AddToBag] Created new cart successfully');
         }
 
+        // Track success
+        track('Product Added to Bag', {
+          product_id: productId,
+          variant_id: productVariantId,
+          selected_options: JSON.stringify(selectedOptions),
+          cart_action: cart ? 'added_to_existing' : 'created_new_cart',
+        });
+
+        logger.info('Product added to bag', {
+          productId,
+          variantId: productVariantId,
+          cartAction: cart ? 'added_to_existing' : 'created_new_cart',
+        });
+
         // Refresh the page to update cart count in header
         console.log('🔄 [AddToBag] Refreshing page...');
         router.refresh();
@@ -90,6 +126,22 @@ const AddToBagButton = ({
       } catch (err) {
         console.error('❌ [AddToBag] Error adding to bag:', err);
         setError('Failed to add item to bag');
+
+        // Track error
+        track('Add to Bag Failed', {
+          product_id: productId,
+          selected_options: JSON.stringify(selectedOptions),
+          error: err instanceof Error ? err.message : 'Unknown error',
+        });
+
+        logger.error(
+          'Failed to add product to bag',
+          err instanceof Error ? err : new Error('Unknown error'),
+          {
+            productId,
+            selectedOptions: JSON.stringify(selectedOptions),
+          },
+        );
       }
     });
   };

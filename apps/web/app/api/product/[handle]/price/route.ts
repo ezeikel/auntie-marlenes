@@ -3,7 +3,7 @@ import { getProductByHandle } from '@/app/actions';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ handle: string }> }
+  { params }: { params: Promise<{ handle: string }> },
 ) {
   const { handle } = await params;
   const { searchParams } = new URL(request.url);
@@ -24,9 +24,7 @@ export async function GET(
     console.error('Failed to fetch product price:', error);
     return NextResponse.json(
       { error: 'Failed to fetch product price' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-
-

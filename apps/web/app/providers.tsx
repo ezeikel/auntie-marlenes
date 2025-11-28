@@ -7,6 +7,7 @@ import type { AbstractIntlMessages } from 'next-intl';
 import { UIContextProvider } from '@/contexts/ui';
 import { SavedProvider } from '@/contexts/saved';
 import { LocationProvider } from '@/contexts/LocationContext';
+import { PostHogProvider } from '@/components/PostHogProvider';
 
 type ProvidersProps = {
   children: React.ReactNode;
@@ -24,11 +25,13 @@ const Providers = ({ children, messages, locale }: ProvidersProps) => {
         disableTransitionOnChange
       >
         <SessionProvider>
-          <LocationProvider>
-            <UIContextProvider>
-              <SavedProvider>{children}</SavedProvider>
-            </UIContextProvider>
-          </LocationProvider>
+          <PostHogProvider>
+            <LocationProvider>
+              <UIContextProvider>
+                <SavedProvider>{children}</SavedProvider>
+              </UIContextProvider>
+            </LocationProvider>
+          </PostHogProvider>
         </SessionProvider>
       </ThemeProvider>
     </NextIntlClientProvider>

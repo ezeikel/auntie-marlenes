@@ -27,6 +27,7 @@ import AccountPopover from './AccountPopover';
 import { navLinks } from '@/lib/constants';
 import { useSession } from '@/hooks/useSession';
 import { signOut as nextAuthSignOut } from 'next-auth/react';
+import { track } from '@/utils/analytics-client';
 
 type HeaderProps = {
   bagSlot?: React.ReactNode;
@@ -43,8 +44,17 @@ const Header = ({ bagSlot }: HeaderProps) => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    const trimmedQuery = searchQuery.trim();
+
+    if (trimmedQuery) {
+      // Track search
+      track('Search Submitted', {
+        search_query: trimmedQuery,
+        search_query_length: trimmedQuery.length,
+        search_source: 'header',
+      });
+
+      router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
     }
   };
 
@@ -128,7 +138,9 @@ const Header = ({ bagSlot }: HeaderProps) => {
                       size="lg"
                       className="text-gray-600"
                     />
-                    <span className="sr-only">{t('navigation.userAccount')}</span>
+                    <span className="sr-only">
+                      {t('navigation.userAccount')}
+                    </span>
                   </Link>
                 </PopoverTrigger>
                 <PopoverContent

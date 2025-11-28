@@ -15,6 +15,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faLanguage } from '@fortawesome/pro-regular-svg-icons';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { locales, localeNames, type Locale } from '@/i18n/config';
+import { track } from '@/utils/analytics-client';
+import { logger } from '@/lib/logger';
 
 const LanguageSwitcher = () => {
   const locale = useLocale() as Locale;
@@ -28,6 +30,21 @@ const LanguageSwitcher = () => {
   }, []);
 
   const handleLanguageChange = (newLocale: Locale) => {
+    const previousLocale = locale;
+
+    // Track language change
+    track('Language Changed', {
+      previous_language: previousLocale,
+      new_language: newLocale,
+      previous_language_name: localeNames[previousLocale].name,
+      new_language_name: localeNames[newLocale].name,
+    });
+
+    logger.info('Language changed', {
+      previousLanguage: previousLocale,
+      newLanguage: newLocale,
+    });
+
     startTransition(() => {
       router.replace(pathname, { locale: newLocale });
     });

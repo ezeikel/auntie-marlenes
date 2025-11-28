@@ -18,6 +18,8 @@ import {
   addLocalSave,
   removeLocalSave,
 } from '@/lib/localStorage-saves';
+import { track } from '@/utils/analytics-client';
+import { logger } from '@/lib/logger';
 
 export function useSaved() {
   const { isAuthenticated } = useSession();
@@ -70,6 +72,13 @@ export function useSaved() {
           setLocalSaves((prev) => prev.filter((id) => id !== productId));
           removeLocalSave(productId);
 
+          // Track unsave
+          track('Product Unsaved', {
+            product_id: productId,
+            is_authenticated: isAuthenticated,
+            storage_location: isAuthenticated ? 'database' : 'local_storage',
+          });
+
           // Remove from DB if authenticated
           if (isAuthenticated) {
             try {
@@ -77,10 +86,26 @@ export function useSaved() {
               await removeProductFromSaved({ productId });
               console.log('✅ Successfully removed from DB');
               setDbSaves((prev) => prev.filter((id) => id !== productId));
+
+              logger.info('Product unsaved from database', {
+                productId,
+              });
             } catch (error) {
               console.error('❌ Failed to remove from saved:', error);
               // Revert optimistic update
               setLocalSaves(getLocalSaves());
+
+              // Track failure
+              track('Product Unsave Failed', {
+                product_id: productId,
+                error: error instanceof Error ? error.message : 'Unknown error',
+              });
+
+              logger.error(
+                'Failed to remove product from saved',
+                error instanceof Error ? error : new Error('Unknown error'),
+                { productId },
+              );
             }
           } else {
             console.log('👤 Not authenticated, only removed from localStorage');
@@ -91,6 +116,13 @@ export function useSaved() {
           setLocalSaves((prev) => [...prev, productId]);
           addLocalSave(productId);
 
+          // Track save
+          track('Product Saved', {
+            product_id: productId,
+            is_authenticated: isAuthenticated,
+            storage_location: isAuthenticated ? 'database' : 'local_storage',
+          });
+
           // Add to DB if authenticated
           if (isAuthenticated) {
             try {
@@ -98,10 +130,26 @@ export function useSaved() {
               await addProductToSaved({ productId });
               console.log('✅ Successfully added to DB');
               setDbSaves((prev) => [...prev, productId]);
+
+              logger.info('Product saved to database', {
+                productId,
+              });
             } catch (error) {
               console.error('❌ Failed to add to saved:', error);
               // Revert optimistic update
               setLocalSaves(getLocalSaves());
+
+              // Track failure
+              track('Product Save Failed', {
+                product_id: productId,
+                error: error instanceof Error ? error.message : 'Unknown error',
+              });
+
+              logger.error(
+                'Failed to add product to saved',
+                error instanceof Error ? error : new Error('Unknown error'),
+                { productId },
+              );
             }
           } else {
             console.log('👤 Not authenticated, only saved to localStorage');

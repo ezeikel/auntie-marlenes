@@ -10,6 +10,8 @@ import {
   getCurrencyForCountry,
 } from '@/lib/location';
 import { updateCartCountryCode, setCountryCookie } from '@/app/actions';
+import { track } from '@/utils/analytics-client';
+import { logger } from '@/lib/logger';
 
 type LocationContextType = {
   country: CountryInfo;
@@ -82,10 +84,20 @@ export const LocationProvider = ({
 
   // Update country and sync with Shopify cart
   const setCountry = async (newCountry: CountryInfo) => {
+    const previousCountry = country.code;
+
     console.log('[LocationContext] Setting country:', {
-      from: country.code,
+      from: previousCountry,
       to: newCountry.code,
       currency: newCountry.currency.code,
+    });
+
+    // Track country change
+    track('Country Changed', {
+      previous_country: previousCountry,
+      new_country: newCountry.code,
+      previous_currency: currency.code,
+      new_currency: newCountry.currency.code,
     });
 
     setCountryState(newCountry);
@@ -98,6 +110,11 @@ export const LocationProvider = ({
       console.log('[LocationContext] Saved to localStorage:', newCountry.code);
     } catch (error) {
       console.error('Error saving country preference:', error);
+      logger.error(
+        'Failed to save country preference to localStorage',
+        error instanceof Error ? error : new Error('Unknown error'),
+        { countryCode: newCountry.code },
+      );
     }
 
     // Set cookie for server-side country detection
@@ -106,14 +123,29 @@ export const LocationProvider = ({
       console.log('[LocationContext] Set cookie:', newCountry.code);
     } catch (error) {
       console.error('Error setting country cookie:', error);
+      logger.error(
+        'Failed to set country cookie',
+        error instanceof Error ? error : new Error('Unknown error'),
+        { countryCode: newCountry.code },
+      );
     }
 
     // Update Shopify cart buyer identity
     try {
       await updateCartCountryCode(newCountry.code);
       console.log('[LocationContext] Updated cart country:', newCountry.code);
+
+      logger.info('Country changed successfully', {
+        previousCountry,
+        newCountry: newCountry.code,
+      });
     } catch (error) {
       console.error('Error updating cart buyer identity:', error);
+      logger.error(
+        'Failed to update cart buyer identity',
+        error instanceof Error ? error : new Error('Unknown error'),
+        { countryCode: newCountry.code },
+      );
     }
 
     // Refresh server components to re-render with new country
@@ -123,13 +155,32 @@ export const LocationProvider = ({
 
   // Update currency only (independent of country)
   const setCurrency = (newCurrency: Currency) => {
+    const previousCurrency = currency.code;
+
+    // Track currency change
+    track('Currency Changed', {
+      previous_currency: previousCurrency,
+      new_currency: newCurrency.code,
+      country: country.code,
+    });
+
     setCurrencyState(newCurrency);
 
     // Save to localStorage
     try {
       localStorage.setItem(STORAGE_KEY_CURRENCY, newCurrency.code);
+
+      logger.info('Currency changed successfully', {
+        previousCurrency,
+        newCurrency: newCurrency.code,
+      });
     } catch (error) {
       console.error('Error saving currency preference:', error);
+      logger.error(
+        'Failed to save currency preference to localStorage',
+        error instanceof Error ? error : new Error('Unknown error'),
+        { currencyCode: newCurrency.code },
+      );
     }
   };
 

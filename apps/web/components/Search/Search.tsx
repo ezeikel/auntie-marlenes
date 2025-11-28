@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import DynamicProductListing from '@/components/DynamicProductListing';
 import { searchProducts } from '@/app/actions';
 import { getServerCountry } from '@/lib/server-location';
+import { trackServer } from '@/utils/analytics-server';
 
 type SearchProps = {
   searchParams: Promise<{
@@ -59,6 +60,16 @@ const Search = async ({ searchParams }: SearchProps) => {
     reverse,
     first: 50,
     countryCode: country,
+  });
+
+  // Track search results (server-side)
+  await trackServer('Search Results Loaded', {
+    search_query: query,
+    results_count: products.length,
+    has_results: products.length > 0,
+    is_zero_results: products.length === 0,
+    sort_key: sortKey,
+    country: country,
   });
 
   return (

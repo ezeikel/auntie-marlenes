@@ -6,5 +6,3 @@ export const routing = defineRouting({
   defaultLocale,
   localePrefix: 'as-needed', // Only show prefix for non-default locales
 });
-
-

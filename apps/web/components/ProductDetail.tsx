@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,7 @@ import {
 import AddToBagButton from './buttons/AddToBagButton/AddToBagButton';
 import { useSaved } from '@/contexts/saved';
 import { toast } from 'sonner';
-import { track } from '@vercel/analytics';
+import { track } from '@/utils/analytics-client';
 import { useLocation } from '@/contexts/LocationContext';
 import { getShippingZone } from '@/lib/location';
 import { ShippingInfo } from '@/components/ShippingInfo';
@@ -64,6 +64,29 @@ const ProductDetail = ({
 
   const images = product.images || [product.image];
   const productIsSaved = isSaved(product.id);
+
+  // Track product view on mount
+  useEffect(() => {
+    track('Product Viewed', {
+      product_id: product.id,
+      product_name: product.name,
+      product_handle: product.handle,
+      brand: product.brand,
+      category: product.category,
+      price: product.price,
+      currency_code: product.currencyCode,
+      in_stock: product.inStock,
+    });
+  }, [
+    product.id,
+    product.name,
+    product.handle,
+    product.brand,
+    product.category,
+    product.price,
+    product.currencyCode,
+    product.inStock,
+  ]);
 
   const handleShare = async () => {
     const shareData = {

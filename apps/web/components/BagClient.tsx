@@ -34,6 +34,9 @@ import { useLocation } from '@/contexts/LocationContext';
 import { getShippingZone } from '@/lib/location';
 import { ShippingInfo } from '@/components/ShippingInfo';
 import { ukShipping } from '@/config/shipping';
+import { track } from '@/utils/analytics-client';
+import { logger } from '@/lib/logger';
+import { useEffect } from 'react';
 
 type BagClientProps = {
   cart: any;
@@ -57,6 +60,34 @@ export default function BagClient({
 
   // Get currency code from cart
   const cartCurrency = cart?.cost?.subtotalAmount?.currencyCode || 'GBP';
+
+  // Track cart view on mount
+  useEffect(() => {
+    if (cart && cart.lines?.length > 0) {
+      track('Cart Viewed', {
+        cart_id: cart.id,
+        item_count: cart.totalQuantity || cart.lines.length,
+        cart_value: subtotal,
+        currency: cartCurrency,
+        delivery_fee: deliveryFee,
+        total_value: total,
+      });
+
+      logger.info('Cart viewed', {
+        cartId: cart.id,
+        itemCount: cart.totalQuantity || cart.lines.length,
+        cartValue: subtotal,
+      });
+    }
+  }, [
+    cart.id,
+    cart.totalQuantity,
+    cart.lines.length,
+    subtotal,
+    cartCurrency,
+    deliveryFee,
+    total,
+  ]);
 
   const handleRemoveItem = async (lineId: string) => {
     try {
@@ -90,6 +121,28 @@ export default function BagClient({
   };
 
   const handleCheckout = () => {
+    // Track checkout initiation
+    track('Checkout Started', {
+      cart_id: cart.id,
+      item_count: cart.totalQuantity || cart.lines?.length || 0,
+      cart_value: subtotal,
+      currency: cartCurrency,
+      delivery_fee: deliveryFee,
+      total_value: total,
+      products: cart.lines?.map((line: any) => ({
+        product_id: line.merchandise.product.id,
+        variant_id: line.merchandise.id,
+        quantity: line.quantity,
+        price: parseFloat(line.merchandise.price.amount),
+      })),
+    });
+
+    logger.info('Checkout started', {
+      cartId: cart.id,
+      itemCount: cart.totalQuantity || cart.lines?.length,
+      totalValue: total,
+    });
+
     // Redirect to Shopify checkout
     if (cart.checkoutUrl) {
       const checkoutUrl = cart.checkoutUrl;
@@ -296,22 +349,29 @@ export default function BagClient({
                   <span className="text-gray-700">Delivery</span>
                 </div>
                 <span className="font-semibold text-cocoa">
-                  {shippingZone === 'UK' && subtotal >= ukShipping.freeDeliveryThreshold
+                  {shippingZone === 'UK' &&
+                  subtotal >= ukShipping.freeDeliveryThreshold
                     ? 'FREE'
                     : 'Calculated at checkout'}
                 </span>
               </div>
 
-              {shippingZone === 'UK' && subtotal < ukShipping.freeDeliveryThreshold && (
-                <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
-                  Add {formatCurrency(ukShipping.freeDeliveryThreshold - subtotal, cartCurrency)} more to qualify for
-                  free UK delivery
-                </p>
-              )}
+              {shippingZone === 'UK' &&
+                subtotal < ukShipping.freeDeliveryThreshold && (
+                  <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
+                    Add{' '}
+                    {formatCurrency(
+                      ukShipping.freeDeliveryThreshold - subtotal,
+                      cartCurrency,
+                    )}{' '}
+                    more to qualify for free UK delivery
+                  </p>
+                )}
 
               {shippingZone !== 'UK' && (
                 <p className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                  Shipping cost will be calculated at checkout based on your location
+                  Shipping cost will be calculated at checkout based on your
+                  location
                 </p>
               )}
             </div>
