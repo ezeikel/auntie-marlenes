@@ -34,7 +34,7 @@ const nextConfig = {
 const sentryOptions = {
   silent: !process.env.CI,
   org: 'chewybytes',
-  project: 'auntie-marlenes',
+  project: 'auntie-marlenes-web',
   authToken: process.env.SENTRY_AUTH_TOKEN,
   widenClientFileUpload: true,
   transpileClientSDK: true,
