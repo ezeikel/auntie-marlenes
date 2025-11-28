@@ -5,37 +5,12 @@ import { track as vercelTrack } from '@vercel/analytics';
 
 type EventProperties = Record<string, string | number | boolean | undefined>;
 
-let posthogInitialized = false;
-
 /**
- * Initialize PostHog client-side tracking
- * Should be called once in a client component (e.g., PostHogProvider)
+ * Check if PostHog is initialized
+ * PostHog is initialized in instrumentation-client.ts
  */
-export const initPostHog = () => {
-  if (typeof window === 'undefined' || posthogInitialized) return;
-
-  const apiKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-  const apiHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
-
-  if (!apiKey) {
-    console.warn('PostHog API key not found. Analytics will be disabled.');
-    return;
-  }
-
-  posthog.init(apiKey, {
-    api_host: apiHost || 'https://us.i.posthog.com',
-    person_profiles: 'identified_only',
-    capture_pageview: false, // We'll manually capture pageviews
-    capture_pageleave: true,
-    autocapture: false, // Disable autocapture to have more control
-    loaded: (ph) => {
-      if (process.env.NODE_ENV === 'development') {
-        ph.debug();
-      }
-    },
-  });
-
-  posthogInitialized = true;
+const isPostHogInitialized = () => {
+  return typeof window !== 'undefined' && posthog.__loaded;
 };
 
 /**
@@ -48,7 +23,7 @@ export const identifyUser = (
   userId: string,
   properties?: Record<string, string | number | boolean>,
 ) => {
-  if (!posthogInitialized) return;
+  if (!isPostHogInitialized()) return;
 
   posthog.identify(userId, properties);
 };
@@ -68,7 +43,7 @@ export const identifyUserComplete = async (
   additionalProperties?: Record<string, string | number | boolean>,
 ) => {
   // Identify in PostHog
-  if (posthogInitialized) {
+  if (isPostHogInitialized()) {
     posthog.identify(user.id, {
       email: user.email || undefined,
       name: user.name || undefined,
@@ -96,7 +71,7 @@ export const identifyUserComplete = async (
  */
 export const resetUserComplete = async () => {
   // Reset PostHog
-  if (posthogInitialized) {
+  if (isPostHogInitialized()) {
     posthog.reset();
   }
 
@@ -114,7 +89,7 @@ export const resetUserComplete = async () => {
  * For complete reset (PostHog + Sentry), use resetUserComplete
  */
 export const resetUser = () => {
-  if (!posthogInitialized) return;
+  if (!isPostHogInitialized()) return;
 
   posthog.reset();
 };
@@ -126,7 +101,7 @@ export const resetUser = () => {
  */
 export const track = (eventName: string, properties?: EventProperties) => {
   // Track with PostHog
-  if (posthogInitialized) {
+  if (isPostHogInitialized()) {
     posthog.capture(eventName, properties);
   }
 
@@ -153,7 +128,7 @@ export const track = (eventName: string, properties?: EventProperties) => {
  * @param properties - Additional page properties
  */
 export const trackPageView = (url?: string, properties?: EventProperties) => {
-  if (!posthogInitialized) return;
+  if (!isPostHogInitialized()) return;
 
   posthog.capture('$pageview', {
     $current_url: url || window.location.href,
@@ -168,7 +143,7 @@ export const trackPageView = (url?: string, properties?: EventProperties) => {
 export const setUserProperties = (
   properties: Record<string, string | number | boolean>,
 ) => {
-  if (!posthogInitialized) return;
+  if (!isPostHogInitialized()) return;
 
   posthog.setPersonProperties(properties);
 };
@@ -189,11 +164,10 @@ export const trackFeatureFlag = (flagKey: string, value: boolean | string) => {
  * @returns PostHog instance or null if not initialized
  */
 export const getPostHog = () => {
-  return posthogInitialized ? posthog : null;
+  return isPostHogInitialized() ? posthog : null;
 };
 
 export default {
-  init: initPostHog,
   identify: identifyUser,
   identifyComplete: identifyUserComplete,
   reset: resetUser,
