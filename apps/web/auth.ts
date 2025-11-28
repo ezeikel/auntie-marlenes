@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth';
-import type { Profile, Account, User } from '@auth/core/types';
+import type { Profile, Account, User, Session } from '@auth/core/types';
+import type { AdapterUser } from '@auth/core/adapters';
 import GoogleProvider from 'next-auth/providers/google';
 import FacebookProvider from 'next-auth/providers/facebook';
 import AppleProvider from 'next-auth/providers/apple';
@@ -155,6 +156,13 @@ const config = {
       }
 
       return false;
+    },
+    async session({ session, user }: { session: Session; user: AdapterUser }) {
+      // Add user id to session
+      if (session.user && user) {
+        session.user.id = user.id;
+      }
+      return session;
     },
   },
   secret: process.env.NEXT_AUTH_SECRET,

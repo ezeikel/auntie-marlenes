@@ -39,7 +39,8 @@ export const initPostHog = () => {
 };
 
 /**
- * Identify a user for tracking
+ * Identify a user for tracking in PostHog only
+ * For combined identification (PostHog + Sentry), use identifyUserComplete
  * @param userId - Unique identifier for the user
  * @param properties - Additional user properties
  */
@@ -53,7 +54,64 @@ export const identifyUser = (
 };
 
 /**
+ * Identify a user across all analytics platforms (PostHog + Sentry)
+ * This is the recommended function to call on login
+ * @param user - User object with id, email, and optional name
+ * @param additionalProperties - Additional user properties for PostHog
+ */
+export const identifyUserComplete = async (
+  user: {
+    id: string;
+    email?: string | null;
+    name?: string | null;
+  },
+  additionalProperties?: Record<string, string | number | boolean>,
+) => {
+  // Identify in PostHog
+  if (posthogInitialized) {
+    posthog.identify(user.id, {
+      email: user.email || undefined,
+      name: user.name || undefined,
+      ...additionalProperties,
+    });
+  }
+
+  // Identify in Sentry
+  try {
+    const { setUser } = await import('@/lib/logger');
+    setUser({
+      id: user.id,
+      email: user.email || undefined,
+      name: user.name || undefined,
+      ...additionalProperties,
+    });
+  } catch (error) {
+    console.warn('Failed to identify user in Sentry:', error);
+  }
+};
+
+/**
+ * Reset user identification across all platforms (e.g., on logout)
+ * This is the recommended function to call on logout
+ */
+export const resetUserComplete = async () => {
+  // Reset PostHog
+  if (posthogInitialized) {
+    posthog.reset();
+  }
+
+  // Reset Sentry
+  try {
+    const { clearUser } = await import('@/lib/logger');
+    clearUser();
+  } catch (error) {
+    console.warn('Failed to clear user in Sentry:', error);
+  }
+};
+
+/**
  * Reset user identification (e.g., on logout)
+ * For complete reset (PostHog + Sentry), use resetUserComplete
  */
 export const resetUser = () => {
   if (!posthogInitialized) return;
@@ -137,7 +195,9 @@ export const getPostHog = () => {
 export default {
   init: initPostHog,
   identify: identifyUser,
+  identifyComplete: identifyUserComplete,
   reset: resetUser,
+  resetComplete: resetUserComplete,
   track,
   trackPageView,
   setUserProperties,

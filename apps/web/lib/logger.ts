@@ -146,6 +146,39 @@ const log = (
 };
 
 /**
+ * Set user identification for Sentry
+ */
+export const setUser = (user: {
+  id: string;
+  email?: string;
+  name?: string;
+  [key: string]: string | number | boolean | undefined;
+}) => {
+  try {
+    const { id, email, name, ...rest } = user;
+    Sentry.setUser({
+      id,
+      email,
+      username: name,
+      ...rest,
+    });
+  } catch (error) {
+    console.warn('Failed to set user in Sentry:', error);
+  }
+};
+
+/**
+ * Clear user identification from Sentry (e.g., on logout)
+ */
+export const clearUser = () => {
+  try {
+    Sentry.setUser(null);
+  } catch (error) {
+    console.warn('Failed to clear user in Sentry:', error);
+  }
+};
+
+/**
  * Comprehensive logger with multiple destinations:
  * - Console: All levels
  * - Sentry: Warnings and errors
