@@ -27,9 +27,23 @@ export const PostHogProvider = ({ children }: PostHogProviderProps) => {
   useEffect(() => {
     if (pathname) {
       const url = window.location.href;
+
+      // Capture UTM parameters for marketing attribution
+      const utmSource = searchParams?.get('utm_source');
+      const utmMedium = searchParams?.get('utm_medium');
+      const utmCampaign = searchParams?.get('utm_campaign');
+      const utmContent = searchParams?.get('utm_content');
+      const utmTerm = searchParams?.get('utm_term');
+
       trackPageView(url, {
         pathname,
         search: searchParams?.toString(),
+        // Include UTM params if present
+        ...(utmSource && { utm_source: utmSource }),
+        ...(utmMedium && { utm_medium: utmMedium }),
+        ...(utmCampaign && { utm_campaign: utmCampaign }),
+        ...(utmContent && { utm_content: utmContent }),
+        ...(utmTerm && { utm_term: utmTerm }),
       });
     }
   }, [pathname, searchParams]);
