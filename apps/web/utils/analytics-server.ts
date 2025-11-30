@@ -27,6 +27,12 @@ export const track = async <TEvent extends TrackingEvent>(
   properties: EventProperties[TEvent],
 ) => {
   try {
+    // Skip tracking during pre-rendering/static generation
+    // During static generation, dynamic APIs like headers() aren't available
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return;
+    }
+
     // Automatically get user info from server session
     const userId = await getUserId('track analytics event');
     const user = userId ? await getCurrentUser() : null;

@@ -2,15 +2,15 @@ import NextAuth from 'next-auth';
 import type { Profile, Account, User, Session } from '@auth/core/types';
 import type { AdapterUser } from '@auth/core/adapters';
 import GoogleProvider from 'next-auth/providers/google';
-import FacebookProvider from 'next-auth/providers/facebook';
-import AppleProvider from 'next-auth/providers/apple';
-import Resend from 'next-auth/providers/resend';
+// import FacebookProvider from 'next-auth/providers/facebook';
+// import AppleProvider from 'next-auth/providers/apple';
+// import Resend from 'next-auth/providers/resend';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from '@auntie-marlenes/db';
-import { render } from '@react-email/render';
-import MagicLinkEmail from '@/components/emails/MagicLinkEmail';
-import resendClient from '@/lib/resend';
-import { generateAppleClientSecret } from '@/lib/apple';
+// import { render } from '@react-email/render';
+// import MagicLinkEmail from '@/components/emails/MagicLinkEmail';
+// import resendClient from '@/lib/resend';
+// import { generateAppleClientSecret } from '@/lib/apple';
 
 type AppleProfile = Profile & {
   user?: {
@@ -19,6 +19,7 @@ type AppleProfile = Profile & {
   };
 };
 
+// Uncomment when Apple auth is enabled
 // const clientSecret = await generateAppleClientSecret({
 //   teamId: process.env.APPLE_TEAM_ID as string,
 //   keyId: process.env.APPLE_KEY_ID as string,

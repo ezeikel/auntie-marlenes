@@ -48,14 +48,12 @@ async function CachedSaleProducts({
   }
 
   // Fetch products on sale (compareAtPrice > price) with user's country for pricing
-  // Skip tracking in cached context - headers() isn't available
   const products = await searchProducts({
     sortKey,
     reverse,
     first: 50,
     onSale: true, // Filter for products with compareAtPrice
     countryCode: country,
-    skipTracking: true,
   });
 
   return (
