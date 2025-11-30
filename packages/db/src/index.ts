@@ -1,6 +1,6 @@
 // Re-export the Prisma client
 export { db } from './client';
-export * from '@prisma/client';
+export * from './generated/prisma/client';
 
 // Re-export Prisma types
 export { Prisma } from './client';
@@ -9,4 +9,4 @@ export { Prisma } from './client';
 export type {
   User as DbUserType,
   SavedItem as DbSavedItemType,
-} from '@prisma/client';
+} from './generated/prisma/client';

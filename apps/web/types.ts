@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import type { User } from '@auntie-marlenes/db';
 import { TRACKING_EVENTS } from '@/constants/events';
 
 export enum SignInMethod {
