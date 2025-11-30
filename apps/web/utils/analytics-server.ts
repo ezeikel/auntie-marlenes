@@ -1,160 +1,70 @@
-import { PostHog } from 'posthog-node';
-import { headers } from 'next/headers';
+import 'server-only';
 
-type EventProperties = Record<
-  string,
-  string | number | boolean | string[] | undefined
->;
-
-let posthogClient: PostHog | null = null;
+import { track as vercelTrackServer } from '@vercel/analytics/server';
+import type { EventProperties, TrackingEvent } from '@/types';
+import { posthogServer } from '@/lib/posthog-server';
+import { cleanVercelProperties } from '@/utils/analytics';
+import { getUserId, getCurrentUser } from '@/utils/user';
 
 /**
- * Get or initialize PostHog server client
+ *
+ * @param event - The name of the event to track (use TRACKING_EVENTS constants)
+ * @param properties - The properties associated with the event (type-safe)
+ *
+ * @example
+ * ```typescript
+ * // In server actions
+ * await track(TRACKING_EVENTS.CART_CREATED, {
+ *   cart_id: cart.id,
+ *   product_variant_id: variantId,
+ *   country_code: 'GB',
+ *   source: 'web'
+ * });
+ * ```
  */
-const getPostHogClient = () => {
-  if (posthogClient) return posthogClient;
-
-  const apiKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-  const apiHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
-
-  if (!apiKey) {
-    console.warn(
-      'PostHog API key not found. Server-side analytics will be disabled.',
-    );
-    return null;
-  }
-
-  posthogClient = new PostHog(apiKey, {
-    host: apiHost || 'https://us.i.posthog.com',
-    flushAt: 1, // Flush events immediately in serverless environments
-    flushInterval: 0,
-  });
-
-  return posthogClient;
-};
-
-/**
- * Get user ID from headers or session
- * This can be extended to use NextAuth or other auth systems
- */
-const getUserId = async (): Promise<string | null> => {
-  // For now, we'll use a distinct_id from cookies or headers
-  // This can be extended to use NextAuth session
-  const headersList = await headers();
-  const userId = headersList.get('x-user-id');
-
-  return userId || null;
-};
-
-/**
- * Get common properties from request headers
- */
-const getCommonProperties = async () => {
-  const headersList = await headers();
-
-  return {
-    $ip: headersList.get('x-forwarded-for') || headersList.get('x-real-ip'),
-    $user_agent: headersList.get('user-agent'),
-    $referrer: headersList.get('referer'),
-  };
-};
-
-/**
- * Track server-side events
- * @param eventName - Name of the event to track
- * @param properties - Event properties
- * @param distinctId - Optional distinct ID (user ID). If not provided, will attempt to get from session
- */
-export const trackServer = async (
-  eventName: string,
-  properties?: EventProperties,
-  distinctId?: string,
+export const track = async <TEvent extends TrackingEvent>(
+  event: TEvent,
+  properties: EventProperties[TEvent],
 ) => {
-  const client = getPostHogClient();
-  if (!client) return;
-
   try {
-    const userId = distinctId || (await getUserId());
-    const commonProps = await getCommonProperties();
+    // Automatically get user info from server session
+    const userId = await getUserId('track analytics event');
+    const user = userId ? await getCurrentUser() : null;
 
-    // If no user ID, use anonymous ID from cookie or generate one
-    const id = userId || `anonymous_${Date.now()}_${Math.random()}`;
+    const userProperties = user
+      ? {
+          email: user.email,
+          name: user.name,
+        }
+      : undefined;
 
-    client.capture({
-      distinctId: id,
-      event: eventName,
-      properties: {
-        ...commonProps,
-        ...properties,
-      },
-    });
-
-    // In serverless environments, we need to flush immediately
-    await client.flush();
-  } catch (error) {
-    console.error('Error tracking server event:', error);
-  }
-};
-
-/**
- * Identify a user on the server
- * @param userId - Unique identifier for the user
- * @param properties - User properties
- */
-export const identifyUserServer = async (
-  userId: string,
-  properties?: Record<string, string | number | boolean>,
-) => {
-  const client = getPostHogClient();
-  if (!client) return;
-
-  try {
-    client.identify({
-      distinctId: userId,
-      properties,
-    });
-
-    await client.flush();
-  } catch (error) {
-    console.error('Error identifying user on server:', error);
-  }
-};
-
-/**
- * Track page view on server
- * @param url - URL of the page
- * @param properties - Additional properties
- * @param distinctId - Optional distinct ID
- */
-export const trackPageViewServer = async (
-  url: string,
-  properties?: EventProperties,
-  distinctId?: string,
-) => {
-  await trackServer(
-    '$pageview',
-    {
-      $current_url: url,
+    const enrichedProperties = {
       ...properties,
-    },
-    distinctId,
-  );
-};
+      userId: userId || undefined,
+      environment: 'server',
+    };
 
-/**
- * Shutdown PostHog client (for cleanup)
- * Useful in API routes or server actions
- */
-export const shutdownPostHog = async () => {
-  if (posthogClient) {
-    await posthogClient.shutdown();
-    posthogClient = null;
+    if (posthogServer) {
+      if (userProperties && userId) {
+        posthogServer.identify({
+          distinctId: userId,
+          properties: userProperties,
+        });
+      }
+      posthogServer.capture({
+        distinctId: userId || 'anonymous',
+        event,
+        properties: enrichedProperties,
+      });
+      await posthogServer.shutdown();
+    }
+
+    await vercelTrackServer(event, cleanVercelProperties(enrichedProperties));
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Analytics Server]', event, enrichedProperties);
+    }
+  } catch (error) {
+    console.error('Server-side analytics tracking error:', error);
   }
-};
-
-export default {
-  track: trackServer,
-  identify: identifyUserServer,
-  trackPageView: trackPageViewServer,
-  shutdown: shutdownPostHog,
 };

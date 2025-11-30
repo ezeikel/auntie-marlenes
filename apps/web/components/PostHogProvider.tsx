@@ -1,50 +1,21 @@
 'use client';
 
 import { useEffect } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { trackPageView } from '@/utils/analytics-client';
+import posthog from 'posthog-js';
+import { PostHogProvider as PHProvider } from 'posthog-js/react';
 
 type PostHogProviderProps = {
   children: React.ReactNode;
 };
 
-/**
- * PostHog Provider Component
- *
- * Tracks page views automatically on route changes.
- * PostHog is initialized in instrumentation-client.ts.
- * Should be included high in the component tree, typically in the root layout.
- */
-export const PostHogProvider = ({ children }: PostHogProviderProps) => {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  // Track page views on route changes
+export function PostHogProvider({ children }: PostHogProviderProps) {
   useEffect(() => {
-    if (pathname) {
-      const url = window.location.href;
+    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      ui_host: 'https://eu.posthog.com',
+      defaults: '2025-05-24',
+    });
+  }, []);
 
-      // Capture UTM parameters for marketing attribution
-      const utmSource = searchParams?.get('utm_source');
-      const utmMedium = searchParams?.get('utm_medium');
-      const utmCampaign = searchParams?.get('utm_campaign');
-      const utmContent = searchParams?.get('utm_content');
-      const utmTerm = searchParams?.get('utm_term');
-
-      trackPageView(url, {
-        pathname,
-        search: searchParams?.toString(),
-        // Include UTM params if present
-        ...(utmSource && { utm_source: utmSource }),
-        ...(utmMedium && { utm_medium: utmMedium }),
-        ...(utmCampaign && { utm_campaign: utmCampaign }),
-        ...(utmContent && { utm_content: utmContent }),
-        ...(utmTerm && { utm_term: utmTerm }),
-      });
-    }
-  }, [pathname, searchParams]);
-
-  return <>{children}</>;
-};
-
-export default PostHogProvider;
+  return <PHProvider client={posthog}>{children}</PHProvider>;
+}

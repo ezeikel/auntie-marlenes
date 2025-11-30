@@ -63,12 +63,14 @@ async function CachedCategoryProducts({
   }
 
   // Fetch products filtered by category with user's country for pricing
+  // Skip tracking in cached context - headers() isn't available
   const products = await searchProducts({
     productType: categoryName,
     sortKey,
     reverse,
     first: 50,
     countryCode: country,
+    skipTracking: true,
   });
 
   return (

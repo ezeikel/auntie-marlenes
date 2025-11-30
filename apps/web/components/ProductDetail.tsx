@@ -33,7 +33,8 @@ import {
 import AddToBagButton from './buttons/AddToBagButton/AddToBagButton';
 import { useSaved } from '@/contexts/saved';
 import { toast } from 'sonner';
-import { track } from '@/utils/analytics-client';
+import { useAnalytics } from '@/utils/analytics-client';
+import { TRACKING_EVENTS } from '@/constants/events';
 import { useLocation } from '@/contexts/LocationContext';
 import { getShippingZone } from '@/lib/location';
 import { ShippingInfo } from '@/components/ShippingInfo';
@@ -61,21 +62,19 @@ const ProductDetail = ({
   const { isSaved, toggleSave } = useSaved();
   const { country } = useLocation();
   const shippingZone = getShippingZone(country.code);
+  const { track } = useAnalytics();
 
   const images = product.images || [product.image];
   const productIsSaved = isSaved(product.id);
 
   // Track product view on mount
   useEffect(() => {
-    track('Product Viewed', {
+    track(TRACKING_EVENTS.PRODUCT_VIEWED, {
       product_id: product.id,
       product_name: product.name,
       product_handle: product.handle,
-      brand: product.brand,
-      category: product.category,
-      price: product.price,
-      currency_code: product.currencyCode,
-      in_stock: product.inStock,
+      product_category: product.category,
+      product_price: product.price,
     });
   }, [
     product.id,
@@ -100,13 +99,10 @@ const ProductDetail = ({
         await navigator.share(shareData);
 
         // Track successful native share
-        track('Product Shared', {
+        track(TRACKING_EVENTS.PRODUCT_SHARED, {
           product_id: product.id,
           product_name: product.name,
           product_handle: product.handle,
-          brand: product.brand,
-          price: product.price,
-          category: product.category,
           share_method: 'native',
         });
 
@@ -116,13 +112,10 @@ const ProductDetail = ({
         await navigator.clipboard.writeText(shareData.url);
 
         // Track clipboard copy
-        track('Product Shared', {
+        track(TRACKING_EVENTS.PRODUCT_SHARED, {
           product_id: product.id,
           product_name: product.name,
           product_handle: product.handle,
-          brand: product.brand,
-          price: product.price,
-          category: product.category,
           share_method: 'clipboard',
         });
 
@@ -132,7 +125,7 @@ const ProductDetail = ({
       // User cancelled or error occurred
       if (error instanceof Error && error.name !== 'AbortError') {
         // Track share failure
-        track('Product Share Failed', {
+        track(TRACKING_EVENTS.PRODUCT_SHARE_FAILED, {
           product_id: product.id,
           product_name: product.name,
           error_name: error.name,

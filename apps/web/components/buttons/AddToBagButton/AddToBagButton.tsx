@@ -9,7 +9,8 @@ import {
   addProductsToCart,
 } from '@/app/actions';
 import { useRouter } from 'next/navigation';
-import { track } from '@/utils/analytics-client';
+import { useAnalytics } from '@/utils/analytics-client';
+import { TRACKING_EVENTS } from '@/constants/events';
 import { logger } from '@/lib/logger';
 
 type AddToBagButtonProps = {
@@ -30,6 +31,7 @@ const AddToBagButton = ({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const { track } = useAnalytics();
 
   const handleAddToBag = () => {
     console.log('🛒 [AddToBag] Button clicked!', {
@@ -38,7 +40,7 @@ const AddToBagButton = ({
     });
 
     // Track add to bag initiated
-    track('Add to Bag Clicked', {
+    track(TRACKING_EVENTS.ADD_TO_BAG_CLICKED, {
       product_id: productId,
       selected_options: JSON.stringify(selectedOptions),
     });
@@ -62,7 +64,7 @@ const AddToBagButton = ({
           console.error('❌ [AddToBag] No variant found for product');
 
           // Track failure
-          track('Add to Bag Failed', {
+          track(TRACKING_EVENTS.ADD_TO_BAG_FAILED, {
             product_id: productId,
             selected_options: JSON.stringify(selectedOptions),
             error: 'No variant found for product',
@@ -101,11 +103,10 @@ const AddToBagButton = ({
         }
 
         // Track success
-        track('Product Added to Bag', {
+        track(TRACKING_EVENTS.PRODUCT_ADDED_TO_BAG, {
           product_id: productId,
           variant_id: productVariantId,
           selected_options: JSON.stringify(selectedOptions),
-          cart_action: cart ? 'added_to_existing' : 'created_new_cart',
         });
 
         logger.info('Product added to bag', {
@@ -128,7 +129,7 @@ const AddToBagButton = ({
         setError('Failed to add item to bag');
 
         // Track error
-        track('Add to Bag Failed', {
+        track(TRACKING_EVENTS.ADD_TO_BAG_FAILED, {
           product_id: productId,
           selected_options: JSON.stringify(selectedOptions),
           error: err instanceof Error ? err.message : 'Unknown error',

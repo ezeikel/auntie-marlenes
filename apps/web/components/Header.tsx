@@ -27,7 +27,8 @@ import AccountPopover from './AccountPopover';
 import { navLinks } from '@/lib/constants';
 import { useSession } from '@/hooks/useSession';
 import { signOut as nextAuthSignOut } from 'next-auth/react';
-import { track } from '@/utils/analytics-client';
+import { useAnalytics } from '@/utils/analytics-client';
+import { TRACKING_EVENTS } from '@/constants/events';
 
 type HeaderProps = {
   bagSlot?: React.ReactNode;
@@ -41,6 +42,7 @@ const Header = ({ bagSlot }: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [accountOpen, setAccountOpen] = useState(false);
+  const { track } = useAnalytics();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +50,7 @@ const Header = ({ bagSlot }: HeaderProps) => {
 
     if (trimmedQuery) {
       // Track search
-      track('Search Submitted', {
+      track(TRACKING_EVENTS.SEARCH_SUBMITTED, {
         search_query: trimmedQuery,
         search_query_length: trimmedQuery.length,
         search_source: 'header',

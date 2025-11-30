@@ -20,17 +20,23 @@ async function CachedBundleDeals({ country }: { country: string }) {
   cacheTag('bundle-deals'); // Tag for webhook invalidation
 
   // Get products on sale (with compareAtPrice)
+  // Skip tracking in cached context - headers() isn't available
   const saleProducts = await searchProducts({
     onSale: true,
     first: 6,
     countryCode: country,
+    skipTracking: true,
   });
 
   // If no sale products, get first 6 products
   const bundleProducts =
     saleProducts.length > 0
       ? saleProducts
-      : await searchProducts({ first: 6, countryCode: country });
+      : await searchProducts({
+          first: 6,
+          countryCode: country,
+          skipTracking: true,
+        });
 
   return (
     <section className="py-16 sm:py-24 bg-white">

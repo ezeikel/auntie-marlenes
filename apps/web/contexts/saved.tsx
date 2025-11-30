@@ -22,10 +22,18 @@ export function SavedProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useSaved() {
+export function useSaved(): SavedContextType {
   const context = useContext(SavedContext);
+
+  // Return safe defaults during SSR or before provider mounts
   if (!context) {
-    throw new Error('useSaved must be used within SavedProvider');
+    return {
+      savedItems: [],
+      isSaved: () => false,
+      toggleSave: async () => {},
+      isPending: false,
+    };
   }
+
   return context;
 }

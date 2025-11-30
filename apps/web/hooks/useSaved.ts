@@ -18,7 +18,8 @@ import {
   addLocalSave,
   removeLocalSave,
 } from '@/lib/localStorage-saves';
-import { track } from '@/utils/analytics-client';
+import { useAnalytics } from '@/utils/analytics-client';
+import { TRACKING_EVENTS } from '@/constants/events';
 import { logger } from '@/lib/logger';
 
 export function useSaved() {
@@ -27,6 +28,8 @@ export function useSaved() {
   const [localSaves, setLocalSaves] = useState<string[]>([]);
   const [dbSaves, setDbSaves] = useState<string[]>([]);
   const [isMounted, setIsMounted] = useState(false);
+
+  const { track } = useAnalytics();
 
   // Wait for client-side mount before accessing localStorage
   useEffect(() => {
@@ -73,7 +76,7 @@ export function useSaved() {
           removeLocalSave(productId);
 
           // Track unsave
-          track('Product Unsaved', {
+          track(TRACKING_EVENTS.PRODUCT_UNSAVED, {
             product_id: productId,
             is_authenticated: isAuthenticated,
             storage_location: isAuthenticated ? 'database' : 'local_storage',
@@ -96,7 +99,7 @@ export function useSaved() {
               setLocalSaves(getLocalSaves());
 
               // Track failure
-              track('Product Unsave Failed', {
+              track(TRACKING_EVENTS.PRODUCT_UNSAVE_FAILED, {
                 product_id: productId,
                 error: error instanceof Error ? error.message : 'Unknown error',
               });
@@ -117,7 +120,7 @@ export function useSaved() {
           addLocalSave(productId);
 
           // Track save
-          track('Product Saved', {
+          track(TRACKING_EVENTS.PRODUCT_SAVED, {
             product_id: productId,
             is_authenticated: isAuthenticated,
             storage_location: isAuthenticated ? 'database' : 'local_storage',
@@ -140,7 +143,7 @@ export function useSaved() {
               setLocalSaves(getLocalSaves());
 
               // Track failure
-              track('Product Save Failed', {
+              track(TRACKING_EVENTS.PRODUCT_SAVE_FAILED, {
                 product_id: productId,
                 error: error instanceof Error ? error.message : 'Unknown error',
               });

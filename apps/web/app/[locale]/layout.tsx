@@ -50,29 +50,30 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
   };
 
   return (
-    <Suspense fallback={null}>
-      <Providers messages={messages} locale={locale}>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationSchema),
-          }}
-        />
-        <SavedItemsSync />
-        <Suspense fallback={<div className="h-8 bg-deep-earth" />}>
-          <AnnouncementBanner />
-        </Suspense>
-        <Suspense fallback={<div className="h-20" />}>
-          <Header />
-        </Suspense>
-        <main lang={locale}>{children}</main>
-        <Suspense fallback={<div className="h-64 bg-deep-earth" />}>
-          <Footer />
-        </Suspense>
-      </Providers>
-    </Suspense>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(organizationSchema),
+        }}
+      />
+      <Suspense fallback={null}>
+        <Providers messages={messages} locale={locale}>
+          <SavedItemsSync />
+          <Suspense fallback={<div className="h-8 bg-deep-earth" />}>
+            <AnnouncementBanner />
+          </Suspense>
+          <Suspense fallback={<div className="h-20" />}>
+            <Header />
+          </Suspense>
+          <main lang={locale}>{children}</main>
+          <Suspense fallback={<div className="h-64 bg-deep-earth" />}>
+            <Footer />
+          </Suspense>
+        </Providers>
+      </Suspense>
+    </>
   );
 };
 
 export default LocaleLayout;
-

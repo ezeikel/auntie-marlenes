@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -13,6 +11,7 @@ import {
 } from '@fortawesome/free-brands-svg-icons';
 import { faArrowRight } from '@fortawesome/pro-regular-svg-icons';
 import { socialLinks } from '@/lib/constants';
+import { cacheLife, cacheTag } from 'next/cache';
 
 const iconMap = {
   whatsapp: faWhatsapp,
@@ -21,6 +20,20 @@ const iconMap = {
   facebook: faFacebook,
   youtube: faYoutube,
 };
+
+async function CachedCopyright() {
+  'use cache';
+  cacheLife('max'); // Cache for 30 days, revalidate monthly (ideal for annual data)
+  cacheTag('footer'); // Tag for webhook invalidation
+
+  const year = new Date().getFullYear();
+
+  return (
+    <p className="text-center md:text-left text-white/80">
+      &copy; {year} Auntie Marlene's. All rights reserved.
+    </p>
+  );
+}
 
 const Footer = () => {
   return (
@@ -195,10 +208,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/20">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm font-inter">
-            <p className="text-center md:text-left text-white/80">
-              &copy; {new Date().getFullYear()} Auntie Marlene's. All rights
-              reserved.
-            </p>
+            <CachedCopyright />
             <p className="text-center text-white/80">
               Made with{' '}
               <span className="text-terracotta font-bold text-lg">♡</span> in{' '}

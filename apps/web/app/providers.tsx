@@ -8,7 +8,6 @@ import { UIContextProvider } from '@/contexts/ui';
 import { SavedProvider } from '@/contexts/saved';
 import { LocationProvider } from '@/contexts/LocationContext';
 import { PostHogProvider } from '@/components/PostHogProvider';
-import { UserIdentifier } from '@/components/UserIdentifier';
 
 type ProvidersProps = {
   children: React.ReactNode;
@@ -18,25 +17,24 @@ type ProvidersProps = {
 
 const Providers = ({ children, messages, locale }: ProvidersProps) => {
   return (
-    <NextIntlClientProvider messages={messages} locale={locale}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="light"
-        forcedTheme="light"
-        disableTransitionOnChange
-      >
-        <SessionProvider>
-          <PostHogProvider>
-            <UserIdentifier />
+    <PostHogProvider>
+      <NextIntlClientProvider messages={messages} locale={locale}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          forcedTheme="light"
+          disableTransitionOnChange
+        >
+          <SessionProvider>
             <LocationProvider>
               <UIContextProvider>
                 <SavedProvider>{children}</SavedProvider>
               </UIContextProvider>
             </LocationProvider>
-          </PostHogProvider>
-        </SessionProvider>
-      </ThemeProvider>
-    </NextIntlClientProvider>
+          </SessionProvider>
+        </ThemeProvider>
+      </NextIntlClientProvider>
+    </PostHogProvider>
   );
 };
 

@@ -98,7 +98,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
             // Identify user with PostHog
             if (response.user.id) {
               try {
-                posthog?.identify(response.user.id, {
+                posthog.identify(response.user.id, {
                   email: response.user.email,
                   name: response.user.name || null,
                 });
@@ -154,7 +154,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       // Identify user with PostHog
       if (response?.user?.id) {
         try {
-          posthog?.identify(response.user.id, {
+          posthog.identify(response.user.id, {
             email: response.user.email,
             name: response.user.name || null,
           });
@@ -217,7 +217,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       // Identify user with PostHog
       if (response?.user?.id) {
         try {
-          posthog?.identify(response.user.id, {
+          posthog.identify(response.user.id, {
             email: response.user.email,
             name: response.user.name || null,
           });
@@ -272,7 +272,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
         // Identify user with PostHog
         if (response?.user?.id) {
           try {
-            posthog?.identify(response.user.id, {
+            posthog.identify(response.user.id, {
               email: response.user.email,
               name: response.user.name || null,
             });

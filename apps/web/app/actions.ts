@@ -23,6 +23,8 @@ import {
   adaptShopifyProducts,
 } from '@/lib/shopify-adapter';
 import type { Product } from '@/lib/constants';
+import { track } from '@/utils/analytics-server';
+import { TRACKING_EVENTS } from '@/constants/events';
 
 export const getCartId = async () => {
   const cookieStore = await cookies();
@@ -127,6 +129,14 @@ export const createCart = async ({
   console.log('🛒 [SERVER] Cookie set, revalidating cache...');
   // update cache - immediate invalidation (no profile for instant expiration)
   revalidateTag('cart', undefined as any);
+
+  // Track cart creation event
+  await track(TRACKING_EVENTS.CART_CREATED, {
+    cart_id: cart.id,
+    product_variant_id: productVariantId,
+    country_code: countryCode,
+    source: 'web',
+  });
 
   console.log('✅ [SERVER] createCart complete!');
   return cart;
@@ -285,6 +295,13 @@ export const addProductsToCart = async ({
   // update cache - immediate invalidation (no profile for instant expiration)
   revalidateTag('cart', undefined as any);
 
+  // Track product added to cart event
+  await track(TRACKING_EVENTS.PRODUCT_ADDED_TO_CART, {
+    cart_id: cartId,
+    product_variant_id: productVariantId,
+    source: 'web',
+  });
+
   return updatedCart;
 };
 
@@ -343,6 +360,13 @@ export const removeProductFromCart = async ({
   // update cache - immediate invalidation (no profile for instant expiration)
   revalidateTag('cart', undefined as any);
 
+  // Track product removed from cart event
+  await track(TRACKING_EVENTS.PRODUCT_REMOVED_FROM_CART, {
+    cart_id: cartId,
+    line_ids: lineIds,
+    source: 'web',
+  });
+
   return updatedCart;
 };
 
@@ -388,6 +412,14 @@ export const updateCartLineQuantity = async ({
   // update cache - immediate invalidation (no profile for instant expiration)
   revalidateTag('cart', undefined as any);
 
+  // Track cart quantity updated event
+  await track(TRACKING_EVENTS.CART_QUANTITY_UPDATED, {
+    cart_id: cartId,
+    line_id: lineId,
+    quantity,
+    source: 'web',
+  });
+
   return updatedCart;
 };
 
@@ -422,12 +454,19 @@ export const getProduct = async ({
   return adaptShopifyProduct(product);
 };
 
-export const getProductByHandle = async ({ handle, countryCode = 'GB' }: { handle: string; countryCode?: string }): Promise<Product> => {
+export const getProductByHandle = async ({
+  handle,
+  countryCode = 'GB',
+}: {
+  handle: string;
+  countryCode?: string;
+}): Promise<Product> => {
   // Use caching for default country (GB) to enable static generation
   // Use no-store for non-GB countries (dynamic, user-specific)
-  const cacheStrategy = countryCode === 'GB'
-    ? { cache: 'force-cache' as RequestCache, next: { revalidate: 3600 } } // Cache for 1 hour
-    : { cache: 'no-store' as RequestCache }; // Dynamic for other countries
+  const cacheStrategy =
+    countryCode === 'GB'
+      ? { cache: 'force-cache' as RequestCache, next: { revalidate: 3600 } } // Cache for 1 hour
+      : { cache: 'no-store' as RequestCache }; // Dynamic for other countries
 
   const res = await fetch(
     process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
@@ -457,12 +496,15 @@ export const getProductByHandle = async ({ handle, countryCode = 'GB' }: { handl
   return adaptShopifyProduct(productByHandle);
 };
 
-export const getProducts = async (countryCode: string = 'GB'): Promise<Product[]> => {
+export const getProducts = async (
+  countryCode: string = 'GB',
+): Promise<Product[]> => {
   // Use caching for default country (GB) to enable static generation
   // Use no-store for non-GB countries (dynamic, user-specific)
-  const cacheStrategy = countryCode === 'GB'
-    ? { cache: 'force-cache' as RequestCache, next: { revalidate: 3600 } } // Cache for 1 hour
-    : { cache: 'no-store' as RequestCache }; // Dynamic for other countries
+  const cacheStrategy =
+    countryCode === 'GB'
+      ? { cache: 'force-cache' as RequestCache, next: { revalidate: 3600 } } // Cache for 1 hour
+      : { cache: 'no-store' as RequestCache }; // Dynamic for other countries
 
   const res = await fetch(
     process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
@@ -531,6 +573,13 @@ export const addProductToSaved = async ({
   // Revalidate save counts and user's saved items
   revalidateTag('saved-counts', undefined as any);
   revalidateTag(`saved-${userId}`, undefined as any);
+
+  // Track product saved event
+  await track(TRACKING_EVENTS.PRODUCT_SAVED, {
+    product_id: productId,
+    user_id: userId,
+    source: 'web',
+  });
 };
 
 export const removeProductFromSaved = async ({
@@ -567,6 +616,13 @@ export const removeProductFromSaved = async ({
   // Revalidate save counts and user's saved items
   revalidateTag('saved-counts', undefined as any);
   revalidateTag(`saved-${userId}`, undefined as any);
+
+  // Track product unsaved event
+  await track(TRACKING_EVENTS.PRODUCT_UNSAVED, {
+    product_id: productId,
+    user_id: userId,
+    source: 'web',
+  });
 };
 
 export const getSaved = async (): Promise<string[]> => {
@@ -648,6 +704,7 @@ export const searchProducts = async ({
   first = 20,
   onSale,
   countryCode = 'GB',
+  skipTracking = false,
 }: {
   query?: string;
   productType?: string;
@@ -657,6 +714,8 @@ export const searchProducts = async ({
   first?: number;
   onSale?: boolean;
   countryCode?: string;
+  /** Skip analytics tracking - use in cached contexts where dynamic data (headers) isn't available */
+  skipTracking?: boolean;
 }): Promise<Product[]> => {
   // Build Shopify search query string
   let searchQuery = '';
@@ -690,9 +749,10 @@ export const searchProducts = async ({
 
   // Use caching for default country (GB) to enable static generation
   // Use no-store for non-GB countries (dynamic, user-specific)
-  const cacheStrategy = countryCode === 'GB'
-    ? { cache: 'force-cache' as RequestCache, next: { revalidate: 3600 } } // Cache for 1 hour
-    : { cache: 'no-store' as RequestCache }; // Dynamic for other countries
+  const cacheStrategy =
+    countryCode === 'GB'
+      ? { cache: 'force-cache' as RequestCache, next: { revalidate: 3600 } } // Cache for 1 hour
+      : { cache: 'no-store' as RequestCache }; // Dynamic for other countries
 
   const res = await fetch(
     process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
@@ -720,9 +780,7 @@ export const searchProducts = async ({
     JSON.stringify(products.edges[0]?.node, null, 2),
   );
 
-  const shopifyProducts = products.edges.map(
-    (edge: ProductEdge) => edge.node,
-  );
+  const shopifyProducts = products.edges.map((edge: ProductEdge) => edge.node);
   let adaptedProducts = adaptShopifyProducts(shopifyProducts);
 
   console.log(
@@ -736,6 +794,21 @@ export const searchProducts = async ({
       (product) =>
         product.compareAtPrice && product.compareAtPrice > product.price,
     );
+  }
+
+  // Track product search event (skip in cached contexts where headers() isn't available)
+  if (!skipTracking) {
+    await track(TRACKING_EVENTS.PRODUCT_SEARCH, {
+      query: query || '',
+      product_type: productType,
+      vendor,
+      sort_key: sortKey,
+      reverse,
+      on_sale: onSale,
+      country_code: countryCode,
+      results_count: adaptedProducts.length,
+      source: 'web',
+    });
   }
 
   return adaptedProducts;
@@ -905,6 +978,16 @@ export const syncLocalSavesToDB = async ({
     // Revalidate caches
     revalidateTag('saved-counts', undefined as any);
     revalidateTag(`saved-${userId}`, undefined as any);
+
+    // Track saved items synced event
+    if (newIds.length > 0) {
+      await track(TRACKING_EVENTS.SAVED_ITEMS_SYNCED, {
+        user_id: userId,
+        product_ids: newIds,
+        synced_count: newIds.length,
+        source: 'web',
+      });
+    }
 
     return { success: true, synced: newIds.length };
   } catch (error) {

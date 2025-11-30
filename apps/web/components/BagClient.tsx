@@ -34,7 +34,8 @@ import { useLocation } from '@/contexts/LocationContext';
 import { getShippingZone } from '@/lib/location';
 import { ShippingInfo } from '@/components/ShippingInfo';
 import { ukShipping } from '@/config/shipping';
-import { track } from '@/utils/analytics-client';
+import { useAnalytics } from '@/utils/analytics-client';
+import { TRACKING_EVENTS } from '@/constants/events';
 import { logger } from '@/lib/logger';
 import { useEffect } from 'react';
 
@@ -57,36 +58,33 @@ export default function BagClient({
   const [isPending, startTransition] = useTransition();
   const { country } = useLocation();
   const shippingZone = getShippingZone(country.code);
+  const { track } = useAnalytics();
 
   // Get currency code from cart
   const cartCurrency = cart?.cost?.subtotalAmount?.currencyCode || 'GBP';
 
   // Track cart view on mount
   useEffect(() => {
-    if (cart && cart.lines?.length > 0) {
-      track('Cart Viewed', {
+    if (cart && cart.lines?.edges?.length > 0) {
+      track(TRACKING_EVENTS.CART_VIEWED, {
         cart_id: cart.id,
-        item_count: cart.totalQuantity || cart.lines.length,
+        item_count: cart.totalQuantity || cart.lines.edges.length,
         cart_value: subtotal,
         currency: cartCurrency,
-        delivery_fee: deliveryFee,
-        total_value: total,
       });
 
       logger.info('Cart viewed', {
         cartId: cart.id,
-        itemCount: cart.totalQuantity || cart.lines.length,
+        itemCount: cart.totalQuantity || cart.lines.edges.length,
         cartValue: subtotal,
       });
     }
   }, [
     cart.id,
     cart.totalQuantity,
-    cart.lines.length,
+    cart.lines?.edges?.length,
     subtotal,
     cartCurrency,
-    deliveryFee,
-    total,
   ]);
 
   const handleRemoveItem = async (lineId: string) => {
@@ -122,24 +120,16 @@ export default function BagClient({
 
   const handleCheckout = () => {
     // Track checkout initiation
-    track('Checkout Started', {
+    track(TRACKING_EVENTS.CHECKOUT_STARTED, {
       cart_id: cart.id,
-      item_count: cart.totalQuantity || cart.lines?.length || 0,
+      item_count: cart.totalQuantity || cart.lines?.edges?.length || 0,
       cart_value: subtotal,
       currency: cartCurrency,
-      delivery_fee: deliveryFee,
-      total_value: total,
-      products: cart.lines?.map((line: any) => ({
-        product_id: line.merchandise.product.id,
-        variant_id: line.merchandise.id,
-        quantity: line.quantity,
-        price: parseFloat(line.merchandise.price.amount),
-      })),
     });
 
     logger.info('Checkout started', {
       cartId: cart.id,
-      itemCount: cart.totalQuantity || cart.lines?.length,
+      itemCount: cart.totalQuantity || cart.lines?.edges?.length,
       totalValue: total,
     });
 

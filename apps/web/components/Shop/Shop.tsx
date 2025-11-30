@@ -54,11 +54,13 @@ async function CachedProductList({
   }
 
   // Fetch all products from Shopify with user's country for pricing
+  // Skip tracking in cached context - headers() isn't available
   const products = await searchProducts({
     sortKey,
     reverse,
     first: 50, // Fetch more products for shop page
     countryCode: country,
+    skipTracking: true,
   });
 
   return (

@@ -10,7 +10,8 @@ import {
   getCurrencyForCountry,
 } from '@/lib/location';
 import { updateCartCountryCode, setCountryCookie } from '@/app/actions';
-import { track } from '@/utils/analytics-client';
+import { useAnalytics } from '@/utils/analytics-client';
+import { TRACKING_EVENTS } from '@/constants/events';
 import { logger } from '@/lib/logger';
 
 type LocationContextType = {
@@ -39,6 +40,7 @@ export const LocationProvider = ({
     getDefaultCountry().currency,
   );
   const [isLoading, setIsLoading] = useState(true);
+  const { track } = useAnalytics();
 
   // Load saved preferences from localStorage on mount
   useEffect(() => {
@@ -93,7 +95,7 @@ export const LocationProvider = ({
     });
 
     // Track country change
-    track('Country Changed', {
+    track(TRACKING_EVENTS.COUNTRY_CHANGED, {
       previous_country: previousCountry,
       new_country: newCountry.code,
       previous_currency: currency.code,
@@ -158,7 +160,7 @@ export const LocationProvider = ({
     const previousCurrency = currency.code;
 
     // Track currency change
-    track('Currency Changed', {
+    track(TRACKING_EVENTS.CURRENCY_CHANGED, {
       previous_currency: previousCurrency,
       new_currency: newCurrency.code,
       country: country.code,

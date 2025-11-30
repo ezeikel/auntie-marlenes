@@ -2,7 +2,8 @@ import { redirect } from 'next/navigation';
 import DynamicProductListing from '@/components/DynamicProductListing';
 import { searchProducts } from '@/app/actions';
 import { getServerCountry } from '@/lib/server-location';
-import { trackServer } from '@/utils/analytics-server';
+import { track } from '@/utils/analytics-server';
+import { TRACKING_EVENTS } from '@/constants/events';
 
 type SearchProps = {
   searchParams: Promise<{
@@ -63,13 +64,10 @@ const Search = async ({ searchParams }: SearchProps) => {
   });
 
   // Track search results (server-side)
-  await trackServer('Search Results Loaded', {
+  await track(TRACKING_EVENTS.SEARCH_RESULTS_LOADED, {
     search_query: query,
     results_count: products.length,
     has_results: products.length > 0,
-    is_zero_results: products.length === 0,
-    sort_key: sortKey,
-    country: country,
   });
 
   return (
