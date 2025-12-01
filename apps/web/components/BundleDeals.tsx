@@ -9,12 +9,18 @@ import {
 } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { getServerCountry } from '@/lib/server-location';
+import { getServerCountry, getServerUserId } from '@/lib/server-location';
 import { cacheLife, cacheTag } from 'next/cache';
 
 // Cached component that fetches bundle/sale products
 // Country becomes part of the cache key automatically
-async function CachedBundleDeals({ country }: { country: string }) {
+async function CachedBundleDeals({
+  country,
+  userId,
+}: {
+  country: string;
+  userId?: string | null;
+}) {
   'use cache';
   cacheLife('days'); // Cache for 1 day
   cacheTag('bundle-deals'); // Tag for webhook invalidation
@@ -24,6 +30,7 @@ async function CachedBundleDeals({ country }: { country: string }) {
     onSale: true,
     first: 6,
     countryCode: country,
+    userId, // Pass userId for analytics tracking
   });
 
   // If no sale products, get first 6 products
@@ -33,6 +40,7 @@ async function CachedBundleDeals({ country }: { country: string }) {
       : await searchProducts({
           first: 6,
           countryCode: country,
+          userId, // Pass userId for analytics tracking
         });
 
   return (
@@ -105,8 +113,9 @@ async function CachedBundleDeals({ country }: { country: string }) {
 // Main component that extracts country and passes to cached component
 const BundleDeals = async () => {
   const country = await getServerCountry();
+  const userId = await getServerUserId();
 
-  return <CachedBundleDeals country={country} />;
+  return <CachedBundleDeals country={country} userId={userId} />;
 };
 
 export default BundleDeals;

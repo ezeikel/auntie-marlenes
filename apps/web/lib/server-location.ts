@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { connection } from 'next/server';
+import { getUserId } from '@/utils/user';
 
 /**
  * Get the user's country code from server-side context.
@@ -23,4 +24,29 @@ export async function getServerCountry(): Promise<string> {
   });
 
   return country;
+}
+
+/**
+ * Get the user's ID from server-side context.
+ * Reads from headers to identify the user.
+ * Returns null if user cannot be identified.
+ *
+ * This function should be called OUTSIDE of cached scopes
+ * and the result passed as an argument to cached components.
+ */
+export async function getServerUserId(): Promise<string | null> {
+  // Wait for incoming request - ensures dynamic rendering
+  await connection();
+
+  try {
+    const userId = await getUserId();
+    console.log(
+      '[server-location] User ID retrieved:',
+      userId ? 'Found' : 'Not found',
+    );
+    return userId;
+  } catch (error) {
+    console.log('[server-location] Could not retrieve user ID:', error);
+    return null;
+  }
 }

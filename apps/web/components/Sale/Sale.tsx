@@ -1,7 +1,7 @@
 import DynamicProductListing from '@/components/DynamicProductListing';
 import { searchProducts } from '@/app/actions';
 import { cacheLife, cacheTag } from 'next/cache';
-import { getServerCountry } from '@/lib/server-location';
+import { getServerCountry, getServerUserId } from '@/lib/server-location';
 
 type SaleProps = {
   searchParams: Promise<{ sort?: string }>;
@@ -12,9 +12,11 @@ type SaleProps = {
 async function CachedSaleProducts({
   sort,
   country,
+  userId,
 }: {
   sort?: string;
   country: string;
+  userId?: string | null;
 }) {
   'use cache';
   cacheLife('days'); // Cache for 1 day - products don't change often
@@ -54,6 +56,7 @@ async function CachedSaleProducts({
     first: 50,
     onSale: true, // Filter for products with compareAtPrice
     countryCode: country,
+    userId, // Pass userId for analytics tracking
   });
 
   return (
@@ -78,8 +81,11 @@ async function CachedSaleProducts({
 const Sale = async ({ searchParams }: SaleProps) => {
   const params = await searchParams;
   const country = await getServerCountry();
+  const userId = await getServerUserId();
 
-  return <CachedSaleProducts sort={params.sort} country={country} />;
+  return (
+    <CachedSaleProducts sort={params.sort} country={country} userId={userId} />
+  );
 };
 
 export default Sale;

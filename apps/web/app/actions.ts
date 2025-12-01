@@ -704,6 +704,7 @@ export const searchProducts = async ({
   first = 20,
   onSale,
   countryCode = 'GB',
+  userId,
 }: {
   query?: string;
   productType?: string;
@@ -713,6 +714,7 @@ export const searchProducts = async ({
   first?: number;
   onSale?: boolean;
   countryCode?: string;
+  userId?: string | null;
 }): Promise<Product[]> => {
   // Build Shopify search query string
   let searchQuery = '';
@@ -794,17 +796,21 @@ export const searchProducts = async ({
   }
 
   // Track product search event
-  await track(TRACKING_EVENTS.PRODUCT_SEARCH, {
-    query: query || '',
-    product_type: productType,
-    vendor,
-    sort_key: sortKey,
-    reverse,
-    on_sale: onSale,
-    country_code: countryCode,
-    results_count: adaptedProducts.length,
-    source: 'web',
-  });
+  await track(
+    TRACKING_EVENTS.PRODUCT_SEARCH,
+    {
+      query: query || '',
+      product_type: productType,
+      vendor,
+      sort_key: sortKey,
+      reverse,
+      on_sale: onSale,
+      country_code: countryCode,
+      results_count: adaptedProducts.length,
+      source: 'web',
+    },
+    userId,
+  );
 
   return adaptedProducts;
 };

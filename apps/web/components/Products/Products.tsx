@@ -3,7 +3,7 @@ import EmptyCategory from '@/components/EmptyCategory';
 import { searchProducts } from '@/app/actions';
 import { deslugify } from '@/lib/utils/slugify';
 import { cacheLife, cacheTag } from 'next/cache';
-import { getServerCountry } from '@/lib/server-location';
+import { getServerCountry, getServerUserId } from '@/lib/server-location';
 
 type ProductsProps = {
   params: Promise<{ locale?: string; category: string }>;
@@ -23,10 +23,12 @@ async function CachedCategoryProducts({
   categorySlug,
   sort,
   country,
+  userId,
 }: {
   categorySlug: string;
   sort?: string;
   country: string;
+  userId?: string | null;
 }) {
   'use cache';
   cacheLife('days'); // Cache for 1 day - products don't change often
@@ -69,6 +71,7 @@ async function CachedCategoryProducts({
     reverse,
     first: 50,
     countryCode: country,
+    userId, // Pass userId for analytics tracking
   });
 
   return (
@@ -98,12 +101,14 @@ const Products = async ({ params, searchParams }: ProductsProps) => {
   const { category: categorySlug } = await params;
   const searchParamsResolved = await searchParams;
   const country = await getServerCountry();
+  const userId = await getServerUserId();
 
   return (
     <CachedCategoryProducts
       categorySlug={categorySlug}
       sort={searchParamsResolved.sort}
       country={country}
+      userId={userId}
     />
   );
 };
