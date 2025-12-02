@@ -81,8 +81,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Revalidate cache
-    revalidateTag('saved-counts', undefined as any);
-    revalidateTag(`saved-${userId}`, undefined as any);
+    revalidateTag('saved-counts', 'max');
+    revalidateTag(`saved-${userId}`, 'max');
 
     return Response.json(
       { success: true },
@@ -136,8 +136,8 @@ export async function DELETE(request: NextRequest) {
     });
 
     // Revalidate cache
-    revalidateTag('saved-counts', undefined as any);
-    revalidateTag(`saved-${userId}`, undefined as any);
+    revalidateTag('saved-counts', 'max');
+    revalidateTag(`saved-${userId}`, 'max');
 
     return Response.json(
       { success: true },

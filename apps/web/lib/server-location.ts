@@ -39,7 +39,7 @@ export async function getServerUserId(): Promise<string | null> {
   await connection();
 
   try {
-    const userId = await getUserId();
+    const userId = await getUserId('get the current user');
     console.log(
       '[server-location] User ID retrieved:',
       userId ? 'Found' : 'Not found',

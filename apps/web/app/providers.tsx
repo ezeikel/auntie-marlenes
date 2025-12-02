@@ -13,12 +13,22 @@ type ProvidersProps = {
   children: React.ReactNode;
   messages?: AbstractIntlMessages;
   locale: string;
+  timeZone?: string;
 };
 
-const Providers = ({ children, messages, locale }: ProvidersProps) => {
+const Providers = ({
+  children,
+  messages,
+  locale,
+  timeZone,
+}: ProvidersProps) => {
   return (
     <PostHogProvider>
-      <NextIntlClientProvider messages={messages} locale={locale}>
+      <NextIntlClientProvider
+        messages={messages}
+        locale={locale}
+        timeZone={timeZone || 'Europe/London'}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

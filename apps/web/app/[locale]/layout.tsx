@@ -58,7 +58,7 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
         }}
       />
       <Suspense fallback={null}>
-        <Providers messages={messages} locale={locale}>
+        <Providers messages={messages} locale={locale} timeZone="Europe/London">
           <SavedItemsSync />
           <Suspense fallback={<div className="h-8 bg-deep-earth" />}>
             <AnnouncementBanner />

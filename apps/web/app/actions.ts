@@ -128,7 +128,7 @@ export const createCart = async ({
 
   console.log('🛒 [SERVER] Cookie set, revalidating cache...');
   // update cache - immediate invalidation (no profile for instant expiration)
-  revalidateTag('cart', undefined as any);
+  revalidateTag('cart', 'max');
 
   // Track cart creation event
   await track(TRACKING_EVENTS.CART_CREATED, {
@@ -184,7 +184,7 @@ export const updateCartBuyerIdentity = async ({
     throw new Error('Failed to update buyer identity');
   }
 
-  revalidateTag('cart', undefined as any);
+  revalidateTag('cart', 'max');
 
   return cart;
 };
@@ -237,7 +237,7 @@ export const updateCartCountryCode = async (countryCode: string) => {
     throw new Error('Failed to update cart country code');
   }
 
-  revalidateTag('cart', undefined as any);
+  revalidateTag('cart', 'max');
 
   return cart;
 };
@@ -293,7 +293,7 @@ export const addProductsToCart = async ({
   }
 
   // update cache - immediate invalidation (no profile for instant expiration)
-  revalidateTag('cart', undefined as any);
+  revalidateTag('cart', 'max');
 
   // Track product added to cart event
   await track(TRACKING_EVENTS.PRODUCT_ADDED_TO_CART, {
@@ -358,7 +358,7 @@ export const removeProductFromCart = async ({
   }
 
   // update cache - immediate invalidation (no profile for instant expiration)
-  revalidateTag('cart', undefined as any);
+  revalidateTag('cart', 'max');
 
   // Track product removed from cart event
   await track(TRACKING_EVENTS.PRODUCT_REMOVED_FROM_CART, {
@@ -410,7 +410,7 @@ export const updateCartLineQuantity = async ({
   }
 
   // update cache - immediate invalidation (no profile for instant expiration)
-  revalidateTag('cart', undefined as any);
+  revalidateTag('cart', 'max');
 
   // Track cart quantity updated event
   await track(TRACKING_EVENTS.CART_QUANTITY_UPDATED, {
@@ -571,8 +571,8 @@ export const addProductToSaved = async ({
   });
 
   // Revalidate save counts and user's saved items
-  revalidateTag('saved-counts', undefined as any);
-  revalidateTag(`saved-${userId}`, undefined as any);
+  revalidateTag('saved-counts', 'max');
+  revalidateTag(`saved-${userId}`, 'max');
 
   // Track product saved event
   await track(TRACKING_EVENTS.PRODUCT_SAVED, {
@@ -614,8 +614,8 @@ export const removeProductFromSaved = async ({
   });
 
   // Revalidate save counts and user's saved items
-  revalidateTag('saved-counts', undefined as any);
-  revalidateTag(`saved-${userId}`, undefined as any);
+  revalidateTag('saved-counts', 'max');
+  revalidateTag(`saved-${userId}`, 'max');
 
   // Track product unsaved event
   await track(TRACKING_EVENTS.PRODUCT_UNSAVED, {
@@ -977,8 +977,8 @@ export const syncLocalSavesToDB = async ({
     }
 
     // Revalidate caches
-    revalidateTag('saved-counts', undefined as any);
-    revalidateTag(`saved-${userId}`, undefined as any);
+    revalidateTag('saved-counts', 'max');
+    revalidateTag(`saved-${userId}`, 'max');
 
     // Track saved items synced event
     if (newIds.length > 0) {
