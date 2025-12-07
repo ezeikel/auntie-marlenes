@@ -106,6 +106,8 @@ export type EventProperties = {
     product_id: string;
     variant_id: string;
     selected_options: string;
+    product_name?: string;
+    product_price?: number;
   };
 
   // Save/Wishlist Events
@@ -187,5 +189,13 @@ export type EventProperties = {
     item_count?: number;
     cart_value?: number;
     currency?: string;
+  };
+  [TRACKING_EVENTS.CHECKOUT_COMPLETED]: {
+    order_id: string;
+    order_name: string;
+    total_amount: number;
+    currency: string;
+    customer_email: string;
+    item_count?: number;
   };
 };

@@ -78,8 +78,14 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
                   t.src=v;s=b.getElementsByTagName(e)[0];
                   s.parentNode.insertBefore(t,s)}(window, document,'script',
                   'https://connect.facebook.net/en_US/fbevents.js');
-                  fbq('init', '${pixelId}');
-                  fbq('track', 'PageView');
+
+                  // Check if pixel is already initialized
+                  if (!window.fbq.initialized) {
+                    window.fbq.initialized = true;
+                    fbq('init', '${pixelId}');
+                    ${process.env.NODE_ENV === 'development' ? "fbq('set', 'debug', true);" : ''}
+                    fbq('track', 'PageView');
+                  }
                 `,
               }}
             />

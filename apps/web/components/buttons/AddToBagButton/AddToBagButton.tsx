@@ -15,6 +15,8 @@ import { logger } from '@/lib/logger';
 
 type AddToBagButtonProps = {
   productId: string;
+  productName?: string;
+  productPrice?: number;
   selectedOptions?: Record<string, string>;
   onSuccess?: () => void;
   buttonText?: string;
@@ -23,6 +25,8 @@ type AddToBagButtonProps = {
 
 const AddToBagButton = ({
   productId,
+  productName,
+  productPrice,
   selectedOptions,
   onSuccess,
   buttonText = 'ADD TO BAG',
@@ -107,6 +111,8 @@ const AddToBagButton = ({
           product_id: productId,
           variant_id: productVariantId,
           selected_options: JSON.stringify(selectedOptions),
+          product_name: productName,
+          product_price: productPrice,
         });
 
         logger.info('Product added to bag', {

@@ -33,4 +33,5 @@ export const TRACKING_EVENTS = {
 
   // Checkout Events
   CHECKOUT_STARTED: 'checkout_started',
+  CHECKOUT_COMPLETED: 'checkout_completed',
 } as const;

@@ -34,15 +34,30 @@ const trackFacebookPixelEvent = <TEvent extends TrackingEvent>(
     switch (event) {
       case TRACKING_EVENTS.PRODUCT_ADDED_TO_CART:
       case TRACKING_EVENTS.PRODUCT_ADDED_TO_BAG: {
-        const props =
-          properties as EventProperties[typeof TRACKING_EVENTS.PRODUCT_ADDED_TO_CART];
+        // Handle both event types with their specific properties
+        let contentId: string;
+        let contentName: string | undefined;
+        let value: number | undefined;
+
+        if (event === TRACKING_EVENTS.PRODUCT_ADDED_TO_BAG) {
+          const bagProps =
+            properties as EventProperties[typeof TRACKING_EVENTS.PRODUCT_ADDED_TO_BAG];
+          contentId = bagProps.variant_id || bagProps.product_id;
+          contentName = bagProps.product_name;
+          value = bagProps.product_price;
+        } else {
+          const cartProps =
+            properties as EventProperties[typeof TRACKING_EVENTS.PRODUCT_ADDED_TO_CART];
+          contentId = cartProps.product_variant_id || cartProps.cart_id;
+        }
+
         trackAddToCart({
-          content_ids: [
-            props.product_variant_id || (properties as any).variant_id,
-          ],
+          content_ids: [contentId],
           content_type: 'product',
-          value: (properties as any).product_price,
+          content_name: contentName,
+          value: value,
           currency: 'GBP', // Default, should be dynamic based on cart
+          num_items: 1,
         });
         break;
       }

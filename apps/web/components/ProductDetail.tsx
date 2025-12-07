@@ -67,15 +67,34 @@ const ProductDetail = ({
   const images = product.images || [product.image];
   const productIsSaved = isSaved(product.id);
 
-  // Track product view on mount
+  // Track product view on mount - wait for pixel to be ready
   useEffect(() => {
-    track(TRACKING_EVENTS.PRODUCT_VIEWED, {
-      product_id: product.id,
-      product_name: product.name,
-      product_handle: product.handle,
-      product_category: product.category,
-      product_price: product.price,
-    });
+    let isMounted = true;
+
+    const trackProductView = async () => {
+      // Import dynamically to avoid SSR issues
+      const { waitForFacebookPixel } = await import('@/utils/facebook-pixel');
+
+      // Wait for pixel to be ready (will resolve immediately if already loaded)
+      await waitForFacebookPixel();
+
+      // Only track if component is still mounted (prevents duplicate tracking)
+      if (isMounted) {
+        track(TRACKING_EVENTS.PRODUCT_VIEWED, {
+          product_id: product.id,
+          product_name: product.name,
+          product_handle: product.handle,
+          product_category: product.category,
+          product_price: product.price,
+        });
+      }
+    };
+
+    trackProductView();
+
+    return () => {
+      isMounted = false;
+    };
   }, [
     product.id,
     product.name,
@@ -330,6 +349,8 @@ const ProductDetail = ({
               <div className="flex-1">
                 <AddToBagButton
                   productId={product.id}
+                  productName={product.name}
+                  productPrice={product.price}
                   selectedOptions={{
                     ...(selectedColor && { Color: selectedColor.name }),
                     ...(selectedSize && { Size: selectedSize }),

@@ -23,6 +23,36 @@ export const isFacebookPixelLoaded = (): boolean => {
 };
 
 /**
+ * Wait for Facebook Pixel to be loaded
+ * Returns a promise that resolves when the pixel is ready
+ */
+export const waitForFacebookPixel = (
+  maxAttempts = 20,
+  interval = 100,
+): Promise<void> => {
+  return new Promise((resolve) => {
+    let attempts = 0;
+
+    const checkPixel = () => {
+      if (isFacebookPixelLoaded()) {
+        resolve();
+      } else if (attempts < maxAttempts) {
+        attempts++;
+        setTimeout(checkPixel, interval);
+      } else {
+        // Resolve anyway after max attempts to not block the app
+        console.warn(
+          '[Facebook Pixel] Pixel did not load within expected time',
+        );
+        resolve();
+      }
+    };
+
+    checkPixel();
+  });
+};
+
+/**
  * Initialize Facebook Pixel (usually done in layout.tsx)
  * This is a helper function for reference, but initialization
  * should be done via Script component in layout.tsx
@@ -59,7 +89,16 @@ export const trackFacebookPixelEvent = (
   try {
     window.fbq?.('track', eventName, params);
     if (process.env.NODE_ENV === 'development') {
-      console.log('[Facebook Pixel] Tracked:', eventName, params);
+      console.log(
+        '%c[Facebook Pixel] Event Tracked',
+        'background: #4267B2; color: white; padding: 2px 6px; border-radius: 3px;',
+        '\nEvent:',
+        eventName,
+        '\nParameters:',
+        params,
+        '\nPixel Loaded:',
+        isFacebookPixelLoaded(),
+      );
     }
   } catch (error) {
     console.error('[Facebook Pixel] Error tracking event:', error);
@@ -86,7 +125,16 @@ export const trackFacebookPixelCustomEvent = (
   try {
     window.fbq?.('trackCustom', eventName, params);
     if (process.env.NODE_ENV === 'development') {
-      console.log('[Facebook Pixel] Tracked custom:', eventName, params);
+      console.log(
+        '%c[Facebook Pixel] Custom Event Tracked',
+        'background: #4267B2; color: white; padding: 2px 6px; border-radius: 3px;',
+        '\nEvent:',
+        eventName,
+        '\nParameters:',
+        params,
+        '\nPixel Loaded:',
+        isFacebookPixelLoaded(),
+      );
     }
   } catch (error) {
     console.error('[Facebook Pixel] Error tracking custom event:', error);
