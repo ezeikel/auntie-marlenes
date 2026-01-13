@@ -357,6 +357,80 @@ const generateBlogContent = async (
 };
 
 /**
+ * Parse inline markdown formatting and convert to Portable Text spans with marks
+ */
+function parseInlineMarkdown(text: string): any[] {
+  const spans: any[] = [];
+  let currentText = '';
+  let currentMarks: string[] = [];
+  let i = 0;
+
+  const flushSpan = () => {
+    if (currentText) {
+      spans.push({
+        _type: 'span',
+        _key: `span-${spans.length}`,
+        text: currentText,
+        marks: [...currentMarks],
+      });
+      currentText = '';
+    }
+  };
+
+  while (i < text.length) {
+    // Bold: **text**
+    if (text.slice(i, i + 2) === '**') {
+      flushSpan();
+      const endIndex = text.indexOf('**', i + 2);
+      if (endIndex !== -1) {
+        currentMarks.push('strong');
+        currentText = text.slice(i + 2, endIndex);
+        flushSpan();
+        currentMarks = currentMarks.filter((m) => m !== 'strong');
+        i = endIndex + 2;
+        continue;
+      }
+    }
+
+    // Italic: *text* (but not ** which is bold)
+    if (text[i] === '*' && text[i + 1] !== '*') {
+      flushSpan();
+      const endIndex = text.indexOf('*', i + 1);
+      if (endIndex !== -1 && text[endIndex + 1] !== '*') {
+        currentMarks.push('em');
+        currentText = text.slice(i + 1, endIndex);
+        flushSpan();
+        currentMarks = currentMarks.filter((m) => m !== 'em');
+        i = endIndex + 1;
+        continue;
+      }
+    }
+
+    // Inline code: `text`
+    if (text[i] === '`') {
+      flushSpan();
+      const endIndex = text.indexOf('`', i + 1);
+      if (endIndex !== -1) {
+        currentMarks.push('code');
+        currentText = text.slice(i + 1, endIndex);
+        flushSpan();
+        currentMarks = currentMarks.filter((m) => m !== 'code');
+        i = endIndex + 1;
+        continue;
+      }
+    }
+
+    currentText += text[i];
+    i++;
+  }
+
+  flushSpan();
+  return spans.length > 0
+    ? spans
+    : [{ _type: 'span', _key: 'span-0', text, marks: [] }];
+}
+
+/**
  * Convert Markdown to Sanity Portable Text blocks
  */
 function markdownToPortableText(markdown: string): any[] {
@@ -379,7 +453,7 @@ function markdownToPortableText(markdown: string): any[] {
           _key: `block-${blocks.length}`,
           style: 'normal',
           markDefs: [],
-          children: [{ _type: 'span', _key: 'span-0', text, marks: [] }],
+          children: parseInlineMarkdown(text),
         });
       }
       currentParagraph = [];
@@ -438,9 +512,7 @@ function markdownToPortableText(markdown: string): any[] {
         _key: `block-${blocks.length}`,
         style: `h${level}`,
         markDefs: [],
-        children: [
-          { _type: 'span', _key: 'span-0', text: headerMatch[2], marks: [] },
-        ],
+        children: parseInlineMarkdown(headerMatch[2]),
       });
       continue;
     }
@@ -461,9 +533,7 @@ function markdownToPortableText(markdown: string): any[] {
         listItem: 'bullet',
         level: 1,
         markDefs: [],
-        children: [
-          { _type: 'span', _key: 'span-0', text: bulletMatch[1], marks: [] },
-        ],
+        children: parseInlineMarkdown(bulletMatch[1]),
       });
       continue;
     }
@@ -484,9 +554,7 @@ function markdownToPortableText(markdown: string): any[] {
         listItem: 'number',
         level: 1,
         markDefs: [],
-        children: [
-          { _type: 'span', _key: 'span-0', text: numberMatch[1], marks: [] },
-        ],
+        children: parseInlineMarkdown(numberMatch[1]),
       });
       continue;
     }
@@ -500,9 +568,7 @@ function markdownToPortableText(markdown: string): any[] {
         _key: `block-${blocks.length}`,
         style: 'blockquote',
         markDefs: [],
-        children: [
-          { _type: 'span', _key: 'span-0', text: line.slice(2), marks: [] },
-        ],
+        children: parseInlineMarkdown(line.slice(2)),
       });
       continue;
     }
