@@ -1,15 +1,24 @@
 import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import Blog from '@/components/Blog/Blog';
-import { blogPosts } from '@/lib/blog-data';
+import {
+  getPostBySlug,
+  getPostSlugs,
+  getSanityImageUrl,
+} from '@/lib/sanity-blog';
 import { generateBlogPostMetadata } from '@/lib/metadata';
 import { generateArticleSchema, generateBreadcrumbSchema } from '@/lib/schema';
-import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
 type BlogPostPageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };
+
+// Generate static params for all blog posts
+export async function generateStaticParams() {
+  const slugs = await getPostSlugs();
+  return slugs.map(({ slug }) => ({ slug }));
+}
 
 // Generate metadata for blog posts
 export async function generateMetadata({
@@ -17,7 +26,7 @@ export async function generateMetadata({
 }: BlogPostPageProps): Promise<Metadata> {
   const { slug, locale } = await params;
   setRequestLocale(locale);
-  const post = blogPosts.find((p) => p.slug === slug);
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     return {
@@ -29,44 +38,55 @@ export async function generateMetadata({
   return generateBlogPostMetadata({
     title: post.title,
     excerpt: post.excerpt,
-    slug: post.slug,
-    image: post.image,
-    author: post.author.name,
-    publishedDate: new Date(post.date).toISOString(),
+    slug: post.slug.current,
+    image: getSanityImageUrl(post.featuredImage as any, '/placeholder.svg'),
+    author: post.author?.name || "Auntie Marlene's Team",
+    publishedDate: post.publishedAt,
   });
 }
 
-async function BlogSchemas({ params }: { params: Promise<{ locale: string; slug: string }> }) {
+async function BlogSchemas({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>;
+}) {
   const { slug } = await params;
-  const post = blogPosts.find((p) => p.slug === slug);
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     return null;
   }
 
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com';
+  const imageUrl = getSanityImageUrl(
+    post.featuredImage as any,
+    '/placeholder.svg',
+  );
+
   // Generate Article schema
   const articleSchema = generateArticleSchema({
     headline: post.title,
     description: post.excerpt,
-    image: post.image,
-    datePublished: new Date(post.date).toISOString(),
-    authorName: post.author.name,
-    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com'}/blog/${post.slug}`,
+    image: imageUrl,
+    datePublished: post.publishedAt,
+    authorName: post.author?.name || "Auntie Marlene's Team",
+    url: `${siteUrl}/blog/${post.slug.current}`,
   });
 
   // Generate breadcrumb schema
   const breadcrumbSchema = generateBreadcrumbSchema([
     {
       name: 'Home',
-      url: process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com',
+      url: siteUrl,
     },
     {
       name: 'Blog',
-      url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com'}/blog`,
+      url: `${siteUrl}/blog`,
     },
     {
       name: post.title,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com'}/blog/${post.slug}`,
+      url: `${siteUrl}/blog/${post.slug.current}`,
     },
   ]);
 

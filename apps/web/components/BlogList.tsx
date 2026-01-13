@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { blogPosts, blogCategories } from '@/lib/blog-data';
 import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -11,18 +10,25 @@ import {
   faClock,
   faUser,
 } from '@fortawesome/pro-regular-svg-icons';
+import type { BlogPost } from '@/lib/sanity-blog';
 
 interface BlogListProps {
-  featuredPosts: typeof blogPosts;
+  featuredPosts: BlogPost[];
+  allPosts: BlogPost[];
+  categories: string[];
 }
 
-export default function BlogList({ featuredPosts }: BlogListProps) {
+export default function BlogList({
+  featuredPosts,
+  allPosts,
+  categories,
+}: BlogListProps) {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const filteredPosts =
     selectedCategory === 'All'
-      ? blogPosts
-      : blogPosts.filter((post) => post.category === selectedCategory);
+      ? allPosts
+      : allPosts.filter((post) => post.category === selectedCategory);
 
   return (
     <>
@@ -87,7 +93,7 @@ export default function BlogList({ featuredPosts }: BlogListProps) {
       <section className="py-8 bg-white border-t border-gray-200">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-3">
-            {blogCategories.map((category) => (
+            {categories.map((category) => (
               <Button
                 key={category}
                 onClick={() => setSelectedCategory(category)}

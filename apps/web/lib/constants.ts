@@ -182,8 +182,8 @@ export const navLinks: NavLink[] = [
   { nameKey: 'navigation.wigsExtensions', href: '/wigs-extensions' },
   { nameKey: 'navigation.kids', href: '/kids' },
   { nameKey: 'navigation.mens', href: '/mens' },
-  { nameKey: 'navigation.blog', href: '/blog' },
   { nameKey: 'navigation.sale', href: '/sale', isHighlight: true },
+  { nameKey: 'navigation.blog', href: '/blog' },
 ];
 
 export type SocialLink = {

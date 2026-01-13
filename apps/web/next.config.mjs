@@ -8,7 +8,8 @@ const nextConfig = {
   cacheComponents: true,
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: 'cdn.shopify.com', pathname: '**' },
+      { protocol: 'https', hostname: 'cdn.shopify.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'cdn.sanity.io', pathname: '/**' },
     ],
   },
   // Include Prisma binaries in serverless functions (moved from experimental in Next.js 16)

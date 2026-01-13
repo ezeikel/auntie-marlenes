@@ -1,7 +1,13 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getPostBySlug, getRelatedPosts } from '@/lib/blog-data';
+import { PortableText } from '@portabletext/react';
+import {
+  getPostBySlug,
+  getRelatedPosts,
+  getSanityImageUrl,
+  type SanityPost,
+} from '@/lib/sanity-blog';
 import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock, faArrowLeft } from '@fortawesome/pro-regular-svg-icons';
@@ -10,16 +16,38 @@ import {
   faTwitter,
   faPinterest,
 } from '@fortawesome/free-brands-svg-icons';
+import { portableTextComponents } from './PortableTextComponents';
 
-const Blog = async ({ params }: { params: Promise<{ locale?: string; slug: string }> }) => {
+const Blog = async ({
+  params,
+}: {
+  params: Promise<{ locale?: string; slug: string }>;
+}) => {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     notFound();
   }
 
-  const relatedPosts = getRelatedPosts(post.slug, post.category);
+  // Get related posts using the category ID
+  const relatedPosts = post.category?._id
+    ? await getRelatedPosts(post.slug.current, post.category._id)
+    : [];
+
+  // Helper function to format date
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
+
+  // Get reading time
+  const readingTime = post.readingTime || 5;
 
   return (
     <div className="bg-warm-beige min-h-screen">
@@ -43,7 +71,7 @@ const Blog = async ({ params }: { params: Promise<{ locale?: string; slug: strin
           <div className="max-w-4xl mx-auto">
             <div className="mb-6">
               <span className="inline-block bg-sage-green/10 text-sage-green font-semibold text-sm px-4 py-1 rounded-full uppercase mb-4">
-                {post.category}
+                {post.category?.title || 'Uncategorized'}
               </span>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-playfair font-bold text-cocoa mb-6 leading-tight">
                 {post.title}
@@ -58,22 +86,31 @@ const Blog = async ({ params }: { params: Promise<{ locale?: string; slug: strin
               <div className="flex items-center gap-3">
                 <div className="relative w-12 h-12 rounded-full overflow-hidden">
                   <Image
-                    src={post.author.avatar || '/placeholder.svg'}
-                    alt={post.author.name}
+                    src={getSanityImageUrl(
+                      post.author?.image,
+                      '/placeholder.svg?height=100&width=100&text=Author',
+                    )}
+                    alt={post.author?.name || 'Author'}
                     fill
                     className="object-cover"
                   />
                 </div>
                 <div>
-                  <p className="font-semibold text-cocoa">{post.author.name}</p>
-                  <p className="text-sm text-gray-500">Author</p>
+                  <p className="font-semibold text-cocoa">
+                    {post.author?.name || "Auntie Marlene's Team"}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {post.author?.title || 'Author'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-gray-500">
                 <FontAwesomeIcon icon={faClock} />
-                <span>{post.readTime}</span>
+                <span>{readingTime} min read</span>
               </div>
-              <div className="text-gray-500">{post.date}</div>
+              <div className="text-gray-500">
+                {formatDate(post.publishedAt)}
+              </div>
               <div className="ml-auto flex items-center gap-2">
                 <span className="text-sm text-gray-600 mr-2">Share:</span>
                 <Button
@@ -103,19 +140,47 @@ const Blog = async ({ params }: { params: Promise<{ locale?: string; slug: strin
             {/* Featured Image */}
             <div className="relative aspect-[16/9] rounded-2xl overflow-hidden mb-12">
               <Image
-                src={post.image || '/placeholder.svg'}
-                alt={post.title}
+                src={getSanityImageUrl(
+                  post.featuredImage as any,
+                  '/placeholder.svg?height=600&width=1200&text=Blog+Post',
+                )}
+                alt={post.featuredImage?.alt || post.title}
                 fill
                 className="object-cover"
                 priority
               />
+              {post.featuredImage?.credit &&
+                !post.featuredImage.credit
+                  .toLowerCase()
+                  .includes('generated') &&
+                !post.featuredImage.credit.toLowerCase().includes('gemini') && (
+                  <div className="absolute bottom-0 right-0 bg-black/50 text-white text-xs px-3 py-1 rounded-tl">
+                    Photo by{' '}
+                    {post.featuredImage.creditUrl ? (
+                      <a
+                        href={post.featuredImage.creditUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                      >
+                        {post.featuredImage.credit}
+                      </a>
+                    ) : (
+                      post.featuredImage.credit
+                    )}
+                  </div>
+                )}
             </div>
 
             {/* Article Content */}
-            <div
-              className="prose prose-lg max-w-none prose-headings:font-playfair prose-headings:text-cocoa prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4 prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6 prose-a:text-sage-green prose-a:no-underline hover:prose-a:underline prose-strong:text-cocoa prose-ul:my-6 prose-ol:my-6 prose-li:text-gray-700 prose-li:my-2"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            <div className="prose prose-lg max-w-none">
+              {post.body && (
+                <PortableText
+                  value={post.body}
+                  components={portableTextComponents}
+                />
+              )}
+            </div>
 
             {/* Tags/Topics - Optional */}
             <div className="mt-12 pt-8 border-t border-gray-200">
@@ -124,7 +189,7 @@ const Blog = async ({ params }: { params: Promise<{ locale?: string; slug: strin
                   Topics:
                 </span>
                 <Button variant="outline" size="sm" className="bg-transparent">
-                  {post.category}
+                  {post.category?.title || 'Uncategorized'}
                 </Button>
               </div>
             </div>
@@ -134,21 +199,22 @@ const Blog = async ({ params }: { params: Promise<{ locale?: string; slug: strin
               <div className="flex items-start gap-4">
                 <div className="relative w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
                   <Image
-                    src={post.author.avatar || '/placeholder.svg'}
-                    alt={post.author.name}
+                    src={getSanityImageUrl(
+                      post.author?.image,
+                      '/placeholder.svg?height=100&width=100&text=Author',
+                    )}
+                    alt={post.author?.name || 'Author'}
                     fill
                     className="object-cover"
                   />
                 </div>
                 <div>
                   <h3 className="text-xl font-playfair font-bold text-cocoa mb-2">
-                    About {post.author.name}
+                    About {post.author?.name || "Auntie Marlene's Team"}
                   </h3>
                   <p className="text-gray-700">
-                    A passionate hair care enthusiast and writer dedicated to
-                    helping others on their natural hair journey. With years of
-                    experience and countless product trials, they share honest
-                    reviews and practical tips.
+                    {post.author?.bio ||
+                      'A passionate hair care enthusiast and writer dedicated to helping others on their natural hair journey. With years of experience and countless product trials, they share honest reviews and practical tips.'}
                   </p>
                 </div>
               </div>
@@ -167,21 +233,26 @@ const Blog = async ({ params }: { params: Promise<{ locale?: string; slug: strin
             <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
               {relatedPosts.map((relatedPost) => (
                 <article
-                  key={relatedPost.id}
+                  key={relatedPost._id}
                   className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300"
                 >
-                  <Link href={`/blog/${relatedPost.slug}`}>
+                  <Link href={`/blog/${relatedPost.slug.current}`}>
                     <div className="relative aspect-[16/10]">
                       <Image
-                        src={relatedPost.image || '/placeholder.svg'}
-                        alt={relatedPost.title}
+                        src={getSanityImageUrl(
+                          relatedPost.featuredImage as any,
+                          '/placeholder.svg?height=400&width=600&text=Blog',
+                        )}
+                        alt={
+                          relatedPost.featuredImage?.alt || relatedPost.title
+                        }
                         fill
                         className="object-cover hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                     <div className="p-6">
                       <span className="text-sage-green font-semibold text-sm uppercase">
-                        {relatedPost.category}
+                        {post.category?.title || 'Uncategorized'}
                       </span>
                       <h3 className="text-xl font-playfair font-bold text-cocoa hover:text-terracotta transition-colors mt-2 mb-3 line-clamp-2">
                         {relatedPost.title}
@@ -191,7 +262,7 @@ const Blog = async ({ params }: { params: Promise<{ locale?: string; slug: strin
                       </p>
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <FontAwesomeIcon icon={faClock} size="sm" />
-                        <span>{relatedPost.readTime}</span>
+                        <span>{relatedPost.readingTime || 5} min read</span>
                       </div>
                     </div>
                   </Link>

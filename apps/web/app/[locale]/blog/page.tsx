@@ -1,6 +1,10 @@
 import { setRequestLocale } from 'next-intl/server';
 import BlogList from '@/components/BlogList';
-import { getFeaturedPosts } from '@/lib/blog-data';
+import {
+  getFeaturedPostsLegacy,
+  getAllPostsLegacy,
+  getCategoryTitles,
+} from '@/lib/sanity-blog';
 import { generatePageMetadata } from '@/lib/metadata';
 import type { Metadata } from 'next';
 
@@ -28,7 +32,12 @@ const BlogPage = async ({ params }: BlogPageProps) => {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const featuredPosts = getFeaturedPosts();
+  // Fetch blog data from Sanity
+  const [featuredPosts, allPosts, categories] = await Promise.all([
+    getFeaturedPostsLegacy(),
+    getAllPostsLegacy(),
+    getCategoryTitles(),
+  ]);
 
   return (
     <div className="bg-warm-beige min-h-screen">
@@ -37,7 +46,7 @@ const BlogPage = async ({ params }: BlogPageProps) => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-playfair font-bold mb-6">
-              The Auntie Marlene's Blog
+              The Auntie Marlene&apos;s Blog
             </h1>
             <p className="text-xl md:text-2xl text-white/90 leading-relaxed">
               Your trusted source for hair care tips, product reviews, and
@@ -47,7 +56,11 @@ const BlogPage = async ({ params }: BlogPageProps) => {
         </div>
       </section>
 
-      <BlogList featuredPosts={featuredPosts} />
+      <BlogList
+        featuredPosts={featuredPosts}
+        allPosts={allPosts}
+        categories={categories}
+      />
     </div>
   );
 };
