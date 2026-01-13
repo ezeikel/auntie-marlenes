@@ -16,7 +16,8 @@
     "preinstall": "pnpm dlx only-allow pnpm",
     "env:pull": "vercel env pull",
     "db:studio": "cd ../../packages/db && pnpm db:studio",
-    "avatars:generate": "npx tsx --env-file=.env.local scripts/generate-author-avatars.ts"
+    "avatars:generate": "npx tsx --env-file=.env.local scripts/generate-author-avatars.ts",
+    "blog:fix-markdown": "npx tsx --env-file=.env.local scripts/fix-blog-markdown.ts"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
