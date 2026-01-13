@@ -15,7 +15,8 @@
     "check-format": "pnpm prettier --list-different",
     "preinstall": "pnpm dlx only-allow pnpm",
     "env:pull": "vercel env pull",
-    "db:studio": "cd ../../packages/db && pnpm db:studio"
+    "db:studio": "cd ../../packages/db && pnpm db:studio",
+    "avatars:generate": "npx tsx --env-file=.env.local scripts/generate-author-avatars.ts"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -140,6 +141,7 @@
     "tailwindcss-animate": "^1.0.7",
     "ts-node": "^10.9.2",
     "tsc-files": "^1.1.4",
+    "tsx": "^4.20.4",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.46.2"
   }
