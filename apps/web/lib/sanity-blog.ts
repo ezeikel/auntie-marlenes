@@ -5,6 +5,7 @@
  * and transform it to match the existing BlogPost format
  */
 
+import { cacheLife, cacheTag } from 'next/cache';
 import { client } from '@/sanity/lib/client';
 import { urlForImage } from '@/sanity/lib/image';
 import {
@@ -137,6 +138,10 @@ function formatDate(dateString: string): string {
  * Get all published blog posts
  */
 export async function getAllPosts(): Promise<SanityPost[]> {
+  'use cache';
+  cacheLife('blog-list');
+  cacheTag('blog-list', 'blog-posts');
+
   try {
     const posts = await client.fetch<SanityPost[]>(postsQuery);
     return posts || [];
@@ -158,6 +163,10 @@ export async function getAllPostsLegacy(): Promise<BlogPost[]> {
  * Get a single post by slug
  */
 export async function getPostBySlug(slug: string): Promise<SanityPost | null> {
+  'use cache';
+  cacheLife('blog-post');
+  cacheTag('blog-posts', `blog-post-${slug}`);
+
   try {
     const post = await client.fetch<SanityPost>(postBySlugQuery, { slug });
     return post || null;
@@ -198,6 +207,10 @@ export async function getRelatedPosts(
   categoryId: string,
   limit = 3,
 ): Promise<SanityPost[]> {
+  'use cache';
+  cacheLife('blog-list');
+  cacheTag('blog-posts');
+
   try {
     const posts = await client.fetch<SanityPost[]>(relatedPostsQuery, {
       slug: currentSlug,
@@ -226,6 +239,10 @@ export async function getRelatedPostsLegacy(
  * Get featured posts
  */
 export async function getFeaturedPosts(): Promise<SanityPost[]> {
+  'use cache';
+  cacheLife('blog-list');
+  cacheTag('blog-list', 'blog-posts');
+
   try {
     const posts = await client.fetch<SanityPost[]>(featuredPostsQuery);
     return posts || [];
@@ -247,6 +264,10 @@ export async function getFeaturedPostsLegacy(): Promise<BlogPost[]> {
  * Get all categories
  */
 export async function getCategories(): Promise<SanityCategory[]> {
+  'use cache';
+  cacheLife('blog-list');
+  cacheTag('blog-list', 'blog-categories');
+
   try {
     const categories = await client.fetch<SanityCategory[]>(categoriesQuery);
     return categories || [];
