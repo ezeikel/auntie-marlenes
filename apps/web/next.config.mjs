@@ -1,4 +1,5 @@
 import { withSentryConfig } from '@sentry/nextjs';
+import { withPlausibleProxy } from 'next-plausible';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
@@ -45,4 +46,6 @@ const sentryOptions = {
   reactComponentAnnotation: { enabled: true },
 };
 
-export default withSentryConfig(withNextIntl(nextConfig), sentryOptions);
+export default withPlausibleProxy()(
+  withSentryConfig(withNextIntl(nextConfig), sentryOptions)
+);

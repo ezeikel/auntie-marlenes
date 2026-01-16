@@ -4,6 +4,7 @@ import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
 import { NextIntlClientProvider } from 'next-intl';
 import type { AbstractIntlMessages } from 'next-intl';
+import PlausibleProvider from 'next-plausible';
 import { UIContextProvider } from '@/contexts/ui';
 import { SavedProvider } from '@/contexts/saved';
 import { LocationProvider } from '@/contexts/LocationContext';
@@ -23,28 +24,30 @@ const Providers = ({
   timeZone,
 }: ProvidersProps) => {
   return (
-    <PostHogProvider>
-      <NextIntlClientProvider
-        messages={messages}
-        locale={locale}
-        timeZone={timeZone || 'Europe/London'}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          forcedTheme="light"
-          disableTransitionOnChange
+    <PlausibleProvider domain="auntiemarlenes.com" trackOutboundLinks>
+      <PostHogProvider>
+        <NextIntlClientProvider
+          messages={messages}
+          locale={locale}
+          timeZone={timeZone || 'Europe/London'}
         >
-          <SessionProvider>
-            <LocationProvider>
-              <UIContextProvider>
-                <SavedProvider>{children}</SavedProvider>
-              </UIContextProvider>
-            </LocationProvider>
-          </SessionProvider>
-        </ThemeProvider>
-      </NextIntlClientProvider>
-    </PostHogProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            forcedTheme="light"
+            disableTransitionOnChange
+          >
+            <SessionProvider>
+              <LocationProvider>
+                <UIContextProvider>
+                  <SavedProvider>{children}</SavedProvider>
+                </UIContextProvider>
+              </LocationProvider>
+            </SessionProvider>
+          </ThemeProvider>
+        </NextIntlClientProvider>
+      </PostHogProvider>
+    </PlausibleProvider>
   );
 };
 
