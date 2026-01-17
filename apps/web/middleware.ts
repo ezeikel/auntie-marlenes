@@ -6,8 +6,13 @@ import { routing } from './i18n/routing';
 // Create the next-intl middleware
 const intlMiddleware = createIntlMiddleware(routing);
 
-export const proxy = async (request: NextRequest) => {
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Skip i18n for Plausible analytics proxy routes
+  if (pathname.startsWith('/js/') || pathname.startsWith('/proxy/')) {
+    return NextResponse.next();
+  }
 
   // PostHog reverse proxy
   if (pathname.startsWith('/relay-hyx5')) {
@@ -50,7 +55,7 @@ export const proxy = async (request: NextRequest) => {
 
   // Handle internationalization routing
   return intlMiddleware(request);
-};
+}
 
 export const config = {
   // Match only internationalized pathnames
