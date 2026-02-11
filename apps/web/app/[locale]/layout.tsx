@@ -112,6 +112,12 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={cn(inter.variable, playfairDisplay.variable)}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:p-4 focus:bg-white focus:text-cocoa focus:underline"
+        >
+          Skip to main content
+        </a>
         {pixelId && (
           <>
             <Script
@@ -168,7 +174,9 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
             <Suspense fallback={<div className="h-20" />}>
               <Header />
             </Suspense>
-            <main lang={locale}>{children}</main>
+            <main id="main-content" lang={locale}>
+              {children}
+            </main>
             <Suspense fallback={<div className="h-64 bg-deep-earth" />}>
               <Footer />
             </Suspense>

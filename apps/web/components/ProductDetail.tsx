@@ -186,6 +186,8 @@ const ProductDetail = ({
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
+                    aria-label={`View image ${idx + 1}`}
+                    aria-current={selectedImage === idx ? 'true' : undefined}
                     className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
                       selectedImage === idx
                         ? 'border-cocoa'
@@ -241,7 +243,8 @@ const ProductDetail = ({
                           prev === 0 ? images.length - 1 : prev - 1,
                         )
                       }
-                      className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50"
+                      aria-label="Previous image"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 h-11 w-11 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50"
                     >
                       <FontAwesomeIcon icon={faChevronLeft} size="sm" />
                     </button>
@@ -251,7 +254,8 @@ const ProductDetail = ({
                           prev === images.length - 1 ? 0 : prev + 1,
                         )
                       }
-                      className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50"
+                      aria-label="Next image"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 h-11 w-11 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50"
                     >
                       <FontAwesomeIcon icon={faChevronRight} size="sm" />
                     </button>
@@ -263,6 +267,8 @@ const ProductDetail = ({
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
+                    aria-label={`Go to image ${idx + 1}`}
+                    aria-current={selectedImage === idx ? 'true' : undefined}
                     className={`h-2 rounded-full transition-all ${
                       selectedImage === idx ? 'w-8 bg-cocoa' : 'w-2 bg-gray-300'
                     }`}
@@ -304,6 +310,8 @@ const ProductDetail = ({
                     <button
                       key={color.name}
                       onClick={() => setSelectedColor(color)}
+                      aria-label={`Select colour ${color.name}`}
+                      aria-pressed={selectedColor?.name === color.name}
                       className={`w-16 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
                         selectedColor?.name === color.name
                           ? 'border-cocoa'
@@ -331,6 +339,8 @@ const ProductDetail = ({
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
+                      aria-label={`Select size ${size}`}
+                      aria-pressed={selectedSize === size}
                       className={`px-6 py-3 rounded-lg border-2 transition-colors font-medium ${
                         selectedSize === size
                           ? 'border-cocoa bg-cocoa text-white'

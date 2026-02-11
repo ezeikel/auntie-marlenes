@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidateTag } from 'next/cache';
+import { after } from 'next/server';
 import { cookies } from 'next/headers';
 import { print } from 'graphql';
 import { db } from '@auntie-marlenes/db';
@@ -130,12 +131,14 @@ export const createCart = async ({
   // update cache - immediate invalidation (no profile for instant expiration)
   revalidateTag('cart', 'max');
 
-  // Track cart creation event
-  await track(TRACKING_EVENTS.CART_CREATED, {
-    cart_id: cart.id,
-    product_variant_id: productVariantId,
-    country_code: countryCode,
-    source: 'web',
+  // Track cart creation event (non-blocking)
+  after(async () => {
+    await track(TRACKING_EVENTS.CART_CREATED, {
+      cart_id: cart.id,
+      product_variant_id: productVariantId,
+      country_code: countryCode,
+      source: 'web',
+    });
   });
 
   console.log('✅ [SERVER] createCart complete!');
@@ -295,11 +298,13 @@ export const addProductsToCart = async ({
   // update cache - immediate invalidation (no profile for instant expiration)
   revalidateTag('cart', 'max');
 
-  // Track product added to cart event
-  await track(TRACKING_EVENTS.PRODUCT_ADDED_TO_CART, {
-    cart_id: cartId,
-    product_variant_id: productVariantId,
-    source: 'web',
+  // Track product added to cart event (non-blocking)
+  after(async () => {
+    await track(TRACKING_EVENTS.PRODUCT_ADDED_TO_CART, {
+      cart_id: cartId,
+      product_variant_id: productVariantId,
+      source: 'web',
+    });
   });
 
   return updatedCart;
@@ -360,11 +365,13 @@ export const removeProductFromCart = async ({
   // update cache - immediate invalidation (no profile for instant expiration)
   revalidateTag('cart', 'max');
 
-  // Track product removed from cart event
-  await track(TRACKING_EVENTS.PRODUCT_REMOVED_FROM_CART, {
-    cart_id: cartId,
-    line_ids: lineIds,
-    source: 'web',
+  // Track product removed from cart event (non-blocking)
+  after(async () => {
+    await track(TRACKING_EVENTS.PRODUCT_REMOVED_FROM_CART, {
+      cart_id: cartId,
+      line_ids: lineIds,
+      source: 'web',
+    });
   });
 
   return updatedCart;
@@ -412,12 +419,14 @@ export const updateCartLineQuantity = async ({
   // update cache - immediate invalidation (no profile for instant expiration)
   revalidateTag('cart', 'max');
 
-  // Track cart quantity updated event
-  await track(TRACKING_EVENTS.CART_QUANTITY_UPDATED, {
-    cart_id: cartId,
-    line_id: lineId,
-    quantity,
-    source: 'web',
+  // Track cart quantity updated event (non-blocking)
+  after(async () => {
+    await track(TRACKING_EVENTS.CART_QUANTITY_UPDATED, {
+      cart_id: cartId,
+      line_id: lineId,
+      quantity,
+      source: 'web',
+    });
   });
 
   return updatedCart;
@@ -574,11 +583,13 @@ export const addProductToSaved = async ({
   revalidateTag('saved-counts', 'max');
   revalidateTag(`saved-${userId}`, 'max');
 
-  // Track product saved event
-  await track(TRACKING_EVENTS.PRODUCT_SAVED, {
-    product_id: productId,
-    user_id: userId,
-    source: 'web',
+  // Track product saved event (non-blocking)
+  after(async () => {
+    await track(TRACKING_EVENTS.PRODUCT_SAVED, {
+      product_id: productId,
+      user_id: userId,
+      source: 'web',
+    });
   });
 };
 
@@ -617,11 +628,13 @@ export const removeProductFromSaved = async ({
   revalidateTag('saved-counts', 'max');
   revalidateTag(`saved-${userId}`, 'max');
 
-  // Track product unsaved event
-  await track(TRACKING_EVENTS.PRODUCT_UNSAVED, {
-    product_id: productId,
-    user_id: userId,
-    source: 'web',
+  // Track product unsaved event (non-blocking)
+  after(async () => {
+    await track(TRACKING_EVENTS.PRODUCT_UNSAVED, {
+      product_id: productId,
+      user_id: userId,
+      source: 'web',
+    });
   });
 };
 
@@ -795,22 +808,24 @@ export const searchProducts = async ({
     );
   }
 
-  // Track product search event
-  await track(
-    TRACKING_EVENTS.PRODUCT_SEARCH,
-    {
-      query: query || '',
-      product_type: productType,
-      vendor,
-      sort_key: sortKey,
-      reverse,
-      on_sale: onSale,
-      country_code: countryCode,
-      results_count: adaptedProducts.length,
-      source: 'web',
-    },
-    userId,
-  );
+  // Track product search event (non-blocking)
+  after(async () => {
+    await track(
+      TRACKING_EVENTS.PRODUCT_SEARCH,
+      {
+        query: query || '',
+        product_type: productType,
+        vendor,
+        sort_key: sortKey,
+        reverse,
+        on_sale: onSale,
+        country_code: countryCode,
+        results_count: adaptedProducts.length,
+        source: 'web',
+      },
+      userId,
+    );
+  });
 
   return adaptedProducts;
 };
@@ -980,13 +995,15 @@ export const syncLocalSavesToDB = async ({
     revalidateTag('saved-counts', 'max');
     revalidateTag(`saved-${userId}`, 'max');
 
-    // Track saved items synced event
+    // Track saved items synced event (non-blocking)
     if (newIds.length > 0) {
-      await track(TRACKING_EVENTS.SAVED_ITEMS_SYNCED, {
-        user_id: userId,
-        product_ids: newIds,
-        synced_count: newIds.length,
-        source: 'web',
+      after(async () => {
+        await track(TRACKING_EVENTS.SAVED_ITEMS_SYNCED, {
+          user_id: userId,
+          product_ids: newIds,
+          synced_count: newIds.length,
+          source: 'web',
+        });
       });
     }
 

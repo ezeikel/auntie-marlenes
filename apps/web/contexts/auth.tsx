@@ -2,7 +2,9 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
+  useMemo,
   useState,
   useEffect,
   type ReactNode,
@@ -61,7 +63,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     // This is a mock implementation
     // In a real app, you would call your authentication API here
     try {
@@ -83,54 +85,50 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       console.error('Sign in failed:', error);
       throw error;
     }
-  };
+  }, []);
 
-  const signOut = () => {
+  const signOut = useCallback(() => {
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('user');
-  };
+  }, []);
 
-  const signUp = async (
-    email: string,
-    password: string,
-    firstName: string,
-    lastName: string,
-  ) => {
-    // This is a mock implementation
-    // In a real app, you would call your registration API here
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+  const signUp = useCallback(
+    async (
+      email: string,
+      password: string,
+      firstName: string,
+      lastName: string,
+    ) => {
+      // This is a mock implementation
+      // In a real app, you would call your registration API here
+      try {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Mock user data
-      const mockUser: User = {
-        id: '1',
-        email,
-        firstName,
-        lastName,
-      };
+        // Mock user data
+        const mockUser: User = {
+          id: '1',
+          email,
+          firstName,
+          lastName,
+        };
 
-      setUser(mockUser);
-      setIsAuthenticated(true);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      console.error('Sign up failed:', error);
-      throw error;
-    }
-  };
-
-  return (
-    <AuthContext.Provider
-      value={{
-        isAuthenticated,
-        user,
-        signIn,
-        signOut,
-        signUp,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+        setUser(mockUser);
+        setIsAuthenticated(true);
+        localStorage.setItem('user', JSON.stringify(mockUser));
+      } catch (error) {
+        console.error('Sign up failed:', error);
+        throw error;
+      }
+    },
+    [],
   );
+
+  const value = useMemo(
+    () => ({ isAuthenticated, user, signIn, signOut, signUp }),
+    [isAuthenticated, user, signIn, signOut, signUp],
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -6,9 +6,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com';
 
-  // Get all products and categories
-  const products = await getProducts();
-  const categories = await getCategories();
+  // Get all products and categories in parallel
+  const [products, categories] = await Promise.all([
+    getProducts(),
+    getCategories(),
+  ]);
 
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [

@@ -1,6 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  useEffect,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import type { CountryInfo } from '@/lib/location';
 import type { Currency } from '@/lib/currency';
@@ -85,117 +92,123 @@ export const LocationProvider = ({
   }, []);
 
   // Update country and sync with Shopify cart
-  const setCountry = async (newCountry: CountryInfo) => {
-    const previousCountry = country.code;
+  const setCountry = useCallback(
+    async (newCountry: CountryInfo) => {
+      setCountryState((prev) => {
+        const previousCountry = prev.code;
 
-    console.log('[LocationContext] Setting country:', {
-      from: previousCountry,
-      to: newCountry.code,
-      currency: newCountry.currency.code,
-    });
+        console.log('[LocationContext] Setting country:', {
+          from: previousCountry,
+          to: newCountry.code,
+          currency: newCountry.currency.code,
+        });
 
-    // Track country change
-    track(TRACKING_EVENTS.COUNTRY_CHANGED, {
-      previous_country: previousCountry,
-      new_country: newCountry.code,
-      previous_currency: currency.code,
-      new_currency: newCountry.currency.code,
-    });
+        // Track country change
+        track(TRACKING_EVENTS.COUNTRY_CHANGED, {
+          previous_country: previousCountry,
+          new_country: newCountry.code,
+          previous_currency: prev.currency.code,
+          new_currency: newCountry.currency.code,
+        });
 
-    setCountryState(newCountry);
-    setCurrencyState(newCountry.currency); // Auto-update currency when country changes
-
-    // Save to localStorage
-    try {
-      localStorage.setItem(STORAGE_KEY_COUNTRY, newCountry.code);
-      localStorage.setItem(STORAGE_KEY_CURRENCY, newCountry.currency.code);
-      console.log('[LocationContext] Saved to localStorage:', newCountry.code);
-    } catch (error) {
-      console.error('Error saving country preference:', error);
-      logger.error(
-        'Failed to save country preference to localStorage',
-        error instanceof Error ? error : new Error('Unknown error'),
-        { countryCode: newCountry.code },
-      );
-    }
-
-    // Set cookie for server-side country detection
-    try {
-      await setCountryCookie(newCountry.code);
-      console.log('[LocationContext] Set cookie:', newCountry.code);
-    } catch (error) {
-      console.error('Error setting country cookie:', error);
-      logger.error(
-        'Failed to set country cookie',
-        error instanceof Error ? error : new Error('Unknown error'),
-        { countryCode: newCountry.code },
-      );
-    }
-
-    // Update Shopify cart buyer identity
-    try {
-      await updateCartCountryCode(newCountry.code);
-      console.log('[LocationContext] Updated cart country:', newCountry.code);
-
-      logger.info('Country changed successfully', {
-        previousCountry,
-        newCountry: newCountry.code,
+        return newCountry;
       });
-    } catch (error) {
-      console.error('Error updating cart buyer identity:', error);
-      logger.error(
-        'Failed to update cart buyer identity',
-        error instanceof Error ? error : new Error('Unknown error'),
-        { countryCode: newCountry.code },
-      );
-    }
+      setCurrencyState(newCountry.currency); // Auto-update currency when country changes
 
-    // Refresh server components to re-render with new country
-    console.log('[LocationContext] Calling router.refresh()');
-    router.refresh();
-  };
+      // Save to localStorage
+      try {
+        localStorage.setItem(STORAGE_KEY_COUNTRY, newCountry.code);
+        localStorage.setItem(STORAGE_KEY_CURRENCY, newCountry.currency.code);
+        console.log(
+          '[LocationContext] Saved to localStorage:',
+          newCountry.code,
+        );
+      } catch (error) {
+        console.error('Error saving country preference:', error);
+        logger.error(
+          'Failed to save country preference to localStorage',
+          error instanceof Error ? error : new Error('Unknown error'),
+          { countryCode: newCountry.code },
+        );
+      }
+
+      // Set cookie for server-side country detection
+      try {
+        await setCountryCookie(newCountry.code);
+        console.log('[LocationContext] Set cookie:', newCountry.code);
+      } catch (error) {
+        console.error('Error setting country cookie:', error);
+        logger.error(
+          'Failed to set country cookie',
+          error instanceof Error ? error : new Error('Unknown error'),
+          { countryCode: newCountry.code },
+        );
+      }
+
+      // Update Shopify cart buyer identity
+      try {
+        await updateCartCountryCode(newCountry.code);
+        console.log('[LocationContext] Updated cart country:', newCountry.code);
+
+        logger.info('Country changed successfully', {
+          newCountry: newCountry.code,
+        });
+      } catch (error) {
+        console.error('Error updating cart buyer identity:', error);
+        logger.error(
+          'Failed to update cart buyer identity',
+          error instanceof Error ? error : new Error('Unknown error'),
+          { countryCode: newCountry.code },
+        );
+      }
+
+      // Refresh server components to re-render with new country
+      console.log('[LocationContext] Calling router.refresh()');
+      router.refresh();
+    },
+    [router, track],
+  );
 
   // Update currency only (independent of country)
-  const setCurrency = (newCurrency: Currency) => {
-    const previousCurrency = currency.code;
+  const setCurrency = useCallback(
+    (newCurrency: Currency) => {
+      setCurrencyState((prev) => {
+        // Track currency change
+        track(TRACKING_EVENTS.CURRENCY_CHANGED, {
+          previous_currency: prev.code,
+          new_currency: newCurrency.code,
+          country: country.code,
+        });
 
-    // Track currency change
-    track(TRACKING_EVENTS.CURRENCY_CHANGED, {
-      previous_currency: previousCurrency,
-      new_currency: newCurrency.code,
-      country: country.code,
-    });
-
-    setCurrencyState(newCurrency);
-
-    // Save to localStorage
-    try {
-      localStorage.setItem(STORAGE_KEY_CURRENCY, newCurrency.code);
-
-      logger.info('Currency changed successfully', {
-        previousCurrency,
-        newCurrency: newCurrency.code,
+        return newCurrency;
       });
-    } catch (error) {
-      console.error('Error saving currency preference:', error);
-      logger.error(
-        'Failed to save currency preference to localStorage',
-        error instanceof Error ? error : new Error('Unknown error'),
-        { currencyCode: newCurrency.code },
-      );
-    }
-  };
+
+      // Save to localStorage
+      try {
+        localStorage.setItem(STORAGE_KEY_CURRENCY, newCurrency.code);
+
+        logger.info('Currency changed successfully', {
+          newCurrency: newCurrency.code,
+        });
+      } catch (error) {
+        console.error('Error saving currency preference:', error);
+        logger.error(
+          'Failed to save currency preference to localStorage',
+          error instanceof Error ? error : new Error('Unknown error'),
+          { currencyCode: newCurrency.code },
+        );
+      }
+    },
+    [country.code, track],
+  );
+
+  const value = useMemo(
+    () => ({ country, currency, setCountry, setCurrency, isLoading }),
+    [country, currency, setCountry, setCurrency, isLoading],
+  );
 
   return (
-    <LocationContext.Provider
-      value={{
-        country,
-        currency,
-        setCountry,
-        setCurrency,
-        isLoading,
-      }}
-    >
+    <LocationContext.Provider value={value}>
       {children}
     </LocationContext.Provider>
   );

@@ -156,7 +156,7 @@ const Footer = () => {
                       aria-label={link.name}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-warm-clay transition-colors text-xl w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-warm-clay"
+                      className="hover:text-warm-clay transition-colors text-xl w-11 h-11 flex items-center justify-center rounded-full border border-white/20 hover:border-warm-clay"
                     >
                       <FontAwesomeIcon icon={iconMap[link.icon]} />
                     </a>
@@ -189,6 +189,7 @@ const Footer = () => {
                 <Input
                   type="email"
                   placeholder="Your email address"
+                  aria-label="Email address for newsletter"
                   className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:ring-warm-clay focus:border-warm-clay pr-12 h-12"
                   required
                 />

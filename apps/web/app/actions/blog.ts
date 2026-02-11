@@ -732,34 +732,24 @@ export async function generateBlogPostForTopic(
     // 4. Get recently covered topics for context
     const recentTopics: string[] = await writeClient.fetch(coveredTopicsQuery);
 
-    // 5. Generate content
+    // 5-8. Generate content, image, author, and category in parallel
     console.log('Generating content for:', meta.title);
-    const content = await generateBlogContent(
-      blogTopic.topic,
-      meta.title,
-      meta.keywords,
-      blogTopic.category,
-      recentTopics,
-    );
+    const [content, imageResult, authorRef, categoryRef] = await Promise.all([
+      generateBlogContent(
+        blogTopic.topic,
+        meta.title,
+        meta.keywords,
+        blogTopic.category,
+        recentTopics,
+      ),
+      getFeaturedImage(meta.title, meta.excerpt, blogTopic.category, meta.slug),
+      getOrCreateAuthor(blogTopic.category),
+      getOrCreateCategory(blogTopic.category),
+    ]);
 
     if (!content) {
       throw new Error('Failed to generate content');
     }
-
-    // 6. Get featured image
-    console.log('Getting featured image for:', meta.title);
-    const imageResult = await getFeaturedImage(
-      meta.title,
-      meta.excerpt,
-      blogTopic.category,
-      meta.slug,
-    );
-
-    // 7. Get or create author
-    const authorRef = await getOrCreateAuthor(blogTopic.category);
-
-    // 8. Get or create category
-    const categoryRef = await getOrCreateCategory(blogTopic.category);
 
     // 9. Convert content to Portable Text
     const portableText = markdownToPortableText(content);

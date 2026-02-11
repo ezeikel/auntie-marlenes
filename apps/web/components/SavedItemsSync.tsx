@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSession } from '@/hooks/useSession';
 import { syncLocalSavesToDB } from '@/app/actions';
 import { getLocalSaves, clearLocalSaves } from '@/lib/localStorage-saves';
@@ -11,11 +11,13 @@ import { getLocalSaves, clearLocalSaves } from '@/lib/localStorage-saves';
  */
 export default function SavedItemsSync() {
   const { isAuthenticated } = useSession();
-  const [hasSynced, setHasSynced] = useState(false);
+  const hasSyncedRef = useRef(false);
 
   useEffect(() => {
     // Only sync once when user becomes authenticated
-    if (isAuthenticated && !hasSynced) {
+    if (isAuthenticated && !hasSyncedRef.current) {
+      hasSyncedRef.current = true;
+
       const syncSaves = async () => {
         const localSaves = getLocalSaves();
 
@@ -24,15 +26,13 @@ export default function SavedItemsSync() {
             const result = await syncLocalSavesToDB({ productIds: localSaves });
 
             if (result.success) {
-              console.log(`✅ Synced ${result.synced} saved items to database`);
+              console.log(`Synced ${result.synced} saved items to database`);
               clearLocalSaves();
             }
           } catch (error) {
             console.error('Failed to sync saved items:', error);
           }
         }
-
-        setHasSynced(true);
       };
 
       syncSaves();
@@ -40,9 +40,9 @@ export default function SavedItemsSync() {
 
     // Reset sync status when user logs out
     if (!isAuthenticated) {
-      setHasSynced(false);
+      hasSyncedRef.current = false;
     }
-  }, [isAuthenticated, hasSynced]);
+  }, [isAuthenticated]);
 
   // This component doesn't render anything
   return null;

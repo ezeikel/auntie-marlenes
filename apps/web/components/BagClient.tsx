@@ -269,6 +269,7 @@ export default function BagClient({
                         <button
                           onClick={() => handleRemoveItem(node.id)}
                           disabled={isPending}
+                          aria-label={`Remove ${product.title} from bag`}
                           className="text-sm text-gray-600 hover:text-red-600 flex items-center gap-1.5 transition-colors disabled:opacity-50"
                         >
                           <FontAwesomeIcon icon={faTrash} size="sm" />

@@ -98,6 +98,7 @@ const Header = ({ bagSlot }: HeaderProps) => {
                 <Input
                   type="search"
                   placeholder={t('navigation.searchPlaceholder')}
+                  aria-label={t('navigation.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full h-10 pr-12 bg-gray-50 border-gray-300 focus:bg-white focus:ring-sage-green"
@@ -133,6 +134,7 @@ const Header = ({ bagSlot }: HeaderProps) => {
                     href={isAuthenticated ? '/account' : '/sign-in'}
                     className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-10 w-10 relative"
                     onMouseEnter={() => setAccountOpen(true)}
+                    onFocus={() => setAccountOpen(true)}
                     onClick={handleAccountClick}
                   >
                     <FontAwesomeIcon
@@ -179,9 +181,10 @@ const Header = ({ bagSlot }: HeaderProps) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10"
+                  className="h-11 w-11"
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   aria-label="Toggle menu"
+                  aria-expanded={isMenuOpen}
                 >
                   {isMenuOpen ? (
                     <FontAwesomeIcon icon={faTimes} />
@@ -200,6 +203,7 @@ const Header = ({ bagSlot }: HeaderProps) => {
                 <Input
                   type="search"
                   placeholder={t('navigation.searchPlaceholderMobile')}
+                  aria-label={t('navigation.searchPlaceholderMobile')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full h-10 pr-12 bg-gray-50 border-gray-300 focus:bg-white focus:ring-sage-green text-sm"

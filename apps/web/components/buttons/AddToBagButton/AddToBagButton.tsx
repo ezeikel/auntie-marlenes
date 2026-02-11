@@ -166,7 +166,15 @@ const AddToBagButton = ({
       >
         {isPending ? 'ADDING...' : buttonText}
       </Button>
-      {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+      {error && (
+        <p
+          role="alert"
+          aria-live="polite"
+          className="text-sm text-red-600 mt-1"
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 };

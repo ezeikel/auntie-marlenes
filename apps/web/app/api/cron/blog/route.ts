@@ -106,12 +106,12 @@ export async function POST(request: NextRequest) {
     if (action === 'seed') {
       console.log('Seeding authors and categories');
 
-      // Seed authors
-      const authorsResult = await seedAuthors();
+      // Seed authors and categories in parallel
+      const [authorsResult, categoriesResult] = await Promise.all([
+        seedAuthors(),
+        seedCategories(),
+      ]);
       console.log('Authors seeding result:', authorsResult);
-
-      // Seed categories
-      const categoriesResult = await seedCategories();
       console.log('Categories seeding result:', categoriesResult);
 
       return NextResponse.json({
