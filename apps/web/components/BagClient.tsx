@@ -170,10 +170,10 @@ export default function BagClient({
               {cart.lines.edges.map(({ node }: any) => {
                 const product = node.merchandise.product;
                 const variant = node.merchandise;
-                const price = parseFloat(variant.priceV2.amount);
-                const currencyCode = variant.priceV2.currencyCode;
-                const compareAtPrice = variant.compareAtPriceV2
-                  ? parseFloat(variant.compareAtPriceV2.amount)
+                const price = parseFloat(variant.price.amount);
+                const currencyCode = variant.price.currencyCode;
+                const compareAtPrice = variant.compareAtPrice
+                  ? parseFloat(variant.compareAtPrice.amount)
                   : undefined;
                 const itemTotal = price * node.quantity;
                 const imageUrl =

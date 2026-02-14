@@ -19,7 +19,7 @@ type CartLine = {
   merchandise: {
     id: string;
     title: string;
-    priceV2: {
+    price: {
       amount: string;
       currencyCode: string;
     };
@@ -76,8 +76,7 @@ export default function BagIconClient({
       if (!removedLine) return state;
 
       const lineTotal =
-        parseFloat(removedLine.merchandise.priceV2.amount) *
-        removedLine.quantity;
+        parseFloat(removedLine.merchandise.price.amount) * removedLine.quantity;
       const newLines = state.lines.filter((l) => l.id !== action.lineId);
       return {
         lines: newLines,
@@ -90,7 +89,7 @@ export default function BagIconClient({
       const line = state.lines.find((l) => l.id === action.lineId);
       if (!line) return state;
 
-      const price = parseFloat(line.merchandise.priceV2.amount);
+      const price = parseFloat(line.merchandise.price.amount);
       const oldTotal = price * line.quantity;
       const newTotal = price * action.quantity;
       const newLines = state.lines.map((l) =>
@@ -198,7 +197,9 @@ export default function BagIconClient({
           cartId={cartId}
           lines={optimisticState.lines}
           subtotal={optimisticState.subtotal}
-          currencyCode={optimisticState.lines[0]?.merchandise.priceV2.currencyCode}
+          currencyCode={
+            optimisticState.lines[0]?.merchandise.price.currencyCode
+          }
           checkoutUrl={checkoutUrl}
           onClose={() => setBagOpen(false)}
           onUpdateQuantity={handleUpdateQuantity}

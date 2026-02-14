@@ -13,7 +13,7 @@ type CartLine = {
   merchandise: {
     id: string;
     title: string;
-    priceV2: {
+    price: {
       amount: string;
       currencyCode: string;
     };
@@ -60,7 +60,8 @@ const BagPopover = ({
 }: BagPopoverProps) => {
   const totalItems = lines.reduce((acc, line) => acc + line.quantity, 0);
   // Get currency from prop or fallback to first line item's currency
-  const currency = currencyCode || lines[0]?.merchandise.priceV2.currencyCode || 'GBP';
+  const currency =
+    currencyCode || lines[0]?.merchandise.price.currencyCode || 'GBP';
 
   return (
     <div className="w-[380px] bg-white rounded-lg shadow-2xl border border-gray-200">
@@ -93,7 +94,7 @@ const BagPopover = ({
       {/* Items */}
       <div className="max-h-[400px] overflow-y-auto">
         {lines.map((line) => {
-          const price = parseFloat(line.merchandise.priceV2.amount);
+          const price = parseFloat(line.merchandise.price.amount);
           const imageUrl =
             line.merchandise.image?.url ||
             line.merchandise.product.images?.edges[0]?.node.url ||
@@ -161,7 +162,10 @@ const BagPopover = ({
                       </button>
                     </div>
                     <p className="text-base font-bold text-cocoa">
-                      {formatCurrency(price * line.quantity, line.merchandise.priceV2.currencyCode)}
+                      {formatCurrency(
+                        price * line.quantity,
+                        line.merchandise.price.currencyCode,
+                      )}
                     </p>
                   </div>
                 </div>

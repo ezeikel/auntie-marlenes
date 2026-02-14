@@ -1,54 +1,81 @@
+import type { Product } from '@/lib/constants';
+
 export type FilterOption = {
-  id: string
-  label: string
-  count?: number
-}
+  id: string;
+  label: string;
+  count?: number;
+};
 
 export type FilterSection = {
-  id: string
-  title: string
-  type: "checkbox" | "price" | "toggle"
-  options?: FilterOption[]
-  min?: number
-  max?: number
+  id: string;
+  title: string;
+  type: 'checkbox' | 'price' | 'toggle';
+  options?: FilterOption[];
+  min?: number;
+  max?: number;
+};
+
+export function getFilterSections(products: Product[]): FilterSection[] {
+  // Derive categories from products
+  const categoryCounts = new Map<string, number>();
+  for (const p of products) {
+    if (p.category) {
+      categoryCounts.set(p.category, (categoryCounts.get(p.category) || 0) + 1);
+    }
+  }
+  const categoryOptions: FilterOption[] = Array.from(categoryCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, count]) => ({
+      id: label.toLowerCase().replace(/\s+/g, '-'),
+      label,
+      count,
+    }));
+
+  // Derive brands from products
+  const brandCounts = new Map<string, number>();
+  for (const p of products) {
+    if (p.brand) {
+      brandCounts.set(p.brand, (brandCounts.get(p.brand) || 0) + 1);
+    }
+  }
+  const brandOptions: FilterOption[] = Array.from(brandCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, count]) => ({
+      id: label.toLowerCase().replace(/\s+/g, '-'),
+      label,
+      count,
+    }));
+
+  // Derive price range from products
+  const prices = products.map((p) => p.price).filter((p) => p > 0);
+  const maxPrice = prices.length > 0 ? Math.ceil(Math.max(...prices)) : 10000;
+
+  return [
+    {
+      id: 'availability',
+      title: 'Availability',
+      type: 'toggle',
+    },
+    {
+      id: 'category',
+      title: 'Category',
+      type: 'checkbox',
+      options: categoryOptions,
+    },
+    {
+      id: 'brand',
+      title: 'Brand',
+      type: 'checkbox',
+      options: brandOptions,
+    },
+    {
+      id: 'price',
+      title: 'Price',
+      type: 'price',
+      min: 0,
+      max: maxPrice,
+    },
+  ];
 }
 
-export const filterSections: FilterSection[] = [
-  {
-    id: "availability",
-    title: "Availability",
-    type: "toggle",
-  },
-  {
-    id: "category",
-    title: "Category",
-    type: "checkbox",
-    options: [
-      { id: "hair-care", label: "Hair Care", count: 4 },
-      { id: "styling", label: "Styling", count: 2 },
-      { id: "accessories", label: "Accessories", count: 1 },
-      { id: "skincare", label: "Skincare", count: 0 },
-    ],
-  },
-  {
-    id: "brand",
-    title: "Brand",
-    type: "checkbox",
-    options: [
-      { id: "cantu", label: "Cantu", count: 2 },
-      { id: "shea-moisture", label: "SheaMoisture", count: 1 },
-      { id: "creme-of-nature", label: "Creme of Nature", count: 1 },
-      { id: "mielle", label: "Mielle Organics", count: 1 },
-      { id: "ors", label: "ORS", count: 1 },
-      { id: "sunny-isle", label: "Sunny Isle", count: 1 },
-      { id: "generic", label: "Generic", count: 1 },
-    ],
-  },
-  {
-    id: "price",
-    title: "Price",
-    type: "price",
-    min: 0,
-    max: 10000, // High default to support all currencies
-  },
-]
+export const filterSections: FilterSection[] = getFilterSections([]);

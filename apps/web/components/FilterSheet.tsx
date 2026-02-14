@@ -22,9 +22,10 @@ import {
 } from '@/components/ui/accordion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSliders } from '@fortawesome/pro-regular-svg-icons';
-import { filterSections } from '@/lib/filters';
+import { filterSections, getFilterSections } from '@/lib/filters';
 import { formatCurrency } from '@/lib/currency';
 import { useLocation } from '@/contexts/LocationContext';
+import type { Product } from '@/lib/constants';
 
 type Filters = {
   inStockOnly: boolean;
@@ -34,11 +35,13 @@ type Filters = {
 };
 
 type FilterSheetProps = {
+  products?: Product[];
   onFilterChange?: (filters: Filters) => void;
 };
 
-const FilterSheet = ({ onFilterChange }: FilterSheetProps) => {
+const FilterSheet = ({ products, onFilterChange }: FilterSheetProps) => {
   const { currency } = useLocation();
+  const sections = products ? getFilterSections(products) : filterSections;
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     inStockOnly: false,
@@ -113,7 +116,7 @@ const FilterSheet = ({ onFilterChange }: FilterSheetProps) => {
           defaultValue={['availability', 'category', 'brand', 'price']}
           className="space-y-2"
         >
-          {filterSections.map((section) => (
+          {sections.map((section) => (
             <AccordionItem
               key={section.id}
               value={section.id}

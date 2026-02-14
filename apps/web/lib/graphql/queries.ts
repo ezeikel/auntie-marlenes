@@ -13,11 +13,11 @@ export const GET_CART_QUERY = gql`
               ... on ProductVariant {
                 id
                 title
-                priceV2 {
+                price {
                   amount
                   currencyCode
                 }
-                compareAtPriceV2 {
+                compareAtPrice {
                   amount
                   currencyCode
                 }
@@ -86,11 +86,11 @@ export const CREATE_CART_MUTATION = gql`
                 ... on ProductVariant {
                   id
                   title
-                  priceV2 {
+                  price {
                     amount
                     currencyCode
                   }
-                  compareAtPriceV2 {
+                  compareAtPrice {
                     amount
                     currencyCode
                   }
@@ -150,11 +150,11 @@ export const ADD_PRODUCTS_TO_CART_MUTATION = gql`
                 ... on ProductVariant {
                   id
                   title
-                  priceV2 {
+                  price {
                     amount
                     currencyCode
                   }
-                  compareAtPriceV2 {
+                  compareAtPrice {
                     amount
                     currencyCode
                   }
@@ -216,11 +216,11 @@ export const CART_LINE_REMOVE_MUTATION = gql`
                 ... on ProductVariant {
                   id
                   title
-                  priceV2 {
+                  price {
                     amount
                     currencyCode
                   }
-                  compareAtPriceV2 {
+                  compareAtPrice {
                     amount
                     currencyCode
                   }
@@ -285,11 +285,11 @@ export const CART_LINES_UPDATE_MUTATION = gql`
                 ... on ProductVariant {
                   id
                   title
-                  priceV2 {
+                  price {
                     amount
                     currencyCode
                   }
-                  compareAtPriceV2 {
+                  compareAtPrice {
                     amount
                     currencyCode
                   }
@@ -359,7 +359,8 @@ export const CART_BUYER_IDENTITY_UPDATE_MUTATION = gql`
 `;
 
 export const GET_PRODUCT_QUERY = gql`
-  query GET_PRODUCT_QUERY($id: ID!, $country: CountryCode = GB) @inContext(country: $country) {
+  query GET_PRODUCT_QUERY($id: ID!, $country: CountryCode = GB)
+  @inContext(country: $country) {
     product(id: $id) {
       id
       handle
@@ -410,7 +411,10 @@ export const GET_PRODUCT_QUERY = gql`
 `;
 
 export const GET_PRODUCT_BY_HANDLE_QUERY = gql`
-  query GET_PRODUCT_BY_HANDLE_QUERY($handle: String!, $country: CountryCode = GB) @inContext(country: $country) {
+  query GET_PRODUCT_BY_HANDLE_QUERY(
+    $handle: String!
+    $country: CountryCode = GB
+  ) @inContext(country: $country) {
     productByHandle(handle: $handle) {
       id
       handle

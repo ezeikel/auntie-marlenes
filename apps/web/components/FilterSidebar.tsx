@@ -13,9 +13,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { filterSections } from '@/lib/filters';
+import { filterSections, getFilterSections } from '@/lib/filters';
 import { formatCurrency } from '@/lib/currency';
 import { useLocation } from '@/contexts/LocationContext';
+import type { Product } from '@/lib/constants';
 
 type Filters = {
   inStockOnly: boolean;
@@ -25,11 +26,13 @@ type Filters = {
 };
 
 type FilterSidebarProps = {
+  products?: Product[];
   onFilterChange?: (filters: Filters) => void;
 };
 
-const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
+const FilterSidebar = ({ products, onFilterChange }: FilterSidebarProps) => {
   const { currency } = useLocation();
+  const sections = products ? getFilterSections(products) : filterSections;
   const [filters, setFilters] = useState<Filters>({
     inStockOnly: false,
     categories: [],
@@ -105,7 +108,7 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
         defaultValue={['availability', 'category', 'brand', 'price']}
         className="space-y-2"
       >
-        {filterSections.map((section) => (
+        {sections.map((section) => (
           <AccordionItem
             key={section.id}
             value={section.id}
@@ -252,7 +255,8 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
                     />
 
                     <p className="text-xs text-gray-500 text-center">
-                      The highest price is {formatCurrency(section.max, currency.code)}
+                      The highest price is{' '}
+                      {formatCurrency(section.max, currency.code)}
                     </p>
                   </div>
                 )}

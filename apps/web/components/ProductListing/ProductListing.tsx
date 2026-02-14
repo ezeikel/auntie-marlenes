@@ -120,7 +120,13 @@ export default function ProductListing({
   console.log('[ProductListing] Before filters:', {
     total: products.length,
     priceRange: filters.priceRange,
-    samplePrices: products.slice(0, 3).map(p => ({ name: p.name, price: p.price, currencyCode: p.currencyCode }))
+    samplePrices: products
+      .slice(0, 3)
+      .map((p) => ({
+        name: p.name,
+        price: p.price,
+        currencyCode: p.currencyCode,
+      })),
   });
 
   if (filters.inStockOnly) {
@@ -152,7 +158,7 @@ export default function ProductListing({
     before: beforePriceFilter,
     after: filteredProducts.length,
     filtered: beforePriceFilter - filteredProducts.length,
-    priceRange: filters.priceRange
+    priceRange: filters.priceRange,
   });
 
   // Client-side sorting
@@ -209,7 +215,10 @@ export default function ProductListing({
         <div className="lg:grid lg:grid-cols-[280px_1fr] lg:gap-8">
           {/* Desktop Sidebar */}
           <aside className="hidden lg:block">
-            <FilterSidebar onFilterChange={handleFilterChange} />
+            <FilterSidebar
+              products={products}
+              onFilterChange={handleFilterChange}
+            />
           </aside>
 
           <div>
@@ -218,7 +227,10 @@ export default function ProductListing({
               <div className="flex gap-3">
                 {/* Mobile Filter */}
                 <div className="lg:hidden">
-                  <FilterSheet onFilterChange={handleFilterChange} />
+                  <FilterSheet
+                    products={products}
+                    onFilterChange={handleFilterChange}
+                  />
                 </div>
 
                 <DropdownMenu>

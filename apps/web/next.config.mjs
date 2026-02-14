@@ -30,6 +30,43 @@ const nextConfig = {
   // Include Prisma binaries in serverless functions (moved from experimental in Next.js 16)
   serverExternalPackages: ['@prisma/client', '@prisma/engines'],
   skipTrailingSlashRedirect: true,
+  async headers() {
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' connect.facebook.net va.vercel-scripts.com",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: cdn.shopify.com cdn.sanity.io www.facebook.com images.pexels.com",
+      "font-src 'self' fonts.gstatic.com",
+      "connect-src 'self' vitals.vercel-insights.com *.sentry.io",
+      "frame-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+    ].join('; ');
+
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy-Report-Only',
+            value: csp,
+          },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 const sentryOptions = {
