@@ -155,12 +155,14 @@ export const searchProducts = async ({
 
   if (productType) {
     searchQuery += searchQuery
-      ? ` AND product_type:${productType}`
-      : `product_type:${productType}`;
+      ? ` AND product_type:"${productType}"`
+      : `product_type:"${productType}"`;
   }
 
   if (vendor) {
-    searchQuery += searchQuery ? ` AND vendor:${vendor}` : `vendor:${vendor}`;
+    searchQuery += searchQuery
+      ? ` AND vendor:"${vendor}"`
+      : `vendor:"${vendor}"`;
   }
 
   const variables = {
