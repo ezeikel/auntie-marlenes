@@ -9,24 +9,24 @@ type Category = {
 
 const categories: Category[] = [
   {
-    name: 'Women',
-    href: '/women',
-    image: '/images/categories/women.png',
+    name: 'Hair Care',
+    href: '/hair-care',
+    image: '/images/categories/hair-care.png',
   },
   {
-    name: 'Men',
-    href: '/men',
-    image: '/images/categories/men.png',
+    name: 'Wigs & Extensions',
+    href: '/wigs-extensions',
+    image: '/images/categories/wigs-extensions.png',
   },
   {
-    name: 'Kids',
-    href: '/kids',
-    image: '/images/categories/kids.png',
+    name: 'Skin Care',
+    href: '/skin-care',
+    image: '/images/categories/skin-care.png',
   },
   {
-    name: 'Accessories',
-    href: '/accessories',
-    image: '/images/categories/accessories.png',
+    name: 'Body Care',
+    href: '/body-care',
+    image: '/images/categories/body-care.png',
   },
 ];
 

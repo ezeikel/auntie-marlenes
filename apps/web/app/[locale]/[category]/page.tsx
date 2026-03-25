@@ -18,17 +18,21 @@ type CategoryPageProps = {
 
 // Category-specific descriptions for better SEO
 const categoryDescriptions: Record<string, string> = {
-  'braiding-hair':
-    'Shop premium braiding hair including X-Pression, Kanekalon, and more. Perfect for box braids, cornrows, and protective styles. Fast worldwide shipping.',
-  wigs: 'Browse our collection of human hair and synthetic wigs. From lace fronts to full wigs, find your perfect style. Premium quality guaranteed.',
-  'hair-extensions':
-    'Shop clip-in, sew-in, and tape-in hair extensions. 100% human hair and high-quality synthetic options available.',
-  'hair-treatments':
-    'Deep conditioners, protein treatments, and hair masks for healthy, strong hair. Shop trusted brands for all hair types.',
-  'styling-products':
-    'Edge control, gels, mousse, and styling creams. Everything you need for perfect styles that last.',
-  'hair-growth':
-    'Hair growth oils, vitamins, and treatments to help you achieve your hair goals. Natural and effective formulas.',
+  'hair-care':
+    'Shop premium hair care for natural, textured, and afro hair. Shampoos, conditioners, treatments, and styling products from Mielle, Cantu, Shea Moisture and more.',
+  'wigs-extensions':
+    'Browse wigs, lace fronts, braiding hair, and clip-in extensions. From affordable synthetic to premium human hair. Fast UK shipping.',
+  'skin-care':
+    'Skincare for melanin-rich skin. Cleansers, serums, moisturisers and treatments from CeraVe, The Ordinary, Buttah Skin and Fenty Skin.',
+  'body-care':
+    "Nourishing body lotions, butters, washes and scrubs. Keep your skin soft and hydrated with Palmer's, Vaseline, Shea Moisture and more.",
+  accessories:
+    'Essential hair tools and accessories. Satin bonnets, pillowcases, detangling brushes, combs, and edge brushes.',
+  kids: 'Gentle, tear-free hair care for kids with textured and afro hair. Shampoos, conditioners, and detanglers from Cantu Kids and African Pride.',
+  mens: "Men's grooming products for afro and textured hair. Shampoos, beard oils, pomades and more from Cantu Men's and Shea Moisture.",
+  styling:
+    'Edge control, gels, curl activators and styling products. Everything you need for perfect styles that last.',
+  sale: 'Shop sale items and special offers on hair care, beauty, and accessories.',
 };
 
 // Generate metadata for category pages

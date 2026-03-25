@@ -178,10 +178,10 @@ export const navLinks: NavLink[] = [
   { nameKey: 'navigation.home', href: '/' },
   { nameKey: 'navigation.shop', href: '/shop' },
   { nameKey: 'navigation.hairCare', href: '/hair-care' },
-  { nameKey: 'navigation.skincare', href: '/skincare' },
   { nameKey: 'navigation.wigsExtensions', href: '/wigs-extensions' },
-  { nameKey: 'navigation.kids', href: '/kids' },
-  { nameKey: 'navigation.mens', href: '/mens' },
+  { nameKey: 'navigation.skinCare', href: '/skin-care' },
+  { nameKey: 'navigation.bodyCare', href: '/body-care' },
+  { nameKey: 'navigation.accessories', href: '/accessories' },
   { nameKey: 'navigation.sale', href: '/sale', isHighlight: true },
   { nameKey: 'navigation.blog', href: '/blog' },
 ];
