@@ -20,8 +20,8 @@ const badges: TrustBadge[] = [
   },
   {
     icon: faBox,
-    title: 'Over 3000+ Products',
-    description: 'From trusted brands',
+    title: 'Curated Collection',
+    description: 'Handpicked trusted brands',
   },
   {
     icon: faGift,

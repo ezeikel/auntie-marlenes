@@ -4,11 +4,15 @@ import ProductCarousel from '@/components/ProductCarousel';
 import ShopByCategory from '@/components/ShopByCategory';
 import TrustBadges from '@/components/TrustBadges';
 import BundleDeals from '@/components/BundleDeals';
-import BrandSpotlight from '@/components/BrandSpotlight';
-import Testimonials from '@/components/Testimonials';
-import FeaturedIn from '@/components/FeaturedIn';
+// TODO: Re-enable once we have real brand partnerships
+// import BrandSpotlight from '@/components/BrandSpotlight';
+// TODO: Re-enable once we have real customer testimonials
+// import Testimonials from '@/components/Testimonials';
+// TODO: Re-enable once we have real press coverage
+// import FeaturedIn from '@/components/FeaturedIn';
 import BlogSection from '@/components/BlogSection';
 import SocialMediaShowcase from '@/components/SocialMediaShowcase';
+import NewArrivals from '@/components/NewArrivals';
 import { generatePageMetadata } from '@/lib/metadata';
 import type { Metadata } from 'next';
 
@@ -16,7 +20,7 @@ export const metadata: Metadata = generatePageMetadata({
   title:
     "Auntie Marlene's | Black Beauty Supply Store Online | Worldwide Shipping",
   description:
-    'Your modern Black hair & beauty supply store. Shop braiding hair, wigs, extensions, treatments & styling essentials. Premium brands, expert advice, fast global shipping. Trusted by 50,000+ families worldwide. Family-run & Black-owned.',
+    'Your modern Black hair & beauty supply store. Shop hair care, wigs, extensions, skincare & styling essentials. Premium brands, expert advice, fast UK shipping. Family-run & Black-owned.',
   path: '/',
   keywords: [
     'black beauty supply store',
@@ -43,11 +47,12 @@ const HomePage = async ({ params }: HomePageProps) => {
       <TrustBadges />
       <ProductCarousel />
       <ShopByCategory />
+      <NewArrivals />
       <BundleDeals />
-      <BrandSpotlight />
+      {/* <BrandSpotlight /> */}
       <SocialMediaShowcase />
-      <Testimonials />
-      <FeaturedIn />
+      {/* <Testimonials /> */}
+      {/* <FeaturedIn /> */}
       <BlogSection />
     </div>
   );

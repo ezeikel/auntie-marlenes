@@ -11,22 +11,22 @@ const categories: Category[] = [
   {
     name: 'Hair Care',
     href: '/hair-care',
-    image: '/images/categories/hair-care.png',
+    image: '/images/categories/hair-care.jpg',
   },
   {
     name: 'Wigs & Extensions',
     href: '/wigs-extensions',
-    image: '/images/categories/wigs-extensions.png',
+    image: '/images/categories/wigs-extensions.jpg',
   },
   {
     name: 'Skin Care',
     href: '/skin-care',
-    image: '/images/categories/skin-care.png',
+    image: '/images/categories/skin-care.jpg',
   },
   {
     name: 'Body Care',
     href: '/body-care',
-    image: '/images/categories/body-care.png',
+    image: '/images/categories/body-care.jpg',
   },
 ];
 
