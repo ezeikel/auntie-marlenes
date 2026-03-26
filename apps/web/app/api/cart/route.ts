@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { headers } from 'next/headers';
 import { createCart, getCart as getCartAction } from '@/app/actions';
+import { rateLimit } from '@/lib/rate-limit';
 
 /**
  * POST /api/cart - Create a new cart
@@ -8,6 +9,9 @@ import { createCart, getCart as getCartAction } from '@/app/actions';
  * Optional auth via Bearer token (pre-fills buyer identity)
  */
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, { limit: 30, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const { productVariantId } = await request.json();
 
@@ -43,6 +47,9 @@ export async function POST(request: NextRequest) {
  * Query param: cartId
  */
 export async function GET(request: NextRequest) {
+  const limited = rateLimit(request, { limit: 30, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const { searchParams } = new URL(request.url);
     const cartId = searchParams.get('cartId');

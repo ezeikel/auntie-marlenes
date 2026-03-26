@@ -14,6 +14,8 @@ import AnnouncementBanner from '@/components/AnnouncementBanner';
 import Header from '@/components/HeaderWrapper';
 import Footer from '@/components/Footer';
 import { locales, type Locale } from '@/i18n/config';
+// Validate environment variables at startup
+import '@/lib/env';
 
 export const metadata: Metadata = {
   metadataBase: new URL(

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchProducts } from '@/app/actions';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const limited = rateLimit(request, { limit: 60, windowMs: 60_000 });
+  if (limited) return limited;
+
   const { searchParams } = new URL(request.url);
 
   const countryCode = searchParams.get('country') || 'GB';
@@ -29,7 +33,7 @@ export async function GET(request: NextRequest) {
     console.error('Failed to search products:', error);
     return NextResponse.json(
       { error: 'Failed to search products' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

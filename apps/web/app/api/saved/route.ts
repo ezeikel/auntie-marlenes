@@ -2,12 +2,16 @@ import { NextRequest } from 'next/server';
 import { getUserIdFromToken } from '@/lib/auth-mobile';
 import { db } from '@/lib/prisma';
 import { revalidateTag } from 'next/cache';
+import { rateLimit } from '@/lib/rate-limit';
 
 /**
  * GET /api/saved - Get user's saved items
  * Requires authentication
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const limited = rateLimit(request, { limit: 30, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const userId = await getUserIdFromToken();
 
@@ -52,6 +56,9 @@ export async function GET() {
  * Requires authentication
  */
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, { limit: 30, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const userId = await getUserIdFromToken();
 
@@ -111,6 +118,9 @@ export async function POST(request: NextRequest) {
  * Requires authentication
  */
 export async function DELETE(request: NextRequest) {
+  const limited = rateLimit(request, { limit: 30, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const userId = await getUserIdFromToken();
 

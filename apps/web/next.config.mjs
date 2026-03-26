@@ -35,9 +35,9 @@ const nextConfig = {
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' connect.facebook.net va.vercel-scripts.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: cdn.shopify.com cdn.sanity.io www.facebook.com images.pexels.com",
+      "img-src 'self' data: blob: cdn.shopify.com cdn.sanity.io www.facebook.com images.pexels.com",
       "font-src 'self' fonts.gstatic.com",
-      "connect-src 'self' vitals.vercel-insights.com *.sentry.io",
+      "connect-src 'self' vitals.vercel-insights.com *.sentry.io eu.i.posthog.com eu-assets.i.posthog.com",
       "frame-src 'self'",
       "object-src 'none'",
       "base-uri 'self'",
@@ -50,7 +50,7 @@ const nextConfig = {
         source: '/(.*)',
         headers: [
           {
-            key: 'Content-Security-Policy-Report-Only',
+            key: 'Content-Security-Policy',
             value: csp,
           },
           { key: 'X-Frame-Options', value: 'DENY' },

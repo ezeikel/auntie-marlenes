@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProductByHandle } from '@/app/actions';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ handle: string }> },
 ) {
+  const limited = rateLimit(request, { limit: 60, windowMs: 60_000 });
+  if (limited) return limited;
+
   const { handle } = await params;
   const { searchParams } = new URL(request.url);
   const countryCode = searchParams.get('country') || 'GB';

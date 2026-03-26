@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { getUserIdFromToken } from '@/lib/auth-mobile';
 import { db } from '@/lib/prisma';
 import { revalidateTag } from 'next/cache';
+import { rateLimit } from '@/lib/rate-limit';
 
 /**
  * POST /api/saved/sync - Sync local saved items to database
@@ -11,6 +12,9 @@ import { revalidateTag } from 'next/cache';
  * Used when user logs in to merge their local saved items with backend
  */
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, { limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const userId = await getUserIdFromToken();
 

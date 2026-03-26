@@ -5,6 +5,8 @@ import {
   seedCategories,
 } from '@/app/actions/blog';
 
+export const maxDuration = 300;
+
 /**
  * Cron job endpoint for automatic blog generation
  *

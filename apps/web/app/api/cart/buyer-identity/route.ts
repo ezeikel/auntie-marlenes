@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { updateCartBuyerIdentity } from '@/app/actions';
+import { rateLimit } from '@/lib/rate-limit';
 
 /**
  * PATCH /api/cart/buyer-identity - Update cart buyer identity
@@ -7,6 +8,9 @@ import { updateCartBuyerIdentity } from '@/app/actions';
  * Called when user logs in to associate cart with their email
  */
 export async function PATCH(request: NextRequest) {
+  const limited = rateLimit(request, { limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const { cartId, email, countryCode } = await request.json();
 

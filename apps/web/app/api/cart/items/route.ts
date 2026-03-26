@@ -4,12 +4,16 @@ import {
   removeProductFromCart,
   updateCartLineQuantity,
 } from '@/app/actions';
+import { rateLimit } from '@/lib/rate-limit';
 
 /**
  * POST /api/cart/items - Add product to cart
  * Body: { cartId: string, productVariantId: string }
  */
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, { limit: 30, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const { cartId, productVariantId } = await request.json();
 
@@ -48,6 +52,9 @@ export async function POST(request: NextRequest) {
  * Body: { cartId: string, lineId: string }
  */
 export async function DELETE(request: NextRequest) {
+  const limited = rateLimit(request, { limit: 30, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const { cartId, lineId } = await request.json();
 
@@ -86,6 +93,9 @@ export async function DELETE(request: NextRequest) {
  * Body: { cartId: string, lineId: string, quantity: number }
  */
 export async function PATCH(request: NextRequest) {
+  const limited = rateLimit(request, { limit: 30, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const { cartId, lineId, quantity } = await request.json();
 
