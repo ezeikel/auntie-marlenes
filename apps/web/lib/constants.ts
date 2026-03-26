@@ -215,7 +215,7 @@ export const socialLinks: SocialLink[] = [
   },
   {
     name: 'WhatsApp',
-    href: 'https://wa.me/1234567890', // Update with actual WhatsApp number
+    href: 'https://wa.me/447932442879',
     icon: 'whatsapp',
   },
 ];

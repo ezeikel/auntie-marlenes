@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTruck,
   faBox,
-  faGift,
+  faHandHoldingHeart,
   faShieldHalved,
 } from '@fortawesome/pro-regular-svg-icons';
 
@@ -24,9 +24,9 @@ const badges: TrustBadge[] = [
     description: 'Handpicked trusted brands',
   },
   {
-    icon: faGift,
-    title: "Auntie's Rewards",
-    description: 'Earn points on every purchase',
+    icon: faHandHoldingHeart,
+    title: 'Black-Owned',
+    description: 'Supporting our community',
   },
   {
     icon: faShieldHalved,

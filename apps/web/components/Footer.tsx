@@ -1,6 +1,4 @@
 import Link from 'next/link';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faInstagram,
@@ -9,9 +7,9 @@ import {
   faYoutube,
   faWhatsapp,
 } from '@fortawesome/free-brands-svg-icons';
-import { faArrowRight } from '@fortawesome/pro-regular-svg-icons';
 import { socialLinks } from '@/lib/constants';
 import { cacheLife, cacheTag } from 'next/cache';
+import NewsletterForm from './NewsletterForm';
 
 const iconMap = {
   whatsapp: faWhatsapp,
@@ -72,14 +70,6 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/track-order"
-                  className="hover:text-warm-clay transition-colors text-sm"
-                >
-                  Track Your Order
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/faq"
                   className="hover:text-warm-clay transition-colors text-sm"
                 >
@@ -101,14 +91,6 @@ const Footer = () => {
                   className="hover:text-warm-clay transition-colors text-sm"
                 >
                   Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/size-guide"
-                  className="hover:text-warm-clay transition-colors text-sm"
-                >
-                  Size Guide
                 </Link>
               </li>
               <li>
@@ -184,25 +166,7 @@ const Footer = () => {
               Subscribe to our newsletter so we can keep you up to date with the
               latest offers, discounts and news.
             </p>
-            <form className="space-y-3">
-              <div className="relative">
-                <Input
-                  type="email"
-                  placeholder="Your email address"
-                  aria-label="Email address for newsletter"
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:ring-warm-clay focus:border-warm-clay pr-12 h-12"
-                  required
-                />
-                <Button
-                  type="submit"
-                  size="icon"
-                  className="absolute right-1 top-1 bg-terracotta hover:bg-terracotta/90 text-white h-10 w-10 rounded-md"
-                >
-                  <FontAwesomeIcon icon={faArrowRight} />
-                  <span className="sr-only">Subscribe</span>
-                </Button>
-              </div>
-            </form>
+            <NewsletterForm />
           </div>
         </div>
 

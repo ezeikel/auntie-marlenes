@@ -30,8 +30,7 @@ const Hero = () => {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage:
-              "url('/images/pexels-kampus-6948104.jpg')",
+            backgroundImage: "url('/images/pexels-kampus-6948104.jpg')",
             opacity: 0,
           }}
         />
@@ -45,7 +44,7 @@ const Hero = () => {
         <div className="max-w-2xl">
           {/* Eyebrow text */}
           <p className="text-warm-clay font-inter font-semibold text-sm md:text-base uppercase tracking-wider mb-4 animate-fade-in">
-            Trusted by 50,000+ Families
+            Black-Owned & Family-Run
           </p>
 
           {/* Main Heading */}
@@ -57,9 +56,9 @@ const Hero = () => {
 
           {/* Subheading */}
           <p className="text-lg md:text-xl lg:text-2xl text-warm-beige font-inter mb-8 max-w-xl leading-relaxed animate-slide-up-delay">
-            Discover premium skincare and haircare crafted for melanin-rich skin
-            and textured hair. Because you deserve products that truly
-            understand you.
+            Handpicked hair care, skincare, and beauty essentials for textured
+            hair and melanin-rich skin. Curated with the same care your auntie
+            would give.
           </p>
 
           {/* CTA Buttons */}
@@ -90,7 +89,7 @@ const Hero = () => {
                 size="lg"
               />
               <span className="text-sm md:text-base font-inter">
-                5-Star Rated
+                Premium Brands
               </span>
             </div>
             <div className="flex items-center gap-2">
