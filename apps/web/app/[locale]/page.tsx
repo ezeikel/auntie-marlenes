@@ -13,6 +13,7 @@ import BundleDeals from '@/components/BundleDeals';
 import BlogSection from '@/components/BlogSection';
 import SocialMediaShowcase from '@/components/SocialMediaShowcase';
 import NewArrivals from '@/components/NewArrivals';
+import QuizCTA from '@/components/QuizCTA';
 import { generatePageMetadata } from '@/lib/metadata';
 import type { Metadata } from 'next';
 
@@ -48,6 +49,7 @@ const HomePage = async ({ params }: HomePageProps) => {
       <ProductCarousel />
       <ShopByCategory />
       <NewArrivals />
+      <QuizCTA />
       <BundleDeals />
       {/* <BrandSpotlight /> */}
       <SocialMediaShowcase />
