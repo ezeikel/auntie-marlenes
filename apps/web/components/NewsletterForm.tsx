@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight, faCheck } from '@fortawesome/pro-regular-svg-icons';
 import { subscribeToNewsletter } from '@/app/actions/newsletter';
+import { useAnalytics } from '@/utils/analytics-client';
+import { TRACKING_EVENTS } from '@/constants/events';
 
 const NewsletterForm = () => {
+  const { track } = useAnalytics();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<
     'idle' | 'loading' | 'success' | 'error'
@@ -24,6 +27,10 @@ const NewsletterForm = () => {
     setMessage(result.message);
 
     if (result.success) {
+      track(TRACKING_EVENTS.NEWSLETTER_SUBSCRIBED, {
+        email_domain: email.trim().split('@')[1] || 'unknown',
+        source: 'footer',
+      });
       setEmail('');
     }
   };

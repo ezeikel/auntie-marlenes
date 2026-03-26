@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useAnalytics } from '@/utils/analytics-client';
+import { TRACKING_EVENTS } from '@/constants/events';
 import {
   faArrowLeft,
   faArrowRight,
@@ -564,6 +566,7 @@ function OptionCard<T extends string>({
 // ---------------------------------------------------------------------------
 
 export default function SkinTypeQuiz() {
+  const { track } = useAnalytics();
   const [state, setState] = useState<QuizState>({
     step: 1,
     skinType: null,
@@ -573,6 +576,10 @@ export default function SkinTypeQuiz() {
     concern: null,
     spf: null,
   });
+
+  useEffect(() => {
+    track(TRACKING_EVENTS.QUIZ_STARTED, { quiz_type: 'skin_type' });
+  }, [track]);
 
   const goBack = useCallback(() => {
     setState((prev) => ({ ...prev, step: prev.step - 1 }));
@@ -590,47 +597,119 @@ export default function SkinTypeQuiz() {
     });
   }, []);
 
-  const selectSkinType = useCallback((value: SkinType) => {
-    setState((prev) => ({ ...prev, skinType: value }));
-    setTimeout(() => {
-      setState((prev) => ({ ...prev, step: 2 }));
-    }, 300);
-  }, []);
+  const selectSkinType = useCallback(
+    (value: SkinType) => {
+      setState((prev) => ({ ...prev, skinType: value }));
+      track(TRACKING_EVENTS.QUIZ_STEP_COMPLETED, {
+        quiz_type: 'skin_type',
+        step_number: 1,
+        step_name: 'skin_type',
+        selected_value: value,
+      });
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, step: 2 }));
+      }, 300);
+    },
+    [track],
+  );
 
-  const selectHydration = useCallback((value: HydrationLevel) => {
-    setState((prev) => ({ ...prev, hydration: value }));
-    setTimeout(() => {
-      setState((prev) => ({ ...prev, step: 3 }));
-    }, 300);
-  }, []);
+  const selectHydration = useCallback(
+    (value: HydrationLevel) => {
+      setState((prev) => ({ ...prev, hydration: value }));
+      track(TRACKING_EVENTS.QUIZ_STEP_COMPLETED, {
+        quiz_type: 'skin_type',
+        step_number: 2,
+        step_name: 'hydration',
+        selected_value: value,
+      });
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, step: 3 }));
+      }, 300);
+    },
+    [track],
+  );
 
-  const selectSensitivity = useCallback((value: Sensitivity) => {
-    setState((prev) => ({ ...prev, sensitivity: value }));
-    setTimeout(() => {
-      setState((prev) => ({ ...prev, step: 4 }));
-    }, 300);
-  }, []);
+  const selectSensitivity = useCallback(
+    (value: Sensitivity) => {
+      setState((prev) => ({ ...prev, sensitivity: value }));
+      track(TRACKING_EVENTS.QUIZ_STEP_COMPLETED, {
+        quiz_type: 'skin_type',
+        step_number: 3,
+        step_name: 'sensitivity',
+        selected_value: value,
+      });
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, step: 4 }));
+      }, 300);
+    },
+    [track],
+  );
 
-  const selectPIH = useCallback((value: PIHTendency) => {
-    setState((prev) => ({ ...prev, pih: value }));
-    setTimeout(() => {
-      setState((prev) => ({ ...prev, step: 5 }));
-    }, 300);
-  }, []);
+  const selectPIH = useCallback(
+    (value: PIHTendency) => {
+      setState((prev) => ({ ...prev, pih: value }));
+      track(TRACKING_EVENTS.QUIZ_STEP_COMPLETED, {
+        quiz_type: 'skin_type',
+        step_number: 4,
+        step_name: 'pih_tendency',
+        selected_value: value,
+      });
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, step: 5 }));
+      }, 300);
+    },
+    [track],
+  );
 
-  const selectConcern = useCallback((value: PrimaryConcern) => {
-    setState((prev) => ({ ...prev, concern: value }));
-    setTimeout(() => {
-      setState((prev) => ({ ...prev, step: 6 }));
-    }, 300);
-  }, []);
+  const selectConcern = useCallback(
+    (value: PrimaryConcern) => {
+      setState((prev) => ({ ...prev, concern: value }));
+      track(TRACKING_EVENTS.QUIZ_STEP_COMPLETED, {
+        quiz_type: 'skin_type',
+        step_number: 5,
+        step_name: 'primary_concern',
+        selected_value: value,
+      });
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, step: 6 }));
+      }, 300);
+    },
+    [track],
+  );
 
-  const selectSPF = useCallback((value: SPFHabit) => {
-    setState((prev) => ({ ...prev, spf: value }));
-    setTimeout(() => {
-      setState((prev) => ({ ...prev, step: 7 }));
-    }, 300);
-  }, []);
+  const selectSPF = useCallback(
+    (value: SPFHabit) => {
+      setState((prev) => ({ ...prev, spf: value }));
+      track(TRACKING_EVENTS.QUIZ_STEP_COMPLETED, {
+        quiz_type: 'skin_type',
+        step_number: 6,
+        step_name: 'spf_habits',
+        selected_value: value,
+      });
+      track(TRACKING_EVENTS.QUIZ_COMPLETED, {
+        quiz_type: 'skin_type',
+        results: {
+          skin_type: state.skinType || '',
+          hydration: state.hydration || '',
+          sensitivity: state.sensitivity || '',
+          pih: state.pih || '',
+          concern: state.concern || '',
+          spf: value,
+        },
+      });
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, step: 7 }));
+      }, 300);
+    },
+    [
+      track,
+      state.skinType,
+      state.hydration,
+      state.sensitivity,
+      state.pih,
+      state.concern,
+    ],
+  );
 
   // ---------------------------------------------------------------------------
   // Render helpers

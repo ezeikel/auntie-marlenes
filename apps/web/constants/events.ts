@@ -34,4 +34,13 @@ export const TRACKING_EVENTS = {
   // Checkout Events
   CHECKOUT_STARTED: 'checkout_started',
   CHECKOUT_COMPLETED: 'checkout_completed',
+
+  // Quiz Events
+  QUIZ_STARTED: 'quiz_started',
+  QUIZ_STEP_COMPLETED: 'quiz_step_completed',
+  QUIZ_COMPLETED: 'quiz_completed',
+  QUIZ_RESULT_CTA_CLICKED: 'quiz_result_cta_clicked',
+
+  // Newsletter Events
+  NEWSLETTER_SUBSCRIBED: 'newsletter_subscribed',
 } as const;

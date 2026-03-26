@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useAnalytics } from '@/utils/analytics-client';
+import { TRACKING_EVENTS } from '@/constants/events';
 import {
   faArrowLeft,
   faArrowRight,
@@ -433,6 +435,7 @@ function OptionCard<T extends string>({
 // ---------------------------------------------------------------------------
 
 export default function HairTypeQuiz() {
+  const { track } = useAnalytics();
   const [state, setState] = useState<QuizState>({
     step: 1,
     pattern: null,
@@ -441,6 +444,10 @@ export default function HairTypeQuiz() {
     density: null,
     scalpType: null,
   });
+
+  useEffect(() => {
+    track(TRACKING_EVENTS.QUIZ_STARTED, { quiz_type: 'hair_type' });
+  }, [track]);
 
   const goBack = useCallback(() => {
     setState((prev) => ({ ...prev, step: prev.step - 1 }));
@@ -457,41 +464,94 @@ export default function HairTypeQuiz() {
     });
   }, []);
 
-  const selectPattern = useCallback((value: HairPattern) => {
-    setState((prev) => ({ ...prev, pattern: value, subType: null }));
-    // Auto-advance after a short delay so user sees selection
-    setTimeout(() => {
-      setState((prev) => ({ ...prev, step: 2 }));
-    }, 300);
-  }, []);
+  const selectPattern = useCallback(
+    (value: HairPattern) => {
+      setState((prev) => ({ ...prev, pattern: value, subType: null }));
+      track(TRACKING_EVENTS.QUIZ_STEP_COMPLETED, {
+        quiz_type: 'hair_type',
+        step_number: 1,
+        step_name: 'pattern',
+        selected_value: value,
+      });
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, step: 2 }));
+      }, 300);
+    },
+    [track],
+  );
 
-  const selectSubType = useCallback((value: SubType) => {
-    setState((prev) => ({ ...prev, subType: value }));
-    setTimeout(() => {
-      setState((prev) => ({ ...prev, step: 3 }));
-    }, 300);
-  }, []);
+  const selectSubType = useCallback(
+    (value: SubType) => {
+      setState((prev) => ({ ...prev, subType: value }));
+      track(TRACKING_EVENTS.QUIZ_STEP_COMPLETED, {
+        quiz_type: 'hair_type',
+        step_number: 2,
+        step_name: 'sub_type',
+        selected_value: value,
+      });
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, step: 3 }));
+      }, 300);
+    },
+    [track],
+  );
 
-  const selectPorosity = useCallback((value: Porosity) => {
-    setState((prev) => ({ ...prev, porosity: value }));
-    setTimeout(() => {
-      setState((prev) => ({ ...prev, step: 4 }));
-    }, 300);
-  }, []);
+  const selectPorosity = useCallback(
+    (value: Porosity) => {
+      setState((prev) => ({ ...prev, porosity: value }));
+      track(TRACKING_EVENTS.QUIZ_STEP_COMPLETED, {
+        quiz_type: 'hair_type',
+        step_number: 3,
+        step_name: 'porosity',
+        selected_value: value,
+      });
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, step: 4 }));
+      }, 300);
+    },
+    [track],
+  );
 
-  const selectDensity = useCallback((value: Density) => {
-    setState((prev) => ({ ...prev, density: value }));
-    setTimeout(() => {
-      setState((prev) => ({ ...prev, step: 5 }));
-    }, 300);
-  }, []);
+  const selectDensity = useCallback(
+    (value: Density) => {
+      setState((prev) => ({ ...prev, density: value }));
+      track(TRACKING_EVENTS.QUIZ_STEP_COMPLETED, {
+        quiz_type: 'hair_type',
+        step_number: 4,
+        step_name: 'density',
+        selected_value: value,
+      });
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, step: 5 }));
+      }, 300);
+    },
+    [track],
+  );
 
-  const selectScalp = useCallback((value: ScalpType) => {
-    setState((prev) => ({ ...prev, scalpType: value }));
-    setTimeout(() => {
-      setState((prev) => ({ ...prev, step: 6 }));
-    }, 300);
-  }, []);
+  const selectScalp = useCallback(
+    (value: ScalpType) => {
+      setState((prev) => ({ ...prev, scalpType: value }));
+      track(TRACKING_EVENTS.QUIZ_STEP_COMPLETED, {
+        quiz_type: 'hair_type',
+        step_number: 5,
+        step_name: 'scalp_type',
+        selected_value: value,
+      });
+      track(TRACKING_EVENTS.QUIZ_COMPLETED, {
+        quiz_type: 'hair_type',
+        results: {
+          sub_type: state.subType || '',
+          porosity: state.porosity || '',
+          density: state.density || '',
+          scalp_type: value,
+        },
+      });
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, step: 6 }));
+      }, 300);
+    },
+    [track, state.subType, state.porosity, state.density],
+  );
 
   // ---------------------------------------------------------------------------
   // Render helpers

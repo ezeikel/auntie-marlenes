@@ -198,4 +198,30 @@ export type EventProperties = {
     customer_email: string;
     item_count?: number;
   };
+
+  // Quiz Events
+  [TRACKING_EVENTS.QUIZ_STARTED]: {
+    quiz_type: 'hair_type' | 'skin_type';
+  };
+  [TRACKING_EVENTS.QUIZ_STEP_COMPLETED]: {
+    quiz_type: 'hair_type' | 'skin_type';
+    step_number: number;
+    step_name: string;
+    selected_value: string;
+  };
+  [TRACKING_EVENTS.QUIZ_COMPLETED]: {
+    quiz_type: 'hair_type' | 'skin_type';
+    results: Record<string, string>;
+  };
+  [TRACKING_EVENTS.QUIZ_RESULT_CTA_CLICKED]: {
+    quiz_type: 'hair_type' | 'skin_type';
+    cta_label: string;
+    cta_href: string;
+  };
+
+  // Newsletter Events
+  [TRACKING_EVENTS.NEWSLETTER_SUBSCRIBED]: {
+    email_domain: string;
+    source: string;
+  };
 };
