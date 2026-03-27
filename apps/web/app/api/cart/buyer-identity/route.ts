@@ -1,6 +1,14 @@
 import { NextRequest } from 'next/server';
+import { z, ZodError } from 'zod';
 import { updateCartBuyerIdentity } from '@/app/actions';
 import { rateLimit } from '@/lib/rate-limit';
+import { corsHeaders, corsOptionsResponse } from '@/lib/cors';
+
+const buyerIdentitySchema = z.object({
+  cartId: z.string().min(1),
+  email: z.string().email(),
+  countryCode: z.string().length(2).optional(),
+});
 
 /**
  * PATCH /api/cart/buyer-identity - Update cart buyer identity
@@ -12,14 +20,8 @@ export async function PATCH(request: NextRequest) {
   if (limited) return limited;
 
   try {
-    const { cartId, email, countryCode } = await request.json();
-
-    if (!cartId || !email) {
-      return Response.json(
-        { error: 'cartId and email are required' },
-        { status: 400 },
-      );
-    }
+    const body = await request.json();
+    const { cartId, email, countryCode } = buyerIdentitySchema.parse(body);
 
     const cart = await updateCartBuyerIdentity({
       cartId,
@@ -30,16 +32,17 @@ export async function PATCH(request: NextRequest) {
     return Response.json(
       { cart },
       {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders(request, 'PATCH, OPTIONS'),
         status: 200,
       },
     );
   } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        { error: 'Invalid request', details: error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
     console.error('[API] Error updating cart buyer identity:', error);
     return Response.json(
       { error: 'Failed to update cart buyer identity' },
@@ -48,13 +51,6 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
+export async function OPTIONS(request: NextRequest) {
+  return corsOptionsResponse(request, 'PATCH, OPTIONS');
 }

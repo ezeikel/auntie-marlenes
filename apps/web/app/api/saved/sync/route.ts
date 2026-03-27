@@ -1,8 +1,14 @@
 import { NextRequest } from 'next/server';
+import { z, ZodError } from 'zod';
 import { getUserIdFromToken } from '@/lib/auth-mobile';
 import { db } from '@/lib/prisma';
 import { revalidateTag } from 'next/cache';
 import { rateLimit } from '@/lib/rate-limit';
+import { corsHeaders, corsOptionsResponse } from '@/lib/cors';
+
+const syncSavedSchema = z.object({
+  productIds: z.array(z.string().min(1)).max(100),
+});
 
 /**
  * POST /api/saved/sync - Sync local saved items to database
@@ -22,31 +28,19 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { productIds } = await request.json();
-
-    if (!Array.isArray(productIds)) {
-      return Response.json(
-        { error: 'productIds must be an array' },
-        { status: 400 },
-      );
-    }
+    const body = await request.json();
+    const { productIds } = syncSavedSchema.parse(body);
 
     if (productIds.length === 0) {
       return Response.json(
         { success: true, synced: 0 },
         {
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            'Content-Type': 'application/json',
-          },
+          headers: corsHeaders(request, 'POST, OPTIONS'),
           status: 200,
         },
       );
     }
 
-    // Get existing saved items to avoid duplicates
     const existing = await db.savedItem.findMany({
       where: {
         userId,
@@ -60,7 +54,6 @@ export async function POST(request: NextRequest) {
     );
     const newIds = productIds.filter((id: string) => !existingIds.has(id));
 
-    // Batch create new saved items
     let synced = 0;
     if (newIds.length > 0) {
       await db.savedItem.createMany({
@@ -72,23 +65,23 @@ export async function POST(request: NextRequest) {
       synced = newIds.length;
     }
 
-    // Revalidate cache
     revalidateTag('saved-counts', 'max');
     revalidateTag(`saved-${userId}`, 'max');
 
     return Response.json(
       { success: true, synced },
       {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders(request, 'POST, OPTIONS'),
         status: 200,
       },
     );
   } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        { error: 'Invalid request', details: error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
     console.error('[API] Error syncing saved items:', error);
     return Response.json(
       { error: 'Failed to sync saved items' },
@@ -97,13 +90,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
+export async function OPTIONS(request: NextRequest) {
+  return corsOptionsResponse(request, 'POST, OPTIONS');
 }

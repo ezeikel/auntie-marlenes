@@ -1,10 +1,28 @@
 import { NextRequest } from 'next/server';
+import { z, ZodError } from 'zod';
 import {
   addProductsToCart,
   removeProductFromCart,
   updateCartLineQuantity,
 } from '@/app/actions';
 import { rateLimit } from '@/lib/rate-limit';
+import { corsHeaders, corsOptionsResponse } from '@/lib/cors';
+
+const addToCartSchema = z.object({
+  cartId: z.string().min(1),
+  productVariantId: z.string().min(1),
+});
+
+const removeFromCartSchema = z.object({
+  cartId: z.string().min(1),
+  lineId: z.string().min(1),
+});
+
+const updateQuantitySchema = z.object({
+  cartId: z.string().min(1),
+  lineId: z.string().min(1),
+  quantity: z.number().int().min(0),
+});
 
 /**
  * POST /api/cart/items - Add product to cart
@@ -15,30 +33,25 @@ export async function POST(request: NextRequest) {
   if (limited) return limited;
 
   try {
-    const { cartId, productVariantId } = await request.json();
-
-    if (!cartId || !productVariantId) {
-      return Response.json(
-        { error: 'cartId and productVariantId are required' },
-        { status: 400 },
-      );
-    }
+    const body = await request.json();
+    const { cartId, productVariantId } = addToCartSchema.parse(body);
 
     const cart = await addProductsToCart({ cartId, productVariantId });
 
     return Response.json(
       { cart },
       {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders(request, 'POST, OPTIONS'),
         status: 200,
       },
     );
   } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        { error: 'Invalid request', details: error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
     console.error('[API] Error adding product to cart:', error);
     return Response.json(
       { error: 'Failed to add product to cart' },
@@ -56,30 +69,25 @@ export async function DELETE(request: NextRequest) {
   if (limited) return limited;
 
   try {
-    const { cartId, lineId } = await request.json();
-
-    if (!cartId || !lineId) {
-      return Response.json(
-        { error: 'cartId and lineId are required' },
-        { status: 400 },
-      );
-    }
+    const body = await request.json();
+    const { cartId, lineId } = removeFromCartSchema.parse(body);
 
     const cart = await removeProductFromCart({ cartId, lineIds: [lineId] });
 
     return Response.json(
       { cart },
       {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders(request, 'DELETE, OPTIONS'),
         status: 200,
       },
     );
   } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        { error: 'Invalid request', details: error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
     console.error('[API] Error removing product from cart:', error);
     return Response.json(
       { error: 'Failed to remove product from cart' },
@@ -97,30 +105,25 @@ export async function PATCH(request: NextRequest) {
   if (limited) return limited;
 
   try {
-    const { cartId, lineId, quantity } = await request.json();
-
-    if (!cartId || !lineId || typeof quantity !== 'number') {
-      return Response.json(
-        { error: 'cartId, lineId, and quantity are required' },
-        { status: 400 },
-      );
-    }
+    const body = await request.json();
+    const { cartId, lineId, quantity } = updateQuantitySchema.parse(body);
 
     const cart = await updateCartLineQuantity({ cartId, lineId, quantity });
 
     return Response.json(
       { cart },
       {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders(request, 'PATCH, OPTIONS'),
         status: 200,
       },
     );
   } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        { error: 'Invalid request', details: error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
     console.error('[API] Error updating cart line quantity:', error);
     return Response.json(
       { error: 'Failed to update cart line quantity' },
@@ -129,13 +132,6 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, DELETE, PATCH, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
+export async function OPTIONS(request: NextRequest) {
+  return corsOptionsResponse(request, 'POST, DELETE, PATCH, OPTIONS');
 }

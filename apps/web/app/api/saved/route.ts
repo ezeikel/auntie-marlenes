@@ -1,8 +1,14 @@
 import { NextRequest } from 'next/server';
+import { z, ZodError } from 'zod';
 import { getUserIdFromToken } from '@/lib/auth-mobile';
 import { db } from '@/lib/prisma';
 import { revalidateTag } from 'next/cache';
 import { rateLimit } from '@/lib/rate-limit';
+import { corsHeaders, corsOptionsResponse } from '@/lib/cors';
+
+const saveProductSchema = z.object({
+  productId: z.string().min(1),
+});
 
 /**
  * GET /api/saved - Get user's saved items
@@ -32,12 +38,7 @@ export async function GET(request: NextRequest) {
     return Response.json(
       { productIds },
       {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders(request, 'GET, POST, DELETE, OPTIONS'),
         status: 200,
       },
     );
@@ -66,13 +67,9 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { productId } = await request.json();
+    const body = await request.json();
+    const { productId } = saveProductSchema.parse(body);
 
-    if (!productId) {
-      return Response.json({ error: 'productId is required' }, { status: 400 });
-    }
-
-    // Upsert to handle duplicates gracefully
     await db.savedItem.upsert({
       where: {
         userId_productId: {
@@ -80,30 +77,30 @@ export async function POST(request: NextRequest) {
           productId,
         },
       },
-      update: {}, // No-op if already exists
+      update: {},
       create: {
         userId,
         productId,
       },
     });
 
-    // Revalidate cache
     revalidateTag('saved-counts', 'max');
     revalidateTag(`saved-${userId}`, 'max');
 
     return Response.json(
       { success: true },
       {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders(request, 'GET, POST, DELETE, OPTIONS'),
         status: 200,
       },
     );
   } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        { error: 'Invalid request', details: error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
     console.error('[API] Error adding product to saved:', error);
     return Response.json(
       { error: 'Failed to add product to saved' },
@@ -145,19 +142,13 @@ export async function DELETE(request: NextRequest) {
       },
     });
 
-    // Revalidate cache
     revalidateTag('saved-counts', 'max');
     revalidateTag(`saved-${userId}`, 'max');
 
     return Response.json(
       { success: true },
       {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders(request, 'GET, POST, DELETE, OPTIONS'),
         status: 200,
       },
     );
@@ -170,13 +161,6 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
+export async function OPTIONS(request: NextRequest) {
+  return corsOptionsResponse(request, 'GET, POST, DELETE, OPTIONS');
 }

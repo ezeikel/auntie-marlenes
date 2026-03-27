@@ -1,7 +1,12 @@
 import { NextRequest } from 'next/server';
-import { headers } from 'next/headers';
+import { z, ZodError } from 'zod';
 import { createCart, getCart as getCartAction } from '@/app/actions';
 import { rateLimit } from '@/lib/rate-limit';
+import { corsHeaders, corsOptionsResponse } from '@/lib/cors';
+
+const createCartSchema = z.object({
+  productVariantId: z.string().min(1),
+});
 
 /**
  * POST /api/cart - Create a new cart
@@ -13,30 +18,25 @@ export async function POST(request: NextRequest) {
   if (limited) return limited;
 
   try {
-    const { productVariantId } = await request.json();
-
-    if (!productVariantId) {
-      return Response.json(
-        { error: 'productVariantId is required' },
-        { status: 400 },
-      );
-    }
+    const body = await request.json();
+    const { productVariantId } = createCartSchema.parse(body);
 
     const cart = await createCart({ productVariantId });
 
     return Response.json(
       { cart },
       {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders(request, 'POST, OPTIONS'),
         status: 201,
       },
     );
   } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        { error: 'Invalid request', details: error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
     console.error('[API] Error creating cart:', error);
     return Response.json({ error: 'Failed to create cart' }, { status: 500 });
   }
@@ -66,12 +66,7 @@ export async function GET(request: NextRequest) {
     return Response.json(
       { cart },
       {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders(request, 'GET, OPTIONS'),
         status: 200,
       },
     );
@@ -81,13 +76,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
+export async function OPTIONS(request: NextRequest) {
+  return corsOptionsResponse(request, 'GET, POST, OPTIONS');
 }
