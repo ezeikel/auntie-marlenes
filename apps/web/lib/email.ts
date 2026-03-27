@@ -4,6 +4,8 @@ import OrderConfirmationEmail from '@/emails/order-confirmation';
 import AbandonedCartEmail from '@/emails/abandoned-cart';
 import ShippingUpdateEmail from '@/emails/shipping-update';
 import RestockReminderEmail from '@/emails/restock-reminder';
+import WelcomeEmail from '@/emails/welcome';
+import OrderCancellationEmail from '@/emails/order-cancellation';
 
 const FROM = "Auntie Marlene's <hello@auntiemarlenes.com>";
 
@@ -168,4 +170,51 @@ export async function sendRestockReminderEmail(data: {
   });
 
   console.log(`[Email] Restock reminder sent to ${data.email}`);
+}
+
+export async function sendWelcomeEmail(data: { email: string; name?: string }) {
+  if (!data.email) return;
+
+  const html = await render(
+    WelcomeEmail({
+      customerName: data.name,
+    }),
+  );
+
+  await resend.emails.send({
+    from: FROM,
+    to: data.email,
+    subject: "Welcome to Auntie Marlene's",
+    html,
+  });
+
+  console.log(`[Email] Welcome email sent to ${data.email}`);
+}
+
+export async function sendOrderCancellationEmail(order: {
+  email: string;
+  order_number: number | string;
+  customer?: { first_name?: string };
+  cancel_reason?: string;
+}) {
+  if (!order.email) return;
+
+  const html = await render(
+    OrderCancellationEmail({
+      orderNumber: `#${order.order_number}`,
+      customerName: order.customer?.first_name || 'there',
+      cancelReason: order.cancel_reason,
+    }),
+  );
+
+  await resend.emails.send({
+    from: FROM,
+    to: order.email,
+    subject: `Your order #${order.order_number} has been cancelled`,
+    html,
+  });
+
+  console.log(
+    `[Email] Cancellation email sent to ${order.email} for #${order.order_number}`,
+  );
 }

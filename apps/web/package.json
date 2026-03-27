@@ -18,6 +18,8 @@
     "db:studio": "cd ../../packages/db && pnpm db:studio",
     "avatars:generate": "npx tsx --env-file=.env.local scripts/generate-author-avatars.ts",
     "blog:fix-markdown": "npx tsx --env-file=.env.local scripts/fix-blog-markdown.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },
@@ -148,6 +150,7 @@
     "tsc-files": "^1.1.4",
     "tsx": "^4.20.4",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.46.2"
+    "typescript-eslint": "^8.46.2",
+    "vitest": "^4.1.2"
   }
 }

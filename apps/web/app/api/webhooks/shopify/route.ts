@@ -8,6 +8,7 @@ import { db } from '@/lib/prisma';
 import {
   sendOrderConfirmationEmail,
   sendShippingUpdateEmail,
+  sendOrderCancellationEmail,
 } from '@/lib/email';
 
 /**
@@ -222,6 +223,12 @@ async function handleOrderCancelled(order: any) {
     orderNumber: order.order_number,
     cancelReason: order.cancel_reason,
   });
+
+  try {
+    await sendOrderCancellationEmail(order);
+  } catch (err) {
+    console.error('[Shopify Webhook] Failed to send cancellation email:', err);
+  }
 }
 
 /**

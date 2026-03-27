@@ -7,6 +7,7 @@ import GoogleProvider from 'next-auth/providers/google';
 // import Resend from 'next-auth/providers/resend';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from '@auntie-marlenes/db';
+import { sendWelcomeEmail } from '@/lib/email';
 // import { render } from '@react-email/render';
 // import MagicLinkEmail from '@/components/emails/MagicLinkEmail';
 // import resendClient from '@/lib/resend';
@@ -131,6 +132,14 @@ const config = {
           },
         });
 
+        // Send welcome email (non-blocking)
+        sendWelcomeEmail({
+          email: profile?.email as string,
+          name: name as string,
+        }).catch((err) =>
+          console.error('[Auth] Failed to send welcome email:', err),
+        );
+
         return true;
       }
 
@@ -152,6 +161,11 @@ const config = {
             email: userEmail,
           },
         });
+
+        // Send welcome email (non-blocking)
+        sendWelcomeEmail({ email: userEmail }).catch((err) =>
+          console.error('[Auth] Failed to send welcome email:', err),
+        );
 
         return true;
       }
