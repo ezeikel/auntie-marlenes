@@ -38,6 +38,10 @@ jobs:
       - name: Type check
         run: pnpm check-types
 
+      - name: Unit tests
+        working-directory: ./apps/web
+        run: pnpm test
+
   build:
     runs-on: ubuntu-latest
     name: Build
