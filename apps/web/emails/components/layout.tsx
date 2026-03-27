@@ -3,7 +3,6 @@ import {
   Container,
   Head,
   Html,
-  Img,
   Link,
   Preview,
   Section,
@@ -39,13 +38,7 @@ export default function EmailLayout({ preview, children }: EmailLayoutProps) {
           {/* Header */}
           <Section style={header}>
             <Link href={siteUrl} style={logoLink}>
-              <Img
-                src={`${siteUrl}/logo.png`}
-                width="180"
-                height="auto"
-                alt="Auntie Marlene's"
-                style={logo}
-              />
+              <Text style={logoText}>Auntie Marlene's</Text>
             </Link>
           </Section>
 
@@ -115,8 +108,13 @@ const logoLink: React.CSSProperties = {
   textDecoration: 'none',
 };
 
-const logo: React.CSSProperties = {
-  margin: '0 auto',
+const logoText: React.CSSProperties = {
+  fontSize: '24px',
+  fontWeight: 700,
+  color: colors.cocoa,
+  fontFamily: '"Playfair Display", Georgia, serif',
+  margin: 0,
+  textAlign: 'center' as const,
 };
 
 const content: React.CSSProperties = {
