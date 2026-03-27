@@ -1,26 +1,47 @@
 import { PostHog } from 'posthog-node';
 
-const createPostHogClient = (): PostHog | null => {
+/**
+ * Create a PostHog Node SDK client configured for server-side use.
+ *
+ * PostHog recommends creating a client per request in serverless environments
+ * and calling `shutdown()` when done so events flush before the function freezes.
+ *
+ * For long-lived contexts (e.g. logger), use `getPostHogServer()` instead.
+ */
+export function createPostHogClient(): PostHog | null {
   const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-  const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
-  if (posthogKey && posthogHost) {
-    // for server-side PostHog, construct full URL from the relative path
-    const serverHost = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}${posthogHost}`
-      : `http://localhost:3000${posthogHost}`;
-
+  if (posthogKey) {
+    // Server-side: send directly to PostHog EU, not through the reverse proxy.
+    // The proxy (NEXT_PUBLIC_POSTHOG_HOST) is for client-side ad-blocker avoidance
+    // and doesn't work server-side (deployment URLs have Vercel Authentication).
     return new PostHog(posthogKey, {
-      host: serverHost,
+      host: 'https://eu.i.posthog.com',
       flushAt: 1,
       flushInterval: 0,
     });
   }
   console.warn(
-    'PostHog server-side tracking is disabled due to missing environment variables.',
+    'PostHog server-side tracking is disabled due to missing NEXT_PUBLIC_POSTHOG_KEY.',
   );
   return null;
-};
+}
 
-// create a singleton instance of the PostHog client
+// Lazy singleton — created on first access so the env var is available at runtime
+let posthogServerInstance: PostHog | null | undefined;
+
+/**
+ * Get a shared PostHog server client (lazy singleton).
+ * Prefer `createPostHogClient()` + `shutdown()` in route handlers for reliable flushing.
+ */
+export function getPostHogServer(): PostHog | null {
+  if (posthogServerInstance === undefined) {
+    posthogServerInstance = createPostHogClient();
+  }
+  return posthogServerInstance;
+}
+
+// Keep the named export for backward compatibility with existing imports.
+// NOTE: This evaluates at module load time. In serverless environments,
+// prefer `getPostHogServer()` or `createPostHogClient()` for reliability.
 export const posthogServer = createPostHogClient();

@@ -43,4 +43,15 @@ export const TRACKING_EVENTS = {
 
   // Newsletter Events
   NEWSLETTER_SUBSCRIBED: 'newsletter_subscribed',
+
+  // Collection/Category Events
+  COLLECTION_VIEWED: 'collection_viewed',
+
+  // Product List Events
+  PRODUCT_LIST_VIEWED: 'product_list_viewed',
+  PRODUCT_LIST_CLICKED: 'product_list_clicked',
+
+  // Order Events (from Shopify webhooks)
+  ORDER_PAID: 'order_paid',
+  ORDER_CREATED: 'order_created',
 } as const;

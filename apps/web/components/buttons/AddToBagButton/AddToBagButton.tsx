@@ -17,6 +17,7 @@ type AddToBagButtonProps = {
   productId: string;
   productName?: string;
   productPrice?: number;
+  currency?: string;
   selectedOptions?: Record<string, string>;
   onSuccess?: () => void;
   buttonText?: string;
@@ -27,6 +28,7 @@ const AddToBagButton = ({
   productId,
   productName,
   productPrice,
+  currency,
   selectedOptions,
   onSuccess,
   buttonText = 'ADD TO BAG',
@@ -113,6 +115,7 @@ const AddToBagButton = ({
           selected_options: JSON.stringify(selectedOptions),
           product_name: productName,
           product_price: productPrice,
+          currency,
         });
 
         logger.info('Product added to bag', {

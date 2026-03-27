@@ -56,7 +56,7 @@ const trackFacebookPixelEvent = <TEvent extends TrackingEvent>(
           content_type: 'product',
           content_name: contentName,
           value: value,
-          currency: 'GBP', // Default, should be dynamic based on cart
+          currency: (properties as any).currency || 'GBP',
           num_items: 1,
         });
         break;
@@ -81,7 +81,7 @@ const trackFacebookPixelEvent = <TEvent extends TrackingEvent>(
           content_name: props.product_name,
           content_type: 'product',
           value: props.product_price,
-          currency: 'GBP', // Default, should be dynamic
+          currency: props.currency || 'GBP',
         });
         break;
       }

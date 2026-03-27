@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from '@/contexts/LocationContext';
 import ProductListing from '@/components/ProductListing/ProductListing';
 import { Product } from '@/lib/constants';
+import { useAnalytics } from '@/utils/analytics-client';
+import { TRACKING_EVENTS } from '@/constants/events';
 
 type DynamicProductListingProps = {
   initialProducts: Product[];
@@ -119,8 +121,30 @@ const DynamicProductListing = ({
     reverse,
   ]);
 
+  const { track } = useAnalytics();
+  const hasTrackedRef = useRef<string | null>(null);
+
   // Use localized products if available, otherwise static
   const displayProducts = localizedProducts ?? initialProducts;
+
+  // Track product list impression when products are displayed
+  useEffect(() => {
+    if (displayProducts.length === 0) return;
+
+    // Create a fingerprint to avoid re-tracking the same list
+    const fingerprint = displayProducts
+      .slice(0, 5)
+      .map((p) => p.id)
+      .join(',');
+    if (hasTrackedRef.current === fingerprint) return;
+    hasTrackedRef.current = fingerprint;
+
+    track(TRACKING_EVENTS.PRODUCT_LIST_VIEWED, {
+      list_name: title.toLowerCase().replace(/\s+/g, '_'),
+      product_ids: displayProducts.slice(0, 20).map((p) => p.id),
+      product_count: displayProducts.length,
+    });
+  }, [displayProducts, title, track]);
 
   return (
     <div className={isLoading ? 'opacity-70 transition-opacity' : ''}>

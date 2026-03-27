@@ -130,6 +130,20 @@ export const createCart = async ({
       country_code: countryCode,
       source: 'web',
     });
+
+    // Also track the product add with revenue data
+    const firstLine = cart.lines?.edges?.[0]?.node;
+    const merchandise = firstLine?.merchandise;
+    if (merchandise) {
+      await track(TRACKING_EVENTS.PRODUCT_ADDED_TO_CART, {
+        cart_id: cart.id,
+        product_variant_id: productVariantId,
+        source: 'web',
+        product_name: merchandise.product?.title,
+        product_price: parseFloat(merchandise.price?.amount) || undefined,
+        currency: merchandise.price?.currencyCode,
+      });
+    }
   });
 
   console.log('✅ [SERVER] createCart complete!');
@@ -289,12 +303,23 @@ export const addProductsToCart = async ({
   // update cache - immediate invalidation (no profile for instant expiration)
   revalidateTag('cart', 'max');
 
-  // Track product added to cart event (non-blocking)
+  // Track product added to cart event with revenue data (non-blocking)
   after(async () => {
+    // Find the line item that was just added
+    const addedLine = updatedCart.lines?.edges?.find(
+      (edge: any) => edge.node.merchandise?.id === productVariantId,
+    )?.node;
+    const merchandise = addedLine?.merchandise;
+
     await track(TRACKING_EVENTS.PRODUCT_ADDED_TO_CART, {
       cart_id: cartId,
       product_variant_id: productVariantId,
       source: 'web',
+      product_name: merchandise?.product?.title,
+      product_price: merchandise
+        ? parseFloat(merchandise.price?.amount) || undefined
+        : undefined,
+      currency: merchandise?.price?.currencyCode,
     });
   });
 

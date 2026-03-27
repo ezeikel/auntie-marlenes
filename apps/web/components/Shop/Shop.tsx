@@ -1,7 +1,10 @@
+import { after } from 'next/server';
 import DynamicProductListing from '@/components/DynamicProductListing';
 import { searchProducts } from '@/app/actions';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getServerCountry, getServerUserId } from '@/lib/server-location';
+import { track } from '@/utils/analytics-server';
+import { TRACKING_EVENTS } from '@/constants/events';
 
 type ShopProps = {
   searchParams: Promise<{
@@ -85,6 +88,19 @@ const Shop = async ({ searchParams }: ShopProps) => {
   const params = await searchParams;
   const country = await getServerCountry();
   const userId = await getServerUserId();
+
+  // Track collection view (non-blocking, outside cache scope)
+  after(async () => {
+    await track(
+      TRACKING_EVENTS.COLLECTION_VIEWED,
+      {
+        collection_handle: 'shop',
+        collection_title: 'Shop All Products',
+        source: 'shop',
+      },
+      userId,
+    );
+  });
 
   return (
     <div className="bg-white min-h-screen">

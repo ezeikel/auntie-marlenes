@@ -86,6 +86,7 @@ const ProductDetail = ({
           product_handle: product.handle,
           product_category: product.category,
           product_price: product.price,
+          currency: product.currencyCode,
         });
       }
     };
@@ -361,6 +362,7 @@ const ProductDetail = ({
                   productId={product.id}
                   productName={product.name}
                   productPrice={product.price}
+                  currency={product.currencyCode}
                   selectedOptions={{
                     ...(selectedColor && { Color: selectedColor.name }),
                     ...(selectedSize && { Size: selectedSize }),

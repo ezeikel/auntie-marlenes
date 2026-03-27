@@ -66,6 +66,9 @@ export type EventProperties = {
     cart_id: string;
     product_variant_id: string;
     source: string;
+    product_name?: string;
+    product_price?: number;
+    currency?: string;
   };
   [TRACKING_EVENTS.PRODUCT_REMOVED_FROM_CART]: {
     cart_id: string;
@@ -80,6 +83,7 @@ export type EventProperties = {
     product_handle: string;
     product_category?: string;
     product_price?: number;
+    currency?: string;
   };
   [TRACKING_EVENTS.PRODUCT_SHARED]: {
     product_id: string;
@@ -108,6 +112,7 @@ export type EventProperties = {
     selected_options: string;
     product_name?: string;
     product_price?: number;
+    currency?: string;
   };
 
   // Save/Wishlist Events
@@ -223,5 +228,67 @@ export type EventProperties = {
   [TRACKING_EVENTS.NEWSLETTER_SUBSCRIBED]: {
     email_domain: string;
     source: string;
+  };
+
+  // Collection/Category Events
+  [TRACKING_EVENTS.COLLECTION_VIEWED]: {
+    collection_handle: string;
+    collection_title: string;
+    product_count?: number;
+    source: string;
+  };
+
+  // Product List Events
+  [TRACKING_EVENTS.PRODUCT_LIST_VIEWED]: {
+    list_name: string;
+    product_ids: string[];
+    product_count: number;
+  };
+  [TRACKING_EVENTS.PRODUCT_LIST_CLICKED]: {
+    list_name: string;
+    product_id: string;
+    product_name: string;
+    position: number;
+  };
+
+  // Order Events (from Shopify webhooks)
+  [TRACKING_EVENTS.ORDER_PAID]: {
+    order_id: string;
+    order_number: string;
+    order_name: string;
+    total_amount: number;
+    subtotal_amount: number;
+    currency: string;
+    customer_email: string;
+    item_count: number;
+    line_items: Array<{
+      product_id: string;
+      variant_id: string;
+      title: string;
+      quantity: number;
+      price: number;
+    }>;
+    source: 'webhook';
+    $insert_id?: string;
+  };
+  [TRACKING_EVENTS.ORDER_CREATED]: {
+    order_id: string;
+    order_number: string;
+    order_name: string;
+    total_amount: number;
+    subtotal_amount: number;
+    currency: string;
+    customer_email: string;
+    item_count: number;
+    financial_status: string;
+    line_items: Array<{
+      product_id: string;
+      variant_id: string;
+      title: string;
+      quantity: number;
+      price: number;
+    }>;
+    source: 'webhook';
+    $insert_id?: string;
   };
 };
