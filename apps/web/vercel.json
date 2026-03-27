@@ -4,6 +4,14 @@
     {
       "path": "/api/cron/blog",
       "schedule": "0 9 * * 2,4,6"
+    },
+    {
+      "path": "/api/cron/abandoned-cart",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/restock-reminder",
+      "schedule": "0 10 * * *"
     }
   ]
 }

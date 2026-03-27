@@ -4,6 +4,11 @@ import { revalidateTag } from 'next/cache';
 import crypto from 'crypto';
 import { track } from '@/utils/analytics-server';
 import { TRACKING_EVENTS } from '@/constants/events';
+import { db } from '@/lib/prisma';
+import {
+  sendOrderConfirmationEmail,
+  sendShippingUpdateEmail,
+} from '@/lib/email';
 
 /**
  * Verify that the webhook request is from Shopify
@@ -107,6 +112,11 @@ export async function POST(request: Request) {
         await handleProductDelete(data);
         break;
 
+      case 'checkouts/create':
+      case 'checkouts/update':
+        await handleCheckout(data);
+        break;
+
       default:
         console.log(`[Shopify Webhook] Unhandled topic: ${topic}`);
     }
@@ -166,6 +176,41 @@ async function handleOrderUpdate(order: any) {
     status: order.financial_status,
     fulfillmentStatus: order.fulfillment_status,
   });
+
+  // Send shipping update when order is fulfilled
+  if (
+    order.fulfillment_status === 'fulfilled' &&
+    order.fulfillments?.length > 0
+  ) {
+    try {
+      await sendShippingUpdateEmail(order);
+    } catch (err) {
+      console.error(
+        '[Shopify Webhook] Failed to send shipping update email:',
+        err,
+      );
+    }
+
+    // Record delivery for restock reminder (30 days later)
+    try {
+      await db.deliveredOrder.upsert({
+        where: { shopifyOrderId: String(order.id) },
+        update: { deliveredAt: new Date() },
+        create: {
+          shopifyOrderId: String(order.id),
+          email: order.email,
+          lineItems: (order.line_items || []).map((item: any) => ({
+            title: item.title || '',
+            handle: item.handle || '',
+            image: item.image?.src || '',
+          })),
+          deliveredAt: new Date(),
+        },
+      });
+    } catch (err) {
+      console.error('[Shopify Webhook] Failed to record delivered order:', err);
+    }
+  }
 }
 
 /**
@@ -211,6 +256,28 @@ async function handleOrderPaid(order: any) {
     },
     { distinctId: order.email || `shopify-order-${order.id}` },
   );
+
+  // Send order confirmation email
+  try {
+    await sendOrderConfirmationEmail(order);
+  } catch (err) {
+    console.error(
+      '[Shopify Webhook] Failed to send order confirmation email:',
+      err,
+    );
+  }
+
+  // Mark any abandoned checkout as completed so we don't send a recovery email
+  if (order.checkout_token) {
+    try {
+      await db.abandonedCheckout.updateMany({
+        where: { checkoutToken: order.checkout_token },
+        data: { completedAt: new Date() },
+      });
+    } catch {
+      // Checkout may not exist in our DB — that's fine
+    }
+  }
 }
 
 /**
@@ -267,4 +334,56 @@ async function handleProductDelete(product: any) {
   revalidateTag('category-products', 'max');
   revalidateTag('sale-products', 'max');
   console.log('[Shopify Webhook] Revalidated all product caches');
+}
+
+/**
+ * Handle checkout create/update — store for abandoned cart recovery
+ */
+async function handleCheckout(checkout: any) {
+  const email = checkout.email;
+  const token = checkout.token || checkout.cart_token;
+
+  if (!email || !token) {
+    console.log('[Shopify Webhook] Checkout missing email or token, skipping');
+    return;
+  }
+
+  console.log('[Shopify Webhook] Checkout tracked:', {
+    token,
+    email,
+    totalPrice: checkout.total_price,
+  });
+
+  try {
+    await db.abandonedCheckout.upsert({
+      where: { checkoutToken: token },
+      update: {
+        email,
+        checkoutUrl: checkout.abandoned_checkout_url || '',
+        lineItems: (checkout.line_items || []).map((item: any) => ({
+          title: item.title || '',
+          price: item.price || '0',
+          quantity: item.quantity || 1,
+          image: item.image_url || item.image || '',
+        })),
+        totalPrice: checkout.total_price || '0.00',
+        currency: checkout.currency || 'GBP',
+      },
+      create: {
+        checkoutToken: token,
+        email,
+        checkoutUrl: checkout.abandoned_checkout_url || '',
+        lineItems: (checkout.line_items || []).map((item: any) => ({
+          title: item.title || '',
+          price: item.price || '0',
+          quantity: item.quantity || 1,
+          image: item.image_url || item.image || '',
+        })),
+        totalPrice: checkout.total_price || '0.00',
+        currency: checkout.currency || 'GBP',
+      },
+    });
+  } catch (err) {
+    console.error('[Shopify Webhook] Failed to store checkout:', err);
+  }
 }

@@ -72,3 +72,33 @@ model SavedItem {
   @@index([userId])
   @@map("saved_items")
 }
+
+model AbandonedCheckout {
+  id            String    @id @default(cuid())
+  checkoutToken String    @unique
+  email         String
+  checkoutUrl   String
+  lineItems     Json
+  totalPrice    String
+  currency      String
+  emailSent     Boolean   @default(false)
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([emailSent, completedAt, createdAt])
+  @@map("abandoned_checkouts")
+}
+
+model DeliveredOrder {
+  id             String   @id @default(cuid())
+  shopifyOrderId String   @unique
+  email          String
+  lineItems      Json
+  deliveredAt    DateTime
+  reminderSent   Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  @@index([reminderSent, deliveredAt])
+  @@map("delivered_orders")
+}
