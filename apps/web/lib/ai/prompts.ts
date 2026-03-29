@@ -53,6 +53,13 @@ Structure:
 - Include 2-3 internal linking opportunities (mention products or related topics)
 - Add a soft CTA at the end (non-pushy, educational focus)
 
+Product Recommendations:
+- Where relevant, include a "Products to Try" or "What to Look For" section
+- Reference product categories available on the site: hair care, wigs & extensions, braiding hair, skincare
+- Link to relevant category pages using relative URLs like /hair-care, /wigs-extensions, /skincare
+- Frame recommendations around ingredients and product types rather than specific brand names
+- Tie recommendations back to the reader's hair/skin type when the topic is type-specific
+
 SEO:
 - Naturally incorporate 2-3 target keywords
 - Write for humans first, search engines second

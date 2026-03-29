@@ -6,6 +6,7 @@ import ShippingUpdateEmail from '@/emails/shipping-update';
 import RestockReminderEmail from '@/emails/restock-reminder';
 import WelcomeEmail from '@/emails/welcome';
 import OrderCancellationEmail from '@/emails/order-cancellation';
+import QuizResultsEmail from '@/emails/quiz-results';
 
 const FROM = "Auntie Marlene's <hello@auntiemarlenes.com>";
 
@@ -217,4 +218,34 @@ export async function sendOrderCancellationEmail(order: {
   console.log(
     `[Email] Cancellation email sent to ${order.email} for #${order.order_number}`,
   );
+}
+
+export async function sendQuizResultsEmail(data: {
+  email: string;
+  quizType: 'hair' | 'skin';
+  customerName?: string;
+  results: Record<string, string>;
+  recommendations: Array<{ name: string; handle: string; reason: string }>;
+}) {
+  if (!data.email) return;
+
+  const html = await render(
+    QuizResultsEmail({
+      quizType: data.quizType,
+      customerName: data.customerName,
+      results: data.results,
+      recommendations: data.recommendations,
+    }),
+  );
+
+  const typeLabel = data.quizType === 'hair' ? 'hair' : 'skin';
+
+  await resend.emails.send({
+    from: FROM,
+    to: data.email,
+    subject: `Your personalized ${typeLabel} care routine`,
+    html,
+  });
+
+  console.log(`[Email] Quiz results email sent to ${data.email}`);
 }

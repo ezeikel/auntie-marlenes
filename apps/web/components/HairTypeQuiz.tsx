@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAnalytics } from '@/utils/analytics-client';
 import { TRACKING_EVENTS } from '@/constants/events';
+import { sendQuizResults } from '@/app/actions/quiz';
 import {
   faArrowLeft,
   faArrowRight,
@@ -444,6 +445,10 @@ export default function HairTypeQuiz() {
     density: null,
     scalpType: null,
   });
+  const [emailInput, setEmailInput] = useState('');
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailMessage, setEmailMessage] = useState('');
 
   useEffect(() => {
     track(TRACKING_EVENTS.QUIZ_STARTED, { quiz_type: 'hair_type' });
@@ -829,6 +834,73 @@ export default function HairTypeQuiz() {
               </Link>
             ))}
           </div>
+        </div>
+
+        {/* Email Capture */}
+        <div className="bg-sage-green/5 border border-sage-green/20 rounded-2xl p-6 sm:p-8 text-center">
+          <h3 className="text-lg font-playfair font-bold text-cocoa mb-2">
+            Get Your Routine Sent to Your Inbox
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            We&apos;ll email your hair profile and product recommendations so
+            you can reference them anytime.
+          </p>
+          {emailSent ? (
+            <p className="text-sage-green font-semibold text-sm">
+              <FontAwesomeIcon icon={faCheck} className="mr-1" />
+              {emailMessage}
+            </p>
+          ) : (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!emailInput || emailSending) return;
+                setEmailSending(true);
+                const result = await sendQuizResults({
+                  email: emailInput,
+                  quizType: 'hair',
+                  results: {
+                    hair_type: state.subType || '',
+                    porosity: state.porosity || '',
+                    density: state.density || '',
+                    scalp_type: state.scalpType || '',
+                  },
+                  recommendations: recommendations.map((r) => ({
+                    name: r.label,
+                    handle: r.href.replace('/', ''),
+                    reason: `Recommended for Type ${state.subType} hair`,
+                  })),
+                });
+                setEmailSending(false);
+                if (result.success) {
+                  setEmailSent(true);
+                  setEmailMessage(result.message);
+                } else {
+                  setEmailMessage(result.message);
+                }
+              }}
+              className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
+            >
+              <input
+                type="email"
+                placeholder="your@email.com"
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                required
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sage-green/50 focus:border-sage-green"
+              />
+              <button
+                type="submit"
+                disabled={emailSending}
+                className="px-6 py-3 bg-sage-green hover:bg-sage-green/90 text-white font-bold text-sm rounded-lg transition-colors disabled:opacity-50"
+              >
+                {emailSending ? 'Sending...' : 'Send'}
+              </button>
+            </form>
+          )}
+          {!emailSent && emailMessage && (
+            <p className="text-red-500 text-sm mt-2">{emailMessage}</p>
+          )}
         </div>
 
         {/* CTA */}

@@ -16,6 +16,7 @@ export type Product = {
   rating?: number;
   reviewCount?: number;
   saveCount?: number;
+  ingredients?: string;
 };
 
 export const products: Product[] = [

@@ -49,7 +49,10 @@ export default function EmailLayout({ preview, children }: EmailLayoutProps) {
           <Section style={footer}>
             <Hr style={divider} />
             <Text style={footerText}>
-              Auntie Marlene's — Where Beautiful Skin Meets Gorgeous Hair
+              Auntie Marlene's — Black-Owned & Family-Run
+            </Text>
+            <Text style={footerSubtext}>
+              Where Beautiful Skin Meets Gorgeous Hair
             </Text>
             <Text style={footerLinks}>
               <Link href={siteUrl} style={footerLink}>
@@ -136,6 +139,13 @@ const footerText: React.CSSProperties = {
   textAlign: 'center' as const,
   margin: '0 0 8px',
   fontWeight: 600,
+};
+
+const footerSubtext: React.CSSProperties = {
+  color: colors.gray,
+  fontSize: '12px',
+  textAlign: 'center' as const,
+  margin: '0 0 12px',
 };
 
 const footerLinks: React.CSSProperties = {

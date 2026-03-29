@@ -14,6 +14,7 @@ import BlogSection from '@/components/BlogSection';
 import SocialMediaShowcase from '@/components/SocialMediaShowcase';
 import NewArrivals from '@/components/NewArrivals';
 import QuizCTA from '@/components/QuizCTA';
+import BlackOwnedBanner from '@/components/BlackOwnedBanner';
 import { generatePageMetadata } from '@/lib/metadata';
 import type { Metadata } from 'next';
 
@@ -45,6 +46,7 @@ const HomePage = async ({ params }: HomePageProps) => {
   return (
     <div className="bg-gray-50">
       <Hero />
+      <BlackOwnedBanner />
       <TrustBadges />
       <ProductCarousel />
       <ShopByCategory />

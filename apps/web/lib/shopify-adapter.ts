@@ -120,6 +120,22 @@ function extractReviewCount(
 }
 
 /**
+ * Extract a string value from Shopify metafields by key
+ */
+function extractMetafieldValue(
+  metafields?: Array<{ key: string; value: string } | null>,
+  key?: string,
+): string | undefined {
+  if (!metafields || !key) return undefined;
+
+  const field = metafields
+    .filter((f): f is { key: string; value: string } => f !== null)
+    .find((f) => f.key === key);
+
+  return field?.value || undefined;
+}
+
+/**
  * Adapt a Shopify product to the v0 Product type
  */
 export function adaptShopifyProduct(shopifyProduct: ShopifyProduct): Product {
@@ -145,6 +161,10 @@ export function adaptShopifyProduct(shopifyProduct: ShopifyProduct): Product {
     inStock: firstVariant?.availableForSale ?? false,
     rating: extractRating(shopifyProduct.metafields),
     reviewCount: extractReviewCount(shopifyProduct.metafields),
+    ingredients: extractMetafieldValue(
+      shopifyProduct.metafields,
+      'ingredients',
+    ),
   };
 }
 

@@ -1102,6 +1102,114 @@ export const BLOG_TOPICS: BlogTopic[] = [
     category: 'Hair Types',
     keywords: ['tight coils', 'shrinkage', '4c', 'embracing'],
   },
+
+  // Quiz-linked product recommendation articles
+  {
+    topic: 'The Best Products for Type 4C Hair: A Complete Guide',
+    category: 'Hair Types',
+    keywords: [
+      '4c hair products',
+      'best products',
+      'coily hair',
+      'deep conditioner',
+      'hair oils',
+    ],
+  },
+  {
+    topic: 'Type 4B Hair Care Routine: Products That Actually Work',
+    category: 'Hair Types',
+    keywords: [
+      '4b hair routine',
+      'z-pattern coils',
+      'moisturising',
+      'product recommendations',
+    ],
+  },
+  {
+    topic: 'Type 3B Curls: The Best Products for Bouncy Ringlets',
+    category: 'Hair Types',
+    keywords: [
+      '3b curls',
+      'ringlets',
+      'curl cream',
+      'styling gel',
+      'definition',
+    ],
+  },
+  {
+    topic: 'Low Porosity Hair: Products That Actually Penetrate',
+    category: 'Hair Types',
+    keywords: [
+      'low porosity products',
+      'lightweight',
+      'heat cap',
+      'absorption tips',
+    ],
+  },
+  {
+    topic: 'High Porosity Hair: Best Products to Lock in Moisture',
+    category: 'Hair Types',
+    keywords: [
+      'high porosity products',
+      'sealing',
+      'heavy butters',
+      'LOC method',
+    ],
+  },
+  {
+    topic: 'Dry Scalp with Natural Hair: Products and Remedies That Help',
+    category: 'Hair Types',
+    keywords: [
+      'dry scalp',
+      'scalp care',
+      'oil treatment',
+      'moisturising scalp',
+    ],
+  },
+  {
+    topic: 'Type 4A Hair: Building a Simple Wash Day Routine',
+    category: 'Hair Types',
+    keywords: [
+      '4a wash day',
+      'routine',
+      'shampoo',
+      'conditioner',
+      'defined coils',
+    ],
+  },
+  {
+    topic: 'Best Leave-In Conditioners for Every Curl Type',
+    category: 'Hair Products',
+    keywords: [
+      'leave-in conditioner',
+      'curl type',
+      'product guide',
+      'moisture',
+    ],
+  },
+  {
+    topic: 'Protective Styles for Type 4 Hair: Braids, Twists, and Wigs',
+    category: 'Protective Styles',
+    keywords: [
+      'protective styles',
+      'type 4',
+      'braids',
+      'twists',
+      'wigs',
+      'extensions',
+    ],
+  },
+  {
+    topic: 'Skincare Routine for Melanin-Rich Skin: Where to Start',
+    category: 'Skincare',
+    keywords: [
+      'melanin-rich skin',
+      'skincare routine',
+      'dark skin',
+      'hyperpigmentation',
+      'glow',
+    ],
+  },
 ];
 
 /**

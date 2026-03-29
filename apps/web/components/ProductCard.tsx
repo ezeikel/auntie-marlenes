@@ -9,6 +9,7 @@ import { faHeart as faHeartRegular } from '@fortawesome/pro-regular-svg-icons';
 import type { Product } from '@/lib/constants';
 import { formatCurrency } from '@/lib/currency';
 import { useSaved } from '@/contexts/saved';
+import StarRating from './StarRating';
 
 type ProductCardProps = {
   product: Product;
@@ -42,6 +43,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <h3 className="text-sm font-inter font-medium text-cocoa line-clamp-2 group-hover:underline">
             {product.name}
           </h3>
+          {product.rating && (
+            <StarRating
+              rating={product.rating}
+              reviewCount={product.reviewCount}
+              size="sm"
+            />
+          )}
           <p className="text-base font-semibold text-cocoa">
             {formatCurrency(product.price, product.currencyCode)}
           </p>

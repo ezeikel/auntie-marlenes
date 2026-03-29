@@ -38,6 +38,7 @@ import { TRACKING_EVENTS } from '@/constants/events';
 import { useLocation } from '@/contexts/LocationContext';
 import { getShippingZone } from '@/lib/location';
 import { ShippingInfo } from '@/components/ShippingInfo';
+import StarRating from './StarRating';
 
 type ProductDetailProps = {
   product: Product;
@@ -285,9 +286,22 @@ const ProductDetail = ({
               <p className="text-sm font-inter text-gray-600 mb-2">
                 {product.brand}
               </p>
-              <h1 className="text-3xl md:text-4xl font-playfair font-bold text-cocoa mb-4">
+              <h1 className="text-3xl md:text-4xl font-playfair font-bold text-cocoa mb-2">
                 {product.name}
               </h1>
+              {product.rating ? (
+                <div className="mb-4">
+                  <StarRating
+                    rating={product.rating}
+                    reviewCount={product.reviewCount}
+                    size="md"
+                  />
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 mb-4">
+                  No reviews yet — be the first!
+                </p>
+              )}
               {/* PPR: Use dynamic price slot if provided, otherwise format inline */}
               <div>
                 {priceSlot || (
@@ -411,6 +425,9 @@ const ProductDetail = ({
                   Auntie Marlene's
                 </span>
               </p>
+              <p className="text-sage-green font-semibold mt-1">
+                Black-owned store
+              </p>
             </div>
 
             {/* Delivery Info */}
@@ -478,6 +495,17 @@ const ProductDetail = ({
                   </p>
                 </AccordionContent>
               </AccordionItem>
+
+              {product.ingredients && (
+                <AccordionItem value="ingredients">
+                  <AccordionTrigger className="text-base font-semibold hover:no-underline">
+                    Ingredients
+                  </AccordionTrigger>
+                  <AccordionContent className="text-gray-600 text-sm leading-relaxed">
+                    {product.ingredients}
+                  </AccordionContent>
+                </AccordionItem>
+              )}
 
               <AccordionItem value="care">
                 <AccordionTrigger className="text-base font-semibold hover:no-underline">
