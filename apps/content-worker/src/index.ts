@@ -3,32 +3,67 @@ import 'dotenv/config';
 /**
  * Auntie Marlene's Content Worker
  *
- * Generates branded social media content for products:
- * - AI-generated product scene images (Gemini)
- * - Branded post stills with text overlays (Remotion)
- * - Animated reels (Remotion)
- * - Uploads to R2 for review
+ * Pipeline:
+ * 1. Gemini → generate product scene image (with reference photo)
+ * 2. Satori → composite brand text overlay → static IG post
+ * 3. Veo 3.1 → animate scene image → ambient video
+ * 4. Remotion → composite animated text onto video → final reel
+ *
+ * Uploads to R2 for review.
  */
 
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import { getAllProducts, getProductByHandle } from './shopify';
 import { generateProductContent } from './generate';
-import { renderProductPost, renderProductReel, generateOutputPath } from './video/render';
+import { compositePost } from './compositor';
+import { animateScene } from './video-gen';
+import { renderProductReel, generateOutputPath } from './video/render';
 import { uploadProductPost, uploadProductReel, listContent, uploadFile } from './storage';
 
 const app = new Hono();
 
 app.use('*', logger());
 
-// Serve temp files for Remotion (headless browser can't access file:// URLs)
+// Serve temp files for Remotion — supports range requests for video seeking
 app.get('/tmp/:filename', async (c) => {
   const filename = c.req.param('filename');
   try {
-    const data = await readFile(`/tmp/${filename}`);
+    const { stat } = await import('fs/promises');
+    const filePath = `/tmp/${filename}`;
+    const stats = await stat(filePath);
+    const data = await readFile(filePath);
+    const ext = filename.split('.').pop();
+    const contentType = ext === 'mp4' ? 'video/mp4' : 'image/jpeg';
+
+    // Handle range requests (required for Remotion video seeking)
+    const range = c.req.header('range');
+    if (range && ext === 'mp4') {
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : stats.size - 1;
+      const chunk = data.subarray(start, end + 1);
+
+      return new Response(chunk, {
+        status: 206,
+        headers: {
+          'Content-Range': `bytes ${start}-${end}/${stats.size}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunk.length.toString(),
+          'Content-Type': contentType,
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
+
     return new Response(data, {
-      headers: { 'Content-Type': 'image/jpeg', 'Access-Control-Allow-Origin': '*' },
+      headers: {
+        'Content-Type': contentType,
+        'Content-Length': stats.size.toString(),
+        'Accept-Ranges': 'bytes',
+        'Access-Control-Allow-Origin': '*',
+      },
     });
   } catch {
     return c.json({ error: 'Not found' }, 404);
@@ -64,10 +99,9 @@ app.post('/generate/product', async (c) => {
     return c.json({ error: `Product not found: ${handle}` }, 404);
   }
 
-  // Get product image URL for reference
   const productImageUrl = product.images.edges[0]?.node.url;
 
-  // Generate scene image + headline
+  // Step 1: Generate scene image + headline (Gemini + Claude)
   const content = await generateProductContent({
     name: product.title,
     brand: product.vendor,
@@ -75,60 +109,55 @@ app.post('/generate/product', async (c) => {
     imageUrl: productImageUrl,
   });
 
-  // Save scene image to temp for Remotion to access
-  const sceneImagePath = `/tmp/scene-${Date.now()}.jpg`;
-  const { writeFile: fsWriteFile } = await import('fs/promises');
-  await fsWriteFile(sceneImagePath, content.sceneImage);
-
-  // Serve the scene image via a temp URL for Remotion
-  // Remotion needs an HTTP URL, so we use a data URL for stills
-  // or write to a file and use file:// for local rendering
-  const sceneFilename = sceneImagePath.split('/').pop();
-  const sceneImageUrl = `http://localhost:${port}/tmp/${sceneFilename}`;
-
   const results: Record<string, string> = {};
 
-  // Generate post (static image)
+  // Step 2: Static post via Satori
   if (types.includes('post')) {
-    const outputPath = generateOutputPath('post');
+    const postImage = await compositePost({
+      sceneImage: content.sceneImage,
+      headline: content.headline,
+      subheading: content.subheading,
+    });
 
-    await renderProductPost(
-      {
-        sceneImageUrl,
-        headline: content.headline,
-        subheading: content.subheading,
-      },
-      outputPath,
-    );
-
-    const imageBuffer = await readFile(outputPath);
-    const upload = await uploadProductPost(handle, imageBuffer);
+    const upload = await uploadProductPost(handle, postImage);
     results.post = upload.url;
-
     console.log(`[API] Post uploaded: ${upload.url}`);
   }
 
-  // Generate reel (animated video)
+  // Step 3 + 4: Reel via Veo + Remotion
   if (types.includes('reel')) {
-    const outputPath = generateOutputPath('reel');
-
-    await renderProductReel(
-      {
-        sceneImageUrl,
-        headline: content.headline,
-        subheading: content.subheading,
-      },
-      outputPath,
+    // Step 3: Animate scene with Veo
+    console.log('[API] Animating scene with Veo...');
+    const videoBuffer = await animateScene(
+      content.sceneImage,
+      product.productType,
     );
 
-    const videoBuffer = await readFile(outputPath);
-    const upload = await uploadProductReel(handle, videoBuffer);
-    results.reel = upload.url;
+    // Save video to temp for Remotion
+    const videoPath = `/tmp/veo-${Date.now()}.mp4`;
+    await writeFile(videoPath, videoBuffer);
+    const videoFilename = videoPath.split('/').pop();
+    const sceneVideoUrl = `http://localhost:${port}/tmp/${videoFilename}`;
 
+    // Step 4: Remotion composites text overlays onto video
+    const reelOutputPath = generateOutputPath('reel');
+    await renderProductReel(
+      {
+        sceneVideoUrl,
+        headline: content.headline,
+        subheading: content.subheading,
+        durationInFrames: 240, // 8 seconds at 30fps
+      },
+      reelOutputPath,
+    );
+
+    const reelBuffer = await readFile(reelOutputPath);
+    const upload = await uploadProductReel(handle, reelBuffer);
+    results.reel = upload.url;
     console.log(`[API] Reel uploaded: ${upload.url}`);
   }
 
-  // Also upload the raw scene image for reference
+  // Upload raw scene image for reference
   const sceneUpload = await uploadFile(
     `content/products/${handle}/scene-${Date.now()}.jpg`,
     content.sceneImage,
@@ -157,10 +186,13 @@ app.post('/generate/product', async (c) => {
  * Body: { types?: ('post' | 'reel')[], delayMs?: number }
  */
 app.post('/generate/all', async (c) => {
-  const { types = ['post'] as ('post' | 'reel')[], delayMs = 5000 } = await c.req.json<{
-    types?: ('post' | 'reel')[];
-    delayMs?: number;
-  }>().catch(() => ({ types: ['post'] as ('post' | 'reel')[], delayMs: 5000 }));
+  const { types = ['post'] as ('post' | 'reel')[], delayMs = 5000 } =
+    await c.req
+      .json<{
+        types?: ('post' | 'reel')[];
+        delayMs?: number;
+      }>()
+      .catch(() => ({ types: ['post'] as ('post' | 'reel')[], delayMs: 5000 }));
 
   console.log('[API] Generating content for all products...');
 
@@ -179,39 +211,49 @@ app.post('/generate/all', async (c) => {
     try {
       console.log(`[API] Processing: ${product.title}`);
 
+      const productImageUrl = product.images.edges[0]?.node.url;
+
       const content = await generateProductContent({
         name: product.title,
         brand: product.vendor,
         category: product.productType,
+        imageUrl: productImageUrl,
       });
-
-      const sceneImagePath = `/tmp/scene-${Date.now()}.jpg`;
-      const { writeFile: fsWriteFile } = await import('fs/promises');
-      await fsWriteFile(sceneImagePath, content.sceneImage);
-      const sceneFilename = sceneImagePath.split('/').pop();
-  const sceneImageUrl = `http://localhost:${port}/tmp/${sceneFilename}`;
 
       const urls: Record<string, string> = {};
 
       if (types.includes('post')) {
-        const outputPath = generateOutputPath('post');
-        await renderProductPost(
-          { sceneImageUrl, headline: content.headline, subheading: content.subheading },
-          outputPath,
-        );
-        const imageBuffer = await readFile(outputPath);
-        const upload = await uploadProductPost(product.handle, imageBuffer);
+        const postImage = await compositePost({
+          sceneImage: content.sceneImage,
+          headline: content.headline,
+          subheading: content.subheading,
+        });
+        const upload = await uploadProductPost(product.handle, postImage);
         urls.post = upload.url;
       }
 
       if (types.includes('reel')) {
-        const outputPath = generateOutputPath('reel');
-        await renderProductReel(
-          { sceneImageUrl, headline: content.headline, subheading: content.subheading },
-          outputPath,
+        const videoBuffer = await animateScene(
+          content.sceneImage,
+          product.productType,
         );
-        const videoBuffer = await readFile(outputPath);
-        const upload = await uploadProductReel(product.handle, videoBuffer);
+        const videoPath = `/tmp/veo-${Date.now()}.mp4`;
+        await writeFile(videoPath, videoBuffer);
+        const videoFilename = videoPath.split('/').pop();
+        const sceneVideoUrl = `http://localhost:${port}/tmp/${videoFilename}`;
+
+        const reelOutputPath = generateOutputPath('reel');
+        await renderProductReel(
+          {
+            sceneVideoUrl,
+            headline: content.headline,
+            subheading: content.subheading,
+            durationInFrames: 240,
+          },
+          reelOutputPath,
+        );
+        const reelBuffer = await readFile(reelOutputPath);
+        const upload = await uploadProductReel(product.handle, reelBuffer);
         urls.reel = upload.url;
       }
 
@@ -222,7 +264,6 @@ app.post('/generate/all', async (c) => {
         urls,
       });
 
-      // Delay between products to respect rate limits
       if (delayMs > 0) {
         await new Promise((r) => setTimeout(r, delayMs));
       }
@@ -240,18 +281,11 @@ app.post('/generate/all', async (c) => {
   const succeeded = results.filter((r) => r.success).length;
   const failed = results.filter((r) => !r.success).length;
 
-  return c.json({
-    total: products.length,
-    succeeded,
-    failed,
-    results,
-  });
+  return c.json({ total: products.length, succeeded, failed, results });
 });
 
 /**
  * List all generated content.
- *
- * GET /content/list
  */
 app.get('/content/list', async (c) => {
   const urls = await listContent();
