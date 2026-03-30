@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 /**
  * Auntie Marlene's Content Worker
  *
@@ -19,6 +21,19 @@ import { uploadProductPost, uploadProductReel, listContent, uploadFile } from '.
 const app = new Hono();
 
 app.use('*', logger());
+
+// Serve temp files for Remotion (headless browser can't access file:// URLs)
+app.get('/tmp/:filename', async (c) => {
+  const filename = c.req.param('filename');
+  try {
+    const data = await readFile(`/tmp/${filename}`);
+    return new Response(data, {
+      headers: { 'Content-Type': 'image/jpeg', 'Access-Control-Allow-Origin': '*' },
+    });
+  } catch {
+    return c.json({ error: 'Not found' }, 404);
+  }
+});
 
 // Health check
 app.get('/health', (c) => {
@@ -49,11 +64,15 @@ app.post('/generate/product', async (c) => {
     return c.json({ error: `Product not found: ${handle}` }, 404);
   }
 
+  // Get product image URL for reference
+  const productImageUrl = product.images.edges[0]?.node.url;
+
   // Generate scene image + headline
   const content = await generateProductContent({
     name: product.title,
     brand: product.vendor,
     category: product.productType,
+    imageUrl: productImageUrl,
   });
 
   // Save scene image to temp for Remotion to access
@@ -64,7 +83,8 @@ app.post('/generate/product', async (c) => {
   // Serve the scene image via a temp URL for Remotion
   // Remotion needs an HTTP URL, so we use a data URL for stills
   // or write to a file and use file:// for local rendering
-  const sceneImageUrl = `file://${sceneImagePath}`;
+  const sceneFilename = sceneImagePath.split('/').pop();
+  const sceneImageUrl = `http://localhost:${port}/tmp/${sceneFilename}`;
 
   const results: Record<string, string> = {};
 
@@ -168,7 +188,8 @@ app.post('/generate/all', async (c) => {
       const sceneImagePath = `/tmp/scene-${Date.now()}.jpg`;
       const { writeFile: fsWriteFile } = await import('fs/promises');
       await fsWriteFile(sceneImagePath, content.sceneImage);
-      const sceneImageUrl = `file://${sceneImagePath}`;
+      const sceneFilename = sceneImagePath.split('/').pop();
+  const sceneImageUrl = `http://localhost:${port}/tmp/${sceneFilename}`;
 
       const urls: Record<string, string> = {};
 
@@ -238,10 +259,10 @@ app.get('/content/list', async (c) => {
 });
 
 // Start server
-const port = parseInt(process.env.PORT || '3020', 10);
-console.log(`Content worker starting on port ${port}...`);
+import { serve } from '@hono/node-server';
 
-export default {
-  port,
-  fetch: app.fetch,
-};
+const port = parseInt(process.env.PORT || '3020', 10);
+
+serve({ fetch: app.fetch, port }, () => {
+  console.log(`Content worker running on http://localhost:${port}`);
+});

@@ -1,17 +1,19 @@
 /**
- * AI image and headline generation using Gemini via Vercel AI SDK.
+ * AI image and headline generation.
+ * - Gemini for image generation (only model that returns images)
+ * - Claude for creative writing (headlines, copy)
  */
 
 import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
+import { anthropic } from '@ai-sdk/anthropic';
 import sharp from 'sharp';
 import { buildImagePrompt, buildHeadlinePrompt } from './prompts';
 
-// Models — cast needed due to pnpm hoisting resolving different provider type versions
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const geminiImage: any = google('gemini-3-pro-image-preview');
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const geminiText: any = google('gemini-2.0-flash');
+const claude: any = anthropic('claude-sonnet-4-20250514');
 
 export interface GeneratedContent {
   sceneImage: Buffer;
@@ -20,20 +22,51 @@ export interface GeneratedContent {
 }
 
 /**
- * Generate a product scene image using Gemini.
+ * Generate a product scene image using Gemini with reference product photo.
  */
 export async function generateSceneImage(product: {
   name: string;
   brand: string;
   category: string;
+  imageUrl?: string;
 }): Promise<Buffer> {
   const prompt = buildImagePrompt(product);
 
   console.log(`[Generate] Creating scene for "${product.name}"...`);
+  if (product.imageUrl) {
+    console.log(`[Generate] Using reference image: ${product.imageUrl}`);
+  }
+
+  // Build message content — text prompt + optional reference image
+  const content: any[] = [];
+
+  if (product.imageUrl) {
+    // Fetch the product image and include as reference
+    try {
+      const imgRes = await fetch(product.imageUrl);
+      const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
+      const mimeType = imgRes.headers.get('content-type') || 'image/jpeg';
+
+      content.push({
+        type: 'image',
+        image: imgBuffer,
+        mimeType,
+      });
+      content.push({
+        type: 'text',
+        text: `This is the actual product photo. Use this EXACT product with its real packaging, labels, and text in the generated scene. The product packaging must be accurate and faithful to this reference image.\n\n${prompt}`,
+      });
+    } catch (err) {
+      console.warn('[Generate] Failed to fetch reference image, using text-only prompt');
+      content.push({ type: 'text', text: prompt });
+    }
+  } else {
+    content.push({ type: 'text', text: prompt });
+  }
 
   const result = await generateText({
     model: geminiImage,
-    prompt,
+    messages: [{ role: 'user', content }],
   });
 
   const imageFile = result.files?.find((f: any) =>
@@ -66,7 +99,7 @@ export async function generateHeadline(product: {
   const prompt = buildHeadlinePrompt(product);
 
   const result = await generateText({
-    model: geminiText,
+    model: claude,
     prompt,
   });
 
@@ -94,6 +127,7 @@ export async function generateProductContent(product: {
   name: string;
   brand: string;
   category: string;
+  imageUrl?: string;
 }): Promise<GeneratedContent> {
   const [sceneImage, { headline, subheading }] = await Promise.all([
     generateSceneImage(product),
