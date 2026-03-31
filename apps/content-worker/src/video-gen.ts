@@ -1,38 +1,43 @@
 /**
- * Veo 3.1 image-to-video generation via @google/genai SDK.
- * Animates product scene images with subtle ambient motion.
+ * Kling 3.0 Pro image-to-video generation via fal.ai.
+ * Best model for preserving text on product packaging labels.
+ *
+ * Animated scene with subtle ambient motion while keeping product text sharp.
  */
 
-import { GoogleGenAI } from '@google/genai';
+import { fal } from '@fal-ai/client';
+import { uploadFile } from './storage';
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
+// Configure fal.ai with API key
+fal.config({
+  credentials: process.env.FAL_KEY!,
 });
 
 /**
  * Video animation prompts per product category.
  * Focus on: subtle ambient motion, product stays still, calm atmosphere.
+ * Kling-specific: be explicit about text preservation.
  */
 const ANIMATION_PROMPTS: Record<string, string> = {
   'Hair Care':
-    'Subtle ambient motion. Soft warm light shifts gently through a nearby window, casting slow-moving shadows across the scene. A gentle steam wisps upward in the background. The product remains perfectly still and in sharp focus. Camera remains static. Soft ambient bathroom tone.',
+    'Subtle ambient motion. Soft warm light shifts gently through a nearby window casting slow-moving shadows. A gentle steam wisps upward in the background. The product remains perfectly still with all packaging text and labels clearly readable. Camera remains completely static. Soft ambient bathroom tone.',
   'Wigs & Extensions':
-    'Subtle ambient motion. Warm golden light slowly shifts across the salon scene. Soft dust particles drift gently through a sunbeam. The product remains perfectly still and in sharp focus. Camera remains static. Quiet ambient salon atmosphere.',
+    'Subtle ambient motion. Warm golden light slowly shifts across the scene. Soft dust particles drift gently through a sunbeam. The product remains perfectly still with all packaging text and labels clearly readable. Camera remains completely static. Quiet ambient salon atmosphere.',
   Skincare:
-    'Subtle ambient motion. Soft morning light slowly brightens through a window, creating gentle shifting highlights on surfaces. A candle flame flickers softly in the background. The product remains perfectly still and in sharp focus. Camera remains static. Peaceful ambient room tone.',
+    'Subtle ambient motion. Soft morning light slowly brightens through a window creating gentle shifting highlights. A candle flame flickers softly in the background. The product remains perfectly still with all packaging text and labels clearly readable. Camera remains completely static. Peaceful ambient room tone.',
   Styling:
-    'Subtle ambient motion. Warm golden hour light slowly moves across the scene. A sheer curtain barely shifts from a gentle breeze. The product remains perfectly still and in sharp focus. Camera remains static. Soft ambient room tone.',
+    'Subtle ambient motion. Warm golden hour light slowly moves across the scene. A sheer curtain barely shifts from a gentle breeze. The product remains perfectly still with all packaging text and labels clearly readable. Camera remains completely static. Soft ambient room tone.',
 };
 
 const DEFAULT_ANIMATION_PROMPT =
-  'Subtle ambient motion. Soft natural light gently shifts across the scene over time. Background elements have the faintest movement — a plant leaf, fabric edge, or light flicker. The product remains perfectly still and in sharp focus. Camera remains completely static. Soft, calming ambient tone.';
+  'Subtle ambient motion. Soft natural light gently shifts across the scene. Background elements have the faintest movement. The product remains perfectly still with all packaging text, brand name, and labels clearly readable and sharp. Camera remains completely static. Soft calming ambient tone.';
 
 function getAnimationPrompt(category: string): string {
   return ANIMATION_PROMPTS[category] || DEFAULT_ANIMATION_PROMPT;
 }
 
 /**
- * Animate a scene image using Veo 3.1.
+ * Animate a scene image using Kling 3.0 Pro via fal.ai.
  * Returns the video as a Buffer.
  */
 export async function animateScene(
@@ -41,53 +46,57 @@ export async function animateScene(
 ): Promise<Buffer> {
   const prompt = getAnimationPrompt(category);
 
-  console.log(`[Veo] Animating scene (category: ${category})...`);
-  console.log(`[Veo] Prompt: ${prompt.substring(0, 80)}...`);
+  console.log(`[Kling] Animating scene (category: ${category})...`);
+  console.log(`[Kling] Prompt: ${prompt.substring(0, 80)}...`);
 
-  // Start video generation
-  let operation = await ai.models.generateVideos({
-    model: 'veo-3.1-generate-preview',
-    prompt,
-    image: {
-      imageBytes: sceneImage.toString('base64'),
-      mimeType: 'image/jpeg',
+  // Upload scene image to R2 first so Kling can access it via URL
+  const timestamp = Date.now();
+  const imageUpload = await uploadFile(
+    `content/tmp/scene-${timestamp}.jpg`,
+    sceneImage,
+    'image/jpeg',
+  );
+
+  console.log(`[Kling] Scene image uploaded to: ${imageUpload.url}`);
+
+  // Generate video with Kling 3.0 Pro
+  const result = await fal.subscribe(
+    'fal-ai/kling-video/v3/pro/image-to-video',
+    {
+      input: {
+        start_image_url: imageUpload.url,
+        prompt,
+        duration: '5',
+        generate_audio: false,
+        cfg_scale: 0.5,
+        negative_prompt:
+          'blur, distort, low quality, illegible text, garbled text, warped labels',
+      },
+      logs: true,
+      onQueueUpdate: (update) => {
+        if (update.status === 'IN_PROGRESS') {
+          console.log(`[Kling] ${update.status}...`);
+        }
+      },
     },
-  });
+  );
 
-  // Poll until complete
-  let attempts = 0;
-  const maxAttempts = 60; // 10 minutes max (10s intervals)
-
-  while (!operation.done) {
-    attempts++;
-    if (attempts > maxAttempts) {
-      throw new Error('Veo video generation timed out');
-    }
-
-    console.log(
-      `[Veo] Waiting for video generation... (attempt ${attempts}/${maxAttempts})`,
-    );
-    await new Promise((r) => setTimeout(r, 10_000));
-    operation = await ai.operations.getVideosOperation({
-      operation,
-    });
+  // Get the video URL from the result
+  const videoUrl = (result.data as any)?.video?.url;
+  if (!videoUrl) {
+    throw new Error('Kling did not return a video');
   }
 
-  // Get the video
-  const video = operation.response?.generatedVideos?.[0]?.video;
-  if (!video) {
-    throw new Error('Veo did not return a video');
+  console.log(`[Kling] Video generated, downloading from: ${videoUrl}`);
+
+  // Download the video
+  const videoRes = await fetch(videoUrl);
+  if (!videoRes.ok) {
+    throw new Error(`Failed to download Kling video: ${videoRes.status}`);
   }
 
-  // Download video to temp file
-  const { readFile, unlink } = await import('fs/promises');
-  const tempPath = `/tmp/veo-download-${Date.now()}.mp4`;
-  await ai.files.download({ file: video, downloadPath: tempPath });
-
-  const videoBuffer = await readFile(tempPath);
-  await unlink(tempPath).catch(() => {});
-
-  console.log(`[Veo] Video generated (${videoBuffer.length} bytes)`);
+  const videoBuffer = Buffer.from(await videoRes.arrayBuffer());
+  console.log(`[Kling] Video downloaded (${videoBuffer.length} bytes)`);
 
   return videoBuffer;
 }
