@@ -337,6 +337,225 @@ app.get('/content/list', async (c) => {
   return c.json({ count: urls.length, urls });
 });
 
+// ─── Publishing Endpoints ────────────────────────────────────────────────────
+
+import { generateCaption } from './caption';
+import { getCatalogProductId, buildProductTags } from './catalog';
+import { publishToInstagram, publishToFacebook, type PublishResult } from './social';
+
+/**
+ * Generate content AND publish to IG/FB with product tags.
+ *
+ * POST /publish/product
+ * Body: {
+ *   handle: string,
+ *   platforms?: ('instagram' | 'facebook')[],
+ *   types?: ('post' | 'reel')[],
+ *   image_model?: 'gemini' | 'flux-kontext' | 'flux-2-pro',
+ *   video_model?: string
+ * }
+ */
+app.post('/publish/product', async (c) => {
+  const {
+    handle,
+    platforms = ['instagram', 'facebook'],
+    types = ['post'],
+    image_model = 'flux-2-pro',
+    video_model = 'veo',
+  } = await c.req.json<{
+    handle: string;
+    platforms?: ('instagram' | 'facebook')[];
+    types?: ('post' | 'reel')[];
+    image_model?: string;
+    video_model?: string;
+  }>();
+
+  if (!handle) return c.json({ error: 'handle is required' }, 400);
+
+  console.log(`[Publish] Starting for: ${handle}`);
+  console.log(`[Publish] Platforms: ${platforms.join(', ')}, Types: ${types.join(', ')}`);
+
+  // 1. Fetch product
+  const product = await getProductByHandle(handle);
+  if (!product) return c.json({ error: `Product not found: ${handle}` }, 404);
+
+  const productImageUrl = product.images.edges[0]?.node.url;
+
+  // 2. Generate content
+  const content = await generateProductContent(
+    {
+      name: product.title,
+      brand: product.vendor,
+      category: product.productType,
+      imageUrl: productImageUrl,
+    },
+    image_model as any,
+  );
+
+  let postUrl: string | undefined;
+  let reelUrl: string | undefined;
+
+  if (types.includes('post')) {
+    const postImage = await compositePost({
+      sceneImage: content.sceneImage,
+      headline: content.headline,
+      subheading: content.subheading,
+    });
+    const upload = await uploadProductPost(handle, postImage);
+    postUrl = upload.url;
+  }
+
+  if (types.includes('reel')) {
+    const videoBuffer = await animateWithVeo(content.sceneImage, product.productType);
+    const videoPath = `/tmp/veo-${Date.now()}.mp4`;
+    await writeFile(videoPath, videoBuffer);
+    const videoFilename = videoPath.split('/').pop();
+    const sceneVideoUrl = `http://localhost:${port}/tmp/${videoFilename}`;
+
+    const reelOutputPath = generateOutputPath('reel');
+    await renderProductReel(
+      {
+        sceneVideoUrl,
+        headline: content.headline,
+        subheading: content.subheading,
+        durationInFrames: 150,
+      },
+      reelOutputPath,
+    );
+    const reelBuffer = await readFile(reelOutputPath);
+    const upload = await uploadProductReel(handle, reelBuffer);
+    reelUrl = upload.url;
+  }
+
+  // 3. Generate caption
+  const caption = await generateCaption({
+    name: product.title,
+    brand: product.vendor,
+    category: product.productType,
+  });
+
+  // 4. Look up product tag
+  const catalogProductId = await getCatalogProductId(handle, product.title);
+  const productTags = catalogProductId
+    ? buildProductTags(catalogProductId)
+    : undefined;
+
+  if (catalogProductId) {
+    console.log(`[Publish] Product tagged: ${catalogProductId}`);
+  } else {
+    console.log('[Publish] No catalog match — posting without product tag');
+  }
+
+  // 5. Publish to platforms
+  const publishResults: PublishResult[] = [];
+
+  if (platforms.includes('instagram')) {
+    const igResults = await publishToInstagram({
+      imageUrl: postUrl,
+      videoUrl: reelUrl,
+      caption,
+      productTags,
+    });
+    publishResults.push(...igResults);
+  }
+
+  if (platforms.includes('facebook')) {
+    const fbResults = await publishToFacebook({
+      imageUrl: postUrl,
+      videoUrl: reelUrl,
+      caption,
+      productName: product.title,
+    });
+    publishResults.push(...fbResults);
+  }
+
+  return c.json({
+    success: publishResults.every((r) => r.success),
+    product: {
+      handle: product.handle,
+      name: product.title,
+      brand: product.vendor,
+    },
+    caption,
+    productTagged: !!catalogProductId,
+    content: { post: postUrl, reel: reelUrl },
+    publishing: publishResults,
+  });
+});
+
+/**
+ * Publish already-generated content from R2 URLs.
+ *
+ * POST /publish/content
+ * Body: {
+ *   handle: string,
+ *   post_url?: string,
+ *   reel_url?: string,
+ *   platforms?: ('instagram' | 'facebook')[]
+ * }
+ */
+app.post('/publish/content', async (c) => {
+  const {
+    handle,
+    post_url,
+    reel_url,
+    platforms = ['instagram', 'facebook'],
+  } = await c.req.json<{
+    handle: string;
+    post_url?: string;
+    reel_url?: string;
+    platforms?: ('instagram' | 'facebook')[];
+  }>();
+
+  if (!handle) return c.json({ error: 'handle is required' }, 400);
+  if (!post_url && !reel_url) return c.json({ error: 'post_url or reel_url required' }, 400);
+
+  const product = await getProductByHandle(handle);
+  if (!product) return c.json({ error: `Product not found: ${handle}` }, 404);
+
+  // Generate caption
+  const caption = await generateCaption({
+    name: product.title,
+    brand: product.vendor,
+    category: product.productType,
+  });
+
+  // Look up product tag
+  const catalogProductId = await getCatalogProductId(handle, product.title);
+  const productTags = catalogProductId
+    ? buildProductTags(catalogProductId)
+    : undefined;
+
+  const publishResults: PublishResult[] = [];
+
+  if (platforms.includes('instagram')) {
+    const igResults = await publishToInstagram({
+      imageUrl: post_url,
+      videoUrl: reel_url,
+      caption,
+      productTags,
+    });
+    publishResults.push(...igResults);
+  }
+
+  if (platforms.includes('facebook')) {
+    const fbResults = await publishToFacebook({
+      imageUrl: post_url,
+      videoUrl: reel_url,
+      caption,
+      productName: product.title,
+    });
+    publishResults.push(...fbResults);
+  }
+
+  return c.json({
+    success: publishResults.every((r) => r.success),
+    caption,
+    productTagged: !!catalogProductId,
+    publishing: publishResults,
+  });
+});
+
 // Start server
 import { serve } from '@hono/node-server';
 
