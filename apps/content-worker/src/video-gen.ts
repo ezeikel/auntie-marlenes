@@ -1,102 +1,112 @@
 /**
- * Kling 3.0 Pro image-to-video generation via fal.ai.
- * Best model for preserving text on product packaging labels.
- *
- * Animated scene with subtle ambient motion while keeping product text sharp.
+ * Image-to-video generation via fal.ai.
+ * Supports multiple models: Kling, PixVerse, Hailuo.
+ * Uses dynamic AI-generated prompts based on scene analysis.
  */
 
 import { fal } from '@fal-ai/client';
 import { uploadFile } from './storage';
+import { generateVeoPrompt } from './video-prompt';
 
-// Configure fal.ai with API key
+// Configure fal.ai
 fal.config({
   credentials: process.env.FAL_KEY!,
 });
 
-/**
- * Video animation prompts per product category.
- * Focus on: subtle ambient motion, product stays still, calm atmosphere.
- * Kling-specific: be explicit about text preservation.
- */
-const ANIMATION_PROMPTS: Record<string, string> = {
-  'Hair Care':
-    'Subtle ambient motion. Soft warm light shifts gently through a nearby window casting slow-moving shadows. A gentle steam wisps upward in the background. The product remains perfectly still with all packaging text and labels clearly readable. Camera remains completely static. Soft ambient bathroom tone.',
-  'Wigs & Extensions':
-    'Subtle ambient motion. Warm golden light slowly shifts across the scene. Soft dust particles drift gently through a sunbeam. The product remains perfectly still with all packaging text and labels clearly readable. Camera remains completely static. Quiet ambient salon atmosphere.',
-  Skincare:
-    'Subtle ambient motion. Soft morning light slowly brightens through a window creating gentle shifting highlights. A candle flame flickers softly in the background. The product remains perfectly still with all packaging text and labels clearly readable. Camera remains completely static. Peaceful ambient room tone.',
-  Styling:
-    'Subtle ambient motion. Warm golden hour light slowly moves across the scene. A sheer curtain barely shifts from a gentle breeze. The product remains perfectly still with all packaging text and labels clearly readable. Camera remains completely static. Soft ambient room tone.',
-};
+// All available fal.ai image-to-video models
+const FAL_MODELS = {
+  'kling-o3': 'fal-ai/kling-video/o3/standard/image-to-video',
+  'kling-v3': 'fal-ai/kling-video/v3/pro/image-to-video',
+  'pixverse': 'fal-ai/pixverse/v6/image-to-video',
+  'hailuo': 'fal-ai/minimax/hailuo-02/standard/image-to-video',
+} as const;
 
-const DEFAULT_ANIMATION_PROMPT =
-  'Subtle ambient motion. Soft natural light gently shifts across the scene. Background elements have the faintest movement. The product remains perfectly still with all packaging text, brand name, and labels clearly readable and sharp. Camera remains completely static. Soft calming ambient tone.';
-
-function getAnimationPrompt(category: string): string {
-  return ANIMATION_PROMPTS[category] || DEFAULT_ANIMATION_PROMPT;
-}
+export type FalVideoModel = keyof typeof FAL_MODELS;
 
 /**
- * Animate a scene image using Kling 3.0 Pro via fal.ai.
- * Returns the video as a Buffer.
+ * Animate a scene image using a fal.ai video model.
+ * Uses dynamic prompt generation (analyses scene → crafts bespoke prompt).
  */
 export async function animateScene(
   sceneImage: Buffer,
-  category: string,
+  _category: string,
+  model: FalVideoModel = 'kling-o3',
 ): Promise<Buffer> {
-  const prompt = getAnimationPrompt(category);
+  // Generate dynamic prompt based on scene analysis
+  const { prompt, negative_prompt } = await generateVeoPrompt(sceneImage);
 
-  console.log(`[Kling] Animating scene (category: ${category})...`);
-  console.log(`[Kling] Prompt: ${prompt.substring(0, 80)}...`);
+  const modelId = FAL_MODELS[model];
+  console.log(`[Video] Animating with ${model} (${modelId})...`);
+  console.log(`[Video] Prompt: ${prompt.substring(0, 100)}...`);
 
-  // Upload scene image to R2 first so Kling can access it via URL
-  const timestamp = Date.now();
+  // Upload scene image to R2 for fal.ai access
   const imageUpload = await uploadFile(
-    `content/tmp/scene-${timestamp}.jpg`,
+    `content/tmp/scene-${Date.now()}.jpg`,
     sceneImage,
     'image/jpeg',
   );
 
-  console.log(`[Kling] Scene image uploaded to: ${imageUpload.url}`);
+  // Build model-specific input
+  const input: Record<string, unknown> = { prompt };
 
-  // Generate video with Kling 3.0 Pro
-  const result = await fal.subscribe(
-    'fal-ai/kling-video/v3/pro/image-to-video',
-    {
-      input: {
-        start_image_url: imageUpload.url,
-        prompt,
-        duration: '5',
-        generate_audio: false,
-        cfg_scale: 0.5,
-        negative_prompt:
-          'blur, distort, low quality, illegible text, garbled text, warped labels',
-      },
-      logs: true,
-      onQueueUpdate: (update) => {
-        if (update.status === 'IN_PROGRESS') {
-          console.log(`[Kling] ${update.status}...`);
-        }
-      },
-    },
-  );
+  switch (model) {
+    case 'kling-o3':
+      input.image_url = imageUpload.url;
+      input.duration = '5';
+      input.generate_audio = false;
+      break;
 
-  // Get the video URL from the result
-  const videoUrl = (result.data as any)?.video?.url;
-  if (!videoUrl) {
-    throw new Error('Kling did not return a video');
+    case 'kling-v3':
+      input.start_image_url = imageUpload.url;
+      input.duration = '5';
+      input.generate_audio = false;
+      input.cfg_scale = 0.5;
+      input.negative_prompt = negative_prompt;
+      break;
+
+    case 'pixverse':
+      input.image_url = imageUpload.url;
+      input.duration = 5;
+      input.resolution = '1080p';
+      input.negative_prompt = negative_prompt;
+      input.thinking_type = 'enabled';
+      break;
+
+    case 'hailuo':
+      input.image_url = imageUpload.url;
+      input.duration = '6';
+      input.resolution = '768P';
+      input.prompt_optimizer = true;
+      break;
   }
 
-  console.log(`[Kling] Video generated, downloading from: ${videoUrl}`);
+  const result = await fal.subscribe(modelId, {
+    input,
+    logs: true,
+    onQueueUpdate: (update) => {
+      if (update.status === 'IN_PROGRESS') {
+        console.log(`[Video] ${model}: ${update.status}...`);
+      }
+    },
+  });
 
-  // Download the video
+  // Extract video URL — different models return it differently
+  const data = result.data as any;
+  const videoUrl = data?.video?.url || data?.output?.url;
+
+  if (!videoUrl) {
+    throw new Error(`${model} did not return a video`);
+  }
+
+  console.log(`[Video] ${model} video generated, downloading...`);
+
   const videoRes = await fetch(videoUrl);
   if (!videoRes.ok) {
-    throw new Error(`Failed to download Kling video: ${videoRes.status}`);
+    throw new Error(`Failed to download video: ${videoRes.status}`);
   }
 
   const videoBuffer = Buffer.from(await videoRes.arrayBuffer());
-  console.log(`[Kling] Video downloaded (${videoBuffer.length} bytes)`);
+  console.log(`[Video] ${model} video downloaded (${videoBuffer.length} bytes)`);
 
   return videoBuffer;
 }

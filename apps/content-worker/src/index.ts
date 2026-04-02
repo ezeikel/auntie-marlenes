@@ -18,7 +18,8 @@ import { readFile, writeFile } from 'fs/promises';
 import { getAllProducts, getProductByHandle } from './shopify';
 import { generateProductContent } from './generate';
 import { compositePost } from './compositor';
-import { animateScene } from './video-gen';
+import { animateScene as animateWithKling } from './video-gen';
+import { animateScene as animateWithVeo } from './video-gen-veo';
 import { renderProductReel, generateOutputPath } from './video/render';
 import { uploadProductPost, uploadProductReel, listContent, uploadFile } from './storage';
 
@@ -79,12 +80,22 @@ app.get('/health', (c) => {
  * Generate content for a single product.
  *
  * POST /generate/product
- * Body: { handle: string, types?: ('post' | 'reel')[] }
+ * Body: {
+ *   handle: string,
+ *   types?: ('post' | 'reel')[],
+ *   image_model?: 'gemini' | 'flux-kontext' | 'flux-2-pro',
+ *   video_model?: 'veo' | 'kling-o3' | 'kling-v3' | 'pixverse' | 'hailuo' | string[]
+ * }
+ *
+ * Pass video_model as an array to compare multiple models in parallel:
+ *   video_model: ["veo", "pixverse", "hailuo"]
  */
 app.post('/generate/product', async (c) => {
-  const { handle, types = ['post'] } = await c.req.json<{
+  const { handle, types = ['post'], image_model = 'gemini', video_model = 'veo' } = await c.req.json<{
     handle: string;
     types?: ('post' | 'reel')[];
+    image_model?: 'gemini' | 'flux-kontext' | 'flux-2-pro';
+    video_model?: string | string[];
   }>();
 
   if (!handle) {
@@ -101,13 +112,17 @@ app.post('/generate/product', async (c) => {
 
   const productImageUrl = product.images.edges[0]?.node.url;
 
-  // Step 1: Generate scene image + headline (Gemini + Claude)
-  const content = await generateProductContent({
-    name: product.title,
-    brand: product.vendor,
-    category: product.productType,
-    imageUrl: productImageUrl,
-  });
+  // Step 1: Generate scene image + headline
+  console.log(`[API] Using image model: ${image_model}, video model: ${video_model}`);
+  const content = await generateProductContent(
+    {
+      name: product.title,
+      brand: product.vendor,
+      category: product.productType,
+      imageUrl: productImageUrl,
+    },
+    image_model,
+  );
 
   const results: Record<string, string> = {};
 
@@ -124,37 +139,67 @@ app.post('/generate/product', async (c) => {
     console.log(`[API] Post uploaded: ${upload.url}`);
   }
 
-  // Step 3 + 4: Reel via Veo + Remotion
+  // Step 3 + 4: Reel via video model(s) + Remotion
   if (types.includes('reel')) {
-    // Step 3: Animate scene with Veo
-    console.log('[API] Animating scene with Veo...');
-    const videoBuffer = await animateScene(
-      content.sceneImage,
-      product.productType,
-    );
+    // Support single model string or array of models for comparison
+    const modelsToRun = Array.isArray(video_model)
+      ? video_model
+      : [video_model];
+    const isMultiple = modelsToRun.length > 1;
 
-    // Save video to temp for Remotion
-    const videoPath = `/tmp/veo-${Date.now()}.mp4`;
-    await writeFile(videoPath, videoBuffer);
-    const videoFilename = videoPath.split('/').pop();
-    const sceneVideoUrl = `http://localhost:${port}/tmp/${videoFilename}`;
+    const reelJobs = modelsToRun.map(async (model) => {
+      const label = model.toUpperCase();
+      console.log(`[API] Animating scene with ${label}...`);
 
-    // Step 4: Remotion composites text overlays onto video
-    const reelOutputPath = generateOutputPath('reel');
-    await renderProductReel(
-      {
-        sceneVideoUrl,
-        headline: content.headline,
-        subheading: content.subheading,
-        durationInFrames: 240, // 8 seconds at 30fps
-      },
-      reelOutputPath,
-    );
+      // Route to correct video generator
+      let videoBuffer: Buffer;
+      if (model === 'veo') {
+        videoBuffer = await animateWithVeo(content.sceneImage, product.productType);
+      } else {
+        // All fal.ai models: kling-o3, kling-v3, pixverse, hailuo
+        videoBuffer = await animateWithKling(content.sceneImage, product.productType, model as any);
+      }
 
-    const reelBuffer = await readFile(reelOutputPath);
-    const upload = await uploadProductReel(handle, reelBuffer);
-    results.reel = upload.url;
-    console.log(`[API] Reel uploaded: ${upload.url}`);
+      // Save video to temp for Remotion
+      const videoPath = `/tmp/${model}-${Date.now()}.mp4`;
+      await writeFile(videoPath, videoBuffer);
+      const videoFilename = videoPath.split('/').pop();
+      const sceneVideoUrl = `http://localhost:${port}/tmp/${videoFilename}`;
+
+      // Remotion composites text overlays onto video
+      const reelOutputPath = generateOutputPath('reel');
+      await renderProductReel(
+        {
+          sceneVideoUrl,
+          headline: content.headline,
+          subheading: content.subheading,
+          durationInFrames: 150, // 5 seconds at 30fps
+        },
+        reelOutputPath,
+      );
+
+      const reelBuffer = await readFile(reelOutputPath);
+      const suffix = isMultiple ? `-${model}` : '';
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const upload = await uploadFile(
+        `content/products/${handle}/reel${suffix}-${timestamp}.mp4`,
+        reelBuffer,
+        'video/mp4',
+      );
+
+      console.log(`[API] ${label} reel uploaded: ${upload.url}`);
+      return { model, url: upload.url };
+    });
+
+    const reelResults = await Promise.all(reelJobs);
+
+    for (const r of reelResults) {
+      if (isMultiple) {
+        results[`reel_${r.model}`] = r.url;
+      } else {
+        results.reel = r.url;
+      }
+    }
   }
 
   // Upload raw scene image for reference
@@ -233,7 +278,7 @@ app.post('/generate/all', async (c) => {
       }
 
       if (types.includes('reel')) {
-        const videoBuffer = await animateScene(
+        const videoBuffer = await animateWithVeo(
           content.sceneImage,
           product.productType,
         );
