@@ -82,7 +82,12 @@ export async function createInstagramReelContainer(
   };
 
   if (coverUrl) payload.cover_url = coverUrl;
-  if (productTags?.length) payload.product_tags = productTags;
+  // Reels don't support x/y positions — only product_id
+  if (productTags?.length) {
+    payload.product_tags = productTags.map(({ product_id }) => ({
+      product_id,
+    }));
+  }
 
   const res = await fetch(`${GRAPH_API}/${igAccountId}/media`, {
     method: 'POST',

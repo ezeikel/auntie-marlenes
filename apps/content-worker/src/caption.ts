@@ -1,114 +1,74 @@
 /**
- * AI-generated social media captions using Claude.
+ * AI-generated social media captions using Claude with structured output.
  *
  * Strategy based on Perplexity deep research (April 2026):
- * - 125-300 characters optimal (mobile-first, most won't tap "more")
- * - Open with a micro-story / emotional hook, not product specs
- * - 3-5 hashtags max (hashtags don't drive reach per Mosseri, only discovery)
- * - Keywords woven naturally into caption beat hashtags for algorithm
- * - CTA should match buyer readiness: "Tap to shop" or "Link in bio"
- * - Authentic auntie voice > corporate copy
- * - No pricing in captions (drives more clicks to find out)
+ * - 125-300 characters optimal for IG
+ * - Open with emotional hook, not product specs
+ * - 3-5 hashtags max (per Mosseri: hashtags don't drive reach)
+ * - No pricing in captions
+ * - Separate strategy for IG vs FB
  */
 
-import { generateText } from 'ai';
+import { generateObject } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
+import { z } from 'zod';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const claude: any = anthropic('claude-sonnet-4-20250514');
 
-const IG_CAPTION_PROMPT = `Write an Instagram caption for a product post by "Auntie Marlene's" — a Black-owned hair and beauty store from South London.
+const captionSchema = z.object({
+  instagram: z.object({
+    text: z.string().describe('The main caption text (2-3 sentences, under 250 chars). Open with emotional hook. Warm auntie tone. End with CTA.'),
+    hashtags: z.array(z.string()).max(4).describe('3-4 hashtags. Must include #blackowned. Pick tags people actually search for.'),
+  }),
+  facebook: z.object({
+    text: z.string().describe('Facebook caption (2-4 sentences, up to 400 chars). Conversational, recommend to a friend. End with CTA to shop. No hashtags.'),
+  }),
+});
 
-Product: {{PRODUCT_NAME}}
-Brand: {{BRAND}}
-Category: {{CATEGORY}}
+export type CaptionResult = z.infer<typeof captionSchema>;
 
-RULES (follow exactly):
-- 2-3 short sentences MAXIMUM. Keep it under 250 characters
-- Open with the EMOTIONAL PROBLEM this product solves (not product name)
-- Write as a warm, knowledgeable auntie — conversational, not corporate
-- Weave keywords naturally (e.g. "natural hair", "moisture", "curls") — don't list them
-- 1-2 emojis only. Not excessive
-- End with ONE clear CTA: "Tap to shop" or "Link in bio"
-- Only 3-4 hashtags on a new line. Must include #blackowned. Pick 2-3 that someone would actually SEARCH for
-- British English
-- Do NOT include pricing
-- Do NOT use "introducing" or "check out"
+const CAPTION_SYSTEM = `You write social media captions for "Auntie Marlene's" — a Black-owned hair and beauty store from South London.
 
-GOOD EXAMPLE:
-"Dry ends that won't cooperate? This is the deep moisture your curls have been begging for 💛 Link in bio
+Voice: warm, knowledgeable auntie. Conversational, not corporate. Like recommending to a niece.
+Language: British English.
 
-#blackowned #naturalhaircommunity #washdaytips"
-
-Respond with ONLY the caption text.`;
-
-const FB_CAPTION_PROMPT = `Write a Facebook post caption for a product by "Auntie Marlene's" — a Black-owned hair and beauty store from South London.
-
-Product: {{PRODUCT_NAME}}
-Brand: {{BRAND}}
-Category: {{CATEGORY}}
-
-RULES:
-- 2-4 sentences. Can be slightly longer than Instagram (up to 400 chars)
-- Conversational, warm auntie tone — like you're recommending to a friend
-- Include the product benefit and who it's for
-- End with CTA: "Shop at auntiemarlenes.com" or "Visit our shop — link in bio"
-- 1-2 emojis
-- No hashtags (they don't work on Facebook)
-- British English
-- Do NOT include pricing
-
-Respond with ONLY the caption text.`;
+Rules:
+- Open with the EMOTIONAL PROBLEM the product solves, not the product name
+- 1-2 emojis only
+- Never include pricing
+- Never use "introducing" or "check out"
+- Instagram CTA: "Tap to shop" or "Link in bio"
+- Facebook CTA: "Shop at auntiemarlenes.com"`;
 
 /**
- * Generate an Instagram caption for a product.
- */
-export async function generateInstagramCaption(product: {
-  name: string;
-  brand: string;
-  category: string;
-}): Promise<string> {
-  const prompt = IG_CAPTION_PROMPT
-    .replace('{{PRODUCT_NAME}}', product.name)
-    .replace('{{BRAND}}', product.brand)
-    .replace('{{CATEGORY}}', product.category);
-
-  const result = await generateText({ model: claude, prompt });
-  const caption = result.text.trim();
-  console.log(`[Caption] IG caption generated (${caption.length} chars)`);
-  return caption;
-}
-
-/**
- * Generate a Facebook caption for a product.
- */
-export async function generateFacebookCaption(product: {
-  name: string;
-  brand: string;
-  category: string;
-}): Promise<string> {
-  const prompt = FB_CAPTION_PROMPT
-    .replace('{{PRODUCT_NAME}}', product.name)
-    .replace('{{BRAND}}', product.brand)
-    .replace('{{CATEGORY}}', product.category);
-
-  const result = await generateText({ model: claude, prompt });
-  const caption = result.text.trim();
-  console.log(`[Caption] FB caption generated (${caption.length} chars)`);
-  return caption;
-}
-
-/**
- * Generate captions for both platforms.
+ * Generate structured captions for both platforms.
  */
 export async function generateCaptions(product: {
   name: string;
   brand: string;
   category: string;
-}): Promise<{ instagram: string; facebook: string }> {
-  const [instagram, facebook] = await Promise.all([
-    generateInstagramCaption(product),
-    generateFacebookCaption(product),
-  ]);
-  return { instagram, facebook };
+}): Promise<CaptionResult> {
+  // @ts-expect-error — model type mismatch from pnpm hoisting
+  const result = await generateObject({
+    model: claude,
+    schema: captionSchema,
+    system: CAPTION_SYSTEM,
+    prompt: `Generate Instagram and Facebook captions for: ${product.name} by ${product.brand} (category: ${product.category})`,
+  });
+
+  const captions = result.object as CaptionResult;
+
+  console.log(`[Caption] IG: ${captions.instagram.text.length} chars, ${captions.instagram.hashtags.length} tags`);
+  console.log(`[Caption] FB: ${captions.facebook.text.length} chars`);
+
+  return captions;
+}
+
+/**
+ * Format the Instagram caption with hashtags on a new line.
+ */
+export function formatInstagramCaption(caption: CaptionResult['instagram']): string {
+  const tags = caption.hashtags.map((t) => (t.startsWith('#') ? t : `#${t}`)).join(' ');
+  return `${caption.text}\n\n${tags}`;
 }

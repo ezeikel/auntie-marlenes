@@ -1,12 +1,16 @@
 /**
  * Meta Product Catalog integration.
  * Maps Shopify products to Meta catalog product IDs for Instagram Shopping tags.
+ *
+ * Loads all 58 products on first call and matches by name (Meta's search API
+ * is unreliable — returns same results regardless of query).
  */
 
-const GRAPH_API = 'https://graph.facebook.com/v20.0';
+const GRAPH_API = 'https://graph.facebook.com/v24.0';
 
-// In-memory cache of Shopify handle → Meta catalog product ID
+// In-memory cache: lowercase product name → Meta catalog product ID
 const catalogCache = new Map<string, string>();
+let cacheLoaded = false;
 
 interface CatalogProduct {
   id: string;
@@ -15,94 +19,79 @@ interface CatalogProduct {
 }
 
 /**
- * Query Meta product catalog for products matching a search term.
+ * Load all catalog products into cache.
  */
-export async function getCatalogProducts(
-  query?: string,
-): Promise<CatalogProduct[]> {
+async function ensureCacheLoaded(): Promise<void> {
+  if (cacheLoaded) return;
+
   const catalogId = process.env.META_CATALOG_ID;
   const token = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
 
   if (!catalogId || !token) {
-    throw new Error('Missing META_CATALOG_ID or FACEBOOK_PAGE_ACCESS_TOKEN');
+    console.warn('[Catalog] Missing META_CATALOG_ID or FACEBOOK_PAGE_ACCESS_TOKEN');
+    return;
   }
+
+  console.log('[Catalog] Loading full product catalog...');
 
   const url = new URL(`${GRAPH_API}/${catalogId}/products`);
   url.searchParams.set('fields', 'id,retailer_id,name');
-  url.searchParams.set('access_token', token);
   url.searchParams.set('limit', '100');
-  if (query) url.searchParams.set('q', query);
+  url.searchParams.set('access_token', token);
 
   const res = await fetch(url.toString());
   const data = await res.json();
 
   if (!res.ok || data.error) {
-    throw new Error(
-      `Meta catalog query failed: ${JSON.stringify(data.error || data)}`,
-    );
+    console.error('[Catalog] Failed to load catalog:', data.error || data);
+    return;
   }
 
-  return data.data || [];
-}
-
-/**
- * Load all catalog products and build the cache.
- */
-export async function loadCatalogCache(): Promise<void> {
-  console.log('[Catalog] Loading product catalog...');
-
-  const products = await getCatalogProducts();
+  const products: CatalogProduct[] = data.data || [];
 
   for (const product of products) {
-    // retailer_id from Meta typically matches Shopify product ID or variant ID
-    // Also index by name for fuzzy matching
+    catalogCache.set(product.name.toLowerCase(), product.id);
     if (product.retailer_id) {
       catalogCache.set(product.retailer_id, product.id);
     }
-    // Store by lowercase name for lookup
-    catalogCache.set(product.name.toLowerCase(), product.id);
   }
 
+  cacheLoaded = true;
   console.log(`[Catalog] Cached ${products.length} products`);
 }
 
 /**
- * Look up a Meta catalog product ID by Shopify product handle or name.
- * Returns null if not found (post will go out without product tag).
+ * Look up a Meta catalog product ID by product name.
+ * Loads full catalog on first call, then matches from cache.
  */
 export async function getCatalogProductId(
-  handle: string,
+  _handle: string,
   productName: string,
 ): Promise<string | null> {
-  // Check cache first
-  const cached =
-    catalogCache.get(handle) ||
-    catalogCache.get(productName.toLowerCase());
-  if (cached) return cached;
+  await ensureCacheLoaded();
 
-  // Try searching by product name
-  try {
-    const results = await getCatalogProducts(productName);
-    if (results.length > 0) {
-      const match = results[0];
-      catalogCache.set(handle, match.id);
-      catalogCache.set(productName.toLowerCase(), match.id);
-      console.log(
-        `[Catalog] Found product: ${productName} → ${match.id}`,
-      );
-      return match.id;
-    }
-  } catch (err) {
-    console.warn(`[Catalog] Failed to look up product: ${productName}`, err);
+  // Exact match
+  const exact = catalogCache.get(productName.toLowerCase());
+  if (exact) {
+    console.log(`[Catalog] Matched: ${productName} → ${exact}`);
+    return exact;
   }
 
-  console.warn(`[Catalog] Product not found in Meta catalog: ${productName}`);
+  // Fuzzy match — find closest by checking if product name contains catalog name or vice versa
+  const lowerName = productName.toLowerCase();
+  for (const [key, id] of catalogCache) {
+    if (lowerName.includes(key) || key.includes(lowerName)) {
+      console.log(`[Catalog] Fuzzy matched: ${productName} → ${id}`);
+      return id;
+    }
+  }
+
+  console.warn(`[Catalog] No match for: ${productName}`);
   return null;
 }
 
 /**
  * Build product_tags array for Meta Graph API.
- * Position defaults to center of image.
  */
 export function buildProductTags(
   productId: string,

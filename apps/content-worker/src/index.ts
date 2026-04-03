@@ -339,7 +339,7 @@ app.get('/content/list', async (c) => {
 
 // ─── Publishing Endpoints ────────────────────────────────────────────────────
 
-import { generateCaptions } from './caption';
+import { generateCaptions, formatInstagramCaption } from './caption';
 import { getCatalogProductId, buildProductTags } from './catalog';
 import { publishToInstagram, publishToFacebook, type PublishResult } from './social';
 
@@ -453,7 +453,7 @@ app.post('/publish/product', async (c) => {
     const igResults = await publishToInstagram({
       imageUrl: postUrl,
       videoUrl: reelUrl,
-      caption: captions.instagram,
+      caption: formatInstagramCaption(captions.instagram),
       productTags,
     });
     publishResults.push(...igResults);
@@ -463,7 +463,7 @@ app.post('/publish/product', async (c) => {
     const fbResults = await publishToFacebook({
       imageUrl: postUrl,
       videoUrl: reelUrl,
-      caption: captions.facebook,
+      caption: captions.facebook.text,
       productName: product.title,
     });
     publishResults.push(...fbResults);
@@ -532,7 +532,7 @@ app.post('/publish/content', async (c) => {
     const igResults = await publishToInstagram({
       imageUrl: post_url,
       videoUrl: reel_url,
-      caption: captions.instagram,
+      caption: formatInstagramCaption(captions.instagram),
       productTags,
     });
     publishResults.push(...igResults);
@@ -542,7 +542,7 @@ app.post('/publish/content', async (c) => {
     const fbResults = await publishToFacebook({
       imageUrl: post_url,
       videoUrl: reel_url,
-      caption: captions.facebook,
+      caption: captions.facebook.text,
       productName: product.title,
     });
     publishResults.push(...fbResults);
