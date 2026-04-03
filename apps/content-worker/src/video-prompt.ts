@@ -87,108 +87,54 @@ async function analyseScene(sceneImage: Buffer): Promise<SceneAnalysis> {
 }
 
 /**
- * Build a bespoke 5-layer Veo prompt from scene analysis.
+ * Build a bespoke Veo prompt from scene analysis.
  *
- * Layer 1: Camera lock (most important — comes first)
- * Layer 2: Product immobility
- * Layer 3: Environmental animation (dynamic, based on scene)
- * Layer 4: Lighting and text preservation
- * Layer 5: Technical and sensory
+ * Key learnings from research:
+ * - Shorter prompts = better adherence
+ * - Only ONE environmental animation (multiple cause jitter)
+ * - 4 seconds not 6 (reduces cumulative drift)
+ * - "buttery smooth", "rock steady", "zero jitter" = magic keywords
+ * - 1080p for better edge tracking
  */
 function buildVeoPrompt(analysis: SceneAnalysis): {
   prompt: string;
   negative_prompt: string;
 } {
-  // Layer 1: Camera lock
-  const cameraLock =
-    'Static locked-off camera position held completely stationary throughout the entire clip with zero camera movement in any direction.';
-
-  // Layer 2: Product immobility
-  const productLock = `${analysis.product_description} on ${analysis.surface} remains perfectly motionless and completely static with zero movement, no rotation, no shifting position.`;
-
-  // Layer 3: Environmental animation — dynamic based on what's actually in the scene
-  const envAnimations: string[] = [];
+  // Pick the BEST single environmental animation (only one — multiple cause jitter)
+  let envAnimation = `${analysis.lighting_type} gradually shifts across surfaces`;
 
   for (const element of analysis.animatable_elements) {
     const lower = element.toLowerCase();
-    if (lower.includes('light') || lower.includes('sun') || lower.includes('shadow')) {
-      envAnimations.push(
-        `${analysis.lighting_type} gradually shifts subtly across ${analysis.surface} revealing product details while product stays in exact same position`,
-      );
-    } else if (lower.includes('steam') || lower.includes('mist') || lower.includes('vapor')) {
-      envAnimations.push(
-        'gentle steam wisps drift softly upward in background air without approaching product',
-      );
-    } else if (lower.includes('plant') || lower.includes('leaf') || lower.includes('leaves')) {
-      envAnimations.push(
-        'green plant leaves shift subtly with minimal barely perceptible motion creating living atmosphere',
-      );
-    } else if (lower.includes('fabric') || lower.includes('towel') || lower.includes('curtain') || lower.includes('cloth')) {
-      envAnimations.push(
-        `${lower} barely moves with gentle unseen air current creating subtle texture`,
-      );
-    } else if (lower.includes('dust') || lower.includes('particle')) {
-      envAnimations.push(
-        'subtle dust particles float gently in light rays without disturbing product',
-      );
+    if (lower.includes('steam') || lower.includes('mist')) {
+      envAnimation = 'soft steam wisps drift slowly upward in background';
+      break;
     } else if (lower.includes('candle') || lower.includes('flame')) {
-      envAnimations.push(
-        'candle flame flickers softly casting gentle dancing shadows in background',
-      );
-    } else if (lower.includes('water') || lower.includes('reflection') || lower.includes('ripple')) {
-      envAnimations.push(
-        'subtle water reflections ripple gently creating soft ambient movement in background',
-      );
-    } else {
-      envAnimations.push(
-        `${lower} exhibits the faintest subtle natural motion`,
-      );
+      envAnimation = 'candle flame flickers softly in background';
+      break;
+    } else if (lower.includes('dust') || lower.includes('particle')) {
+      envAnimation = 'subtle dust particles float gently through light rays';
+      break;
+    } else if (lower.includes('curtain') || lower.includes('fabric')) {
+      envAnimation = 'fabric barely sways with an imperceptible breeze';
+      break;
     }
   }
 
-  // Take max 3 animations to keep prompt focused
-  const environmentLayer = envAnimations.slice(0, 3).join('. ') + '.';
+  const prompt = [
+    // Camera + stability (most important — first)
+    'Static locked-off camera, rock steady, perfectly stable, zero jitter, buttery smooth motion.',
+    // Product lock
+    `Product on ${analysis.surface} remains completely motionless, fixed in place.`,
+    // ONE subtle environmental animation
+    `${envAnimation}.`,
+    // Text preservation
+    'Product text remains sharp and legible.',
+    // Technical
+    '4 second clip, 1080p, cinematic lighting, premium beauty aesthetic.',
+  ].join(' ');
 
-  // Layer 4: Lighting and text preservation
-  const textPreservation = `Product packaging text and labels remain perfectly sharp and legible throughout animation. ${analysis.lighting_type} maintains consistent illumination on product typography ensuring crisp definition and detail visibility.`;
-
-  // Layer 5: Technical and sensory
-  const moodMap: Record<string, string> = {
-    calm: 'serene peaceful premium',
-    warm: 'warm inviting luxurious',
-    cozy: 'intimate warm welcoming',
-    professional: 'professional sophisticated clean',
-    luxurious: 'luxurious prestige elegant',
-    natural: 'natural organic authentic',
-    fresh: 'fresh clean invigorating',
-  };
-  const moodDesc = moodMap[analysis.mood] || 'premium luxury beauty';
-
-  const technical = `6 second duration. ${moodDesc} beauty brand aesthetic. Cinematic colour grading with warm tones.`;
-
-  // Combine all layers
-  const prompt = [cameraLock, productLock, environmentLayer, textPreservation, technical].join(' ');
-
-  // Negative prompt — comprehensive protection
-  const negative_prompt = [
-    'camera movement',
-    'zoom in',
-    'zoom out',
-    'pan',
-    'camera rotation',
-    'camera tilt',
-    'product movement',
-    'product rotation',
-    'product shift',
-    'text distortion',
-    'label blur',
-    'packaging warp',
-    'perspective change',
-    'parallax motion',
-    'depth shifts',
-    'dynamic motion',
-    'fast movement',
-  ].join(', ');
+  const negative_prompt =
+    'camera movement, zoom, pan, wobble, shake, jitter, flicker, product movement, product rotation, text distortion, label blur, fast motion, dynamic motion, parallax';
 
   return { prompt, negative_prompt };
 }
