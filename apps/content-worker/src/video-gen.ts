@@ -206,7 +206,7 @@ function buildRunwayPrompt(scene: SceneAnalysis): {
   negative_prompt: string;
 } {
   return {
-    prompt: `Cinematic product photography. ${scene.product} on ${scene.surface}. ${scene.lighting}. Static locked camera. Product and all objects completely motionless. Only a very subtle, slow ambient light shift across the surfaces. Premium luxury beauty brand. Smooth, stable, photorealistic.`,
+    prompt: `Static, tight frame. ${scene.product} on ${scene.surface}. ${scene.lighting}. The camera holds perfectly still on a tripod. All objects remain completely still. The only motion is a gentle, slow shift of natural light across the surfaces and soft bokeh shimmer in the background. Premium beauty product advertisement. Photorealistic.`,
     negative_prompt: '',
   };
 }
