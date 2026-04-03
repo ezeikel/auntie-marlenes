@@ -24,6 +24,8 @@ const FAL_MODELS = {
   'kling-v3': 'fal-ai/kling-video/v3/pro/image-to-video',
   'kling-o3': 'fal-ai/kling-video/o3/standard/image-to-video',
   'seedance': 'fal-ai/bytedance/seedance/v1.5/pro/image-to-video',
+  'sora': 'fal-ai/sora-2/image-to-video',
+  'sora-pro': 'fal-ai/sora-2/image-to-video/pro',
   'pixverse': 'fal-ai/pixverse/v6/image-to-video',
   'hailuo': 'fal-ai/minimax/hailuo-02/standard/image-to-video',
 } as const;
@@ -121,6 +123,16 @@ function buildHailuoPrompt(scene: SceneAnalysis): {
   };
 }
 
+function buildSoraPrompt(scene: SceneAnalysis): {
+  prompt: string;
+  negative_prompt: string;
+} {
+  return {
+    prompt: `A perfectly still ${scene.product} sits on ${scene.surface}. ${scene.lighting}. The camera is completely locked in place and does not move at all. The only motion in the entire scene is an extremely subtle, slow shift of ambient light across the surfaces. Everything else — the product, the surface, all objects — remain perfectly motionless. Cinematic, photorealistic, premium beauty product advertisement. 4 seconds.`,
+    negative_prompt: '',
+  };
+}
+
 function buildPromptForModel(
   model: FalVideoModel,
   scene: SceneAnalysis,
@@ -131,6 +143,9 @@ function buildPromptForModel(
       return buildKlingPrompt(scene);
     case 'seedance':
       return buildSeedancePrompt(scene);
+    case 'sora':
+    case 'sora-pro':
+      return buildSoraPrompt(scene);
     case 'pixverse':
       return buildPixversePrompt(scene);
     case 'hailuo':
@@ -201,6 +216,14 @@ export async function animateScene(
       input.resolution = '1080p';
       input.negative_prompt = negative_prompt;
       input.thinking_type = 'enabled';
+      break;
+
+    case 'sora':
+    case 'sora-pro':
+      input.image_url = imageUpload.url;
+      input.duration = 4;
+      input.resolution = '720p';
+      input.aspect_ratio = '9:16';
       break;
 
     case 'hailuo':
