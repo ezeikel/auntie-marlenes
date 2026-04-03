@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "npx tsx --env-file=.env src/index.ts",
     "start": "npx tsx --env-file=.env src/index.ts",
-    "remotion:studio": "npx remotion studio src/video/index.ts --port 3010"
+    "remotion:studio": "npx remotion studio src/video/index.ts --port 3010",
+    "create-product": "npx tsx --env-file=.env src/scripts/create-product.ts",
+    "update-images": "npx tsx --env-file=.env src/scripts/update-product-images.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.64",
