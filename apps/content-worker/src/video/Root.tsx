@@ -7,22 +7,23 @@ const SAMPLE_IMAGE =
 export const RemotionRoot: React.FC = () => {
   return (
     <>
-      {/* Reel with image fallback — 1080x1920 (9:16), 8 seconds @ 30fps */}
+      {/* Reel with image fallback — 1080x1920 (9:16), 24fps to match video models */}
       <Composition
         id="ProductReel"
         component={ProductReel}
-        durationInFrames={240}
-        fps={30}
+        durationInFrames={120}
+        fps={24}
         width={1080}
         height={1920}
         defaultProps={{
           sceneImageUrl: SAMPLE_IMAGE,
+          audioUrl: undefined,
           headline: 'Salon results at home',
           subheading: 'For curls that last',
-          durationInFrames: 240,
+          durationInFrames: 120,
         } satisfies ProductReelProps}
         calculateMetadata={({ props }) => ({
-          durationInFrames: props.durationInFrames || 240,
+          durationInFrames: props.durationInFrames || 120,
         })}
       />
     </>

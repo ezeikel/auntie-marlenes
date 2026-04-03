@@ -6,6 +6,7 @@
  */
 
 import { fal } from '@fal-ai/client';
+import RunwayML from '@runwayml/sdk';
 import { uploadFile } from './storage';
 import { generateText } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
@@ -31,6 +32,49 @@ const FAL_MODELS = {
 } as const;
 
 export type FalVideoModel = keyof typeof FAL_MODELS;
+export type VideoModel = FalVideoModel | 'runway';
+
+// ─── ElevenLabs Audio ────────────────────────────────────────────────────────
+
+/**
+ * Generate lofi background music for a product scene via ElevenLabs Music API.
+ * Uses scene analysis for mood context, always soft/warm/lofi instrumental.
+ */
+export async function generateSceneAudio(
+  scene: SceneAnalysis,
+  durationSeconds: number = 5,
+): Promise<Buffer> {
+  console.log('[Audio] Generating lofi background music via ElevenLabs...');
+
+  // Map scene lighting/surface to a mood modifier
+  const warmth = scene.lighting.toLowerCase().includes('warm') ? 'warm golden' : 'soft dreamy';
+  const prompt = `Soft ${warmth} lo-fi instrumental, gentle piano chords over ambient synth pads, vinyl crackle texture, 70 BPM in C major, cozy beauty product showcase background music`;
+
+  console.log(`[Audio] Prompt: ${prompt}`);
+
+  // Generate 15s so we can skip the intro and use the middle section
+  const res = await fetch('https://api.elevenlabs.io/v1/music', {
+    method: 'POST',
+    headers: {
+      'xi-api-key': process.env.ELEVENLABS_API_KEY!,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      prompt,
+      duration_ms: 15_000,
+      force_instrumental: true,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`ElevenLabs music generation failed (${res.status}): ${err}`);
+  }
+
+  const audioBuffer = Buffer.from(await res.arrayBuffer());
+  console.log(`[Audio] Generated music (${audioBuffer.length} bytes)`);
+  return audioBuffer;
+}
 
 // ─── Scene Analysis ──────────────────────────────────────────────────────────
 
@@ -134,7 +178,7 @@ function buildSoraPrompt(scene: SceneAnalysis): {
 }
 
 function buildPromptForModel(
-  model: FalVideoModel,
+  model: VideoModel,
   scene: SceneAnalysis,
 ): { prompt: string; negative_prompt: string } {
   switch (model) {
@@ -150,29 +194,115 @@ function buildPromptForModel(
       return buildPixversePrompt(scene);
     case 'hailuo':
       return buildHailuoPrompt(scene);
+    case 'runway':
+      return buildRunwayPrompt(scene);
     default:
       return buildKlingPrompt(scene);
   }
 }
 
+function buildRunwayPrompt(scene: SceneAnalysis): {
+  prompt: string;
+  negative_prompt: string;
+} {
+  return {
+    prompt: `Cinematic product photography. ${scene.product} on ${scene.surface}. ${scene.lighting}. Static locked camera. Product and all objects completely motionless. Only a very subtle, slow ambient light shift across the surfaces. Premium luxury beauty brand. Smooth, stable, photorealistic.`,
+    negative_prompt: '',
+  };
+}
+
+// ─── Runway Gen-4.5 ──────────────────────────────────────────────────────────
+
+async function animateWithRunway(
+  sceneImage: Buffer,
+  prompt: string,
+): Promise<Buffer> {
+  console.log('[Video] Animating with Runway Gen-4.5...');
+
+  const client = new RunwayML({
+    apiKey: process.env.RUNWAYML_API_SECRET,
+  });
+
+  // Upload to R2 for public URL
+  const imageUpload = await uploadFile(
+    `content/tmp/scene-${Date.now()}.jpg`,
+    sceneImage,
+    'image/jpeg',
+  );
+
+  const task = await client.imageToVideo.create({
+    model: 'gen4.5',
+    promptImage: imageUpload.url,
+    promptText: prompt,
+    ratio: '720:1280', // 9:16 portrait — only valid 9:16 ratio in Runway API
+    duration: 5,
+  });
+
+  console.log(`[Video] Runway task created: ${task.id}`);
+
+  // Poll for completion
+  let taskResult = await client.tasks.retrieve(task.id);
+  let attempts = 0;
+  const maxAttempts = 60;
+
+  while (taskResult.status !== 'SUCCEEDED' && taskResult.status !== 'FAILED') {
+    attempts++;
+    if (attempts > maxAttempts) throw new Error('Runway task timed out');
+    console.log(`[Video] Runway: ${taskResult.status} (${attempts}/${maxAttempts})...`);
+    await new Promise((r) => setTimeout(r, 10_000));
+    taskResult = await client.tasks.retrieve(task.id);
+  }
+
+  if (taskResult.status === 'FAILED') {
+    throw new Error(`Runway task failed: ${JSON.stringify(taskResult)}`);
+  }
+
+  const videoUrl = (taskResult as any)?.output?.[0];
+  if (!videoUrl) {
+    throw new Error(`Runway did not return a video: ${JSON.stringify(taskResult)}`);
+  }
+
+  console.log(`[Video] Runway video generated, downloading...`);
+
+  const videoRes = await fetch(videoUrl);
+  if (!videoRes.ok) {
+    throw new Error(`Failed to download Runway video: ${videoRes.status}`);
+  }
+
+  const videoBuffer = Buffer.from(await videoRes.arrayBuffer());
+  console.log(`[Video] Runway video downloaded (${videoBuffer.length} bytes)`);
+
+  return videoBuffer;
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────────
 
+export { type SceneAnalysis };
+
 /**
- * Animate a scene image using a fal.ai video model.
+ * Animate a scene image.
+ * Supports fal.ai models + Runway Gen-4.5.
  * Default: Seedance 1.5 Pro (best stability with camera_fixed).
+ * Returns video buffer + scene analysis (for audio generation).
  */
 export async function animateScene(
   sceneImage: Buffer,
   _category: string,
-  model: FalVideoModel = 'seedance',
-): Promise<Buffer> {
+  model: VideoModel = 'seedance',
+): Promise<{ video: Buffer; scene: SceneAnalysis }> {
   // Analyse scene with Claude
   const scene = await analyseScene(sceneImage);
 
   // Build model-specific prompt
   const { prompt, negative_prompt } = buildPromptForModel(model, scene);
 
-  const modelId = FAL_MODELS[model];
+  // Runway uses its own SDK, not fal.ai
+  if (model === 'runway') {
+    const video = await animateWithRunway(sceneImage, prompt);
+    return { video, scene };
+  }
+
+  const modelId = FAL_MODELS[model as FalVideoModel];
   console.log(`[Video] Animating with ${model} (${modelId})...`);
   console.log(`[Video] Prompt: ${prompt.substring(0, 120)}...`);
 
@@ -261,5 +391,5 @@ export async function animateScene(
   const videoBuffer = Buffer.from(await videoRes.arrayBuffer());
   console.log(`[Video] ${model} video downloaded (${videoBuffer.length} bytes)`);
 
-  return videoBuffer;
+  return { video: videoBuffer, scene };
 }

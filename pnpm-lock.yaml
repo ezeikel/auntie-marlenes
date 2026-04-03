@@ -63,6 +63,9 @@ importers:
       '@remotion/renderer':
         specifier: ^4.0.0
         version: 4.0.441(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@runwayml/sdk':
+        specifier: ^3.18.0
+        version: 3.18.0
       ai:
         specifier: ^6.0.27
         version: 6.0.27(zod@4.3.6)
@@ -5364,6 +5367,10 @@ packages:
 
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
+
+  '@runwayml/sdk@3.18.0':
+    resolution: {integrity: sha512-8n3lp+tQfExnP8lX2TnBt2ZrQwyPDmA8OnD5IDXQhNHbV0L58iHD/OnNbV0Q8PLgSMMQ3YqsC4cxCFfP9Bejaw==}
+    hasBin: true
 
   '@sanity/asset-utils@2.3.0':
     resolution: {integrity: sha512-dlEmALjQ5iyQG0O8ZVmkkE3wUYCKfRmiyMvuuGN5SF9buAHxmseBOKJ/Iy2DU/8ef70mtUXlzeCRSlTN/nmZsg==}
@@ -19347,6 +19354,8 @@ snapshots:
       react-refresh: 0.18.0
 
   '@rtsao/scc@1.1.0': {}
+
+  '@runwayml/sdk@3.18.0': {}
 
   '@sanity/asset-utils@2.3.0': {}
 

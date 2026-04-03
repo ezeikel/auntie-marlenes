@@ -18,7 +18,7 @@ import { readFile, writeFile } from 'fs/promises';
 import { getAllProducts, getProductByHandle } from './shopify';
 import { generateProductContent } from './generate';
 import { compositePost } from './compositor';
-import { animateScene as animateWithKling } from './video-gen';
+import { animateScene as animateWithKling, generateSceneAudio } from './video-gen';
 import { animateScene as animateWithVeo } from './video-gen-veo';
 import { renderProductReel, generateOutputPath } from './video/render';
 import { uploadProductPost, uploadProductReel, listContent, uploadFile } from './storage';
@@ -36,7 +36,7 @@ app.get('/tmp/:filename', async (c) => {
     const stats = await stat(filePath);
     const data = await readFile(filePath);
     const ext = filename.split('.').pop();
-    const contentType = ext === 'mp4' ? 'video/mp4' : 'image/jpeg';
+    const contentType = ext === 'mp4' ? 'video/mp4' : ext === 'mp3' ? 'audio/mpeg' : 'image/jpeg';
 
     // Handle range requests (required for Remotion video seeking)
     const range = c.req.header('range');
@@ -153,11 +153,27 @@ app.post('/generate/product', async (c) => {
 
       // Route to correct video generator
       let videoBuffer: Buffer;
+      let scene: { product: string; surface: string; lighting: string } | undefined;
       if (model === 'veo') {
         videoBuffer = await animateWithVeo(content.sceneImage, product.productType);
       } else {
-        // All fal.ai models: kling-o3, kling-v3, pixverse, hailuo
-        videoBuffer = await animateWithKling(content.sceneImage, product.productType, model as any);
+        const result = await animateWithKling(content.sceneImage, product.productType, model as any);
+        videoBuffer = result.video;
+        scene = result.scene;
+      }
+
+      // Generate ambient audio in parallel with video save
+      let audioUrl: string | undefined;
+      if (scene) {
+        try {
+          const audioBuffer = await generateSceneAudio(scene, 5);
+          const audioPath = `/tmp/${model}-audio-${Date.now()}.mp3`;
+          await writeFile(audioPath, audioBuffer);
+          const audioFilename = audioPath.split('/').pop();
+          audioUrl = `http://localhost:${port}/tmp/${audioFilename}`;
+        } catch (err) {
+          console.warn(`[API] Audio generation failed, continuing without audio:`, err);
+        }
       }
 
       // Save video to temp for Remotion
@@ -166,14 +182,15 @@ app.post('/generate/product', async (c) => {
       const videoFilename = videoPath.split('/').pop();
       const sceneVideoUrl = `http://localhost:${port}/tmp/${videoFilename}`;
 
-      // Remotion composites text overlays onto video
+      // Remotion composites text overlays + audio onto video
       const reelOutputPath = generateOutputPath('reel');
       await renderProductReel(
         {
           sceneVideoUrl,
+          audioUrl,
           headline: content.headline,
           subheading: content.subheading,
-          durationInFrames: 150, // 5 seconds at 30fps
+          durationInFrames: 120, // 5 seconds at 24fps
         },
         reelOutputPath,
       );
@@ -293,7 +310,7 @@ app.post('/generate/all', async (c) => {
             sceneVideoUrl,
             headline: content.headline,
             subheading: content.subheading,
-            durationInFrames: 240,
+            durationInFrames: 120, // 5 seconds at 24fps
           },
           reelOutputPath,
         );
@@ -418,7 +435,7 @@ app.post('/publish/product', async (c) => {
         sceneVideoUrl,
         headline: content.headline,
         subheading: content.subheading,
-        durationInFrames: 150,
+        durationInFrames: 120, // 5 seconds at 24fps
       },
       reelOutputPath,
     );

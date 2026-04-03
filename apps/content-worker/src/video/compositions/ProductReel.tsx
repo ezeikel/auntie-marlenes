@@ -1,4 +1,4 @@
-import { AbsoluteFill, Sequence, Video, useCurrentFrame, interpolate } from 'remotion';
+import { AbsoluteFill, Audio, Sequence, OffthreadVideo, useCurrentFrame, interpolate } from 'remotion';
 import { Background } from '../components/Background';
 import { Brand } from '../components/Brand';
 import { Headline } from '../components/Headline';
@@ -6,54 +6,54 @@ import { Headline } from '../components/Headline';
 export type ProductReelProps = {
   sceneVideoUrl?: string;
   sceneImageUrl?: string;
+  audioUrl?: string;
   headline: string;
   subheading: string;
   durationInFrames?: number;
 };
 
 /**
- * ProductReel — animated reel with Veo-generated video background.
+ * ProductReel — animated reel with video background.
  *
- * If sceneVideoUrl is provided, uses the animated video.
+ * If sceneVideoUrl is provided, uses the AI-generated video as-is
+ * (no additional zoom — the video model handles camera motion).
  * Falls back to sceneImageUrl with Ken Burns effect.
  *
- * Timeline (8 seconds @ 30fps = 240 frames):
- * - 0-30 (0-1s):     Background fades in
- * - 30-60 (1-2s):    Brand fades in from top
- * - 60-120 (2-4s):   Headline animates in
- * - 120-240 (4-8s):  Hold with all elements visible
+ * Timeline (5 seconds @ 24fps = 120 frames):
+ * - 0-24 (0-1s):     Background fades in
+ * - 24-48 (1-2s):    Brand fades in from top
+ * - 48-96 (2-4s):    Headline animates in
+ * - 96-120 (4-5s):   Hold with all elements visible
  */
 export const ProductReel: React.FC<ProductReelProps> = ({
   sceneVideoUrl,
   sceneImageUrl,
+  audioUrl,
   headline,
   subheading,
-  durationInFrames = 240,
+  durationInFrames = 120,
 }) => {
   const frame = useCurrentFrame();
 
-  // Subtle slow zoom on video (1.0 → 1.05 over duration)
-  const videoScale = interpolate(frame, [0, durationInFrames], [1, 1.05], {
-    extrapolateRight: 'clamp',
-  });
-
-  // Fade in over first 30 frames
-  const fadeIn = interpolate(frame, [0, 30], [0, 1], {
+  // Fade in over first 24 frames (1 second at 24fps)
+  const fadeIn = interpolate(frame, [0, 24], [0, 1], {
     extrapolateRight: 'clamp',
   });
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#2C1810' }}>
-      {/* Background — Veo video or fallback to image */}
+      {/* Lofi background music — skip intro, start from 5s into the track */}
+      {audioUrl && <Audio src={audioUrl} volume={0.25} startFrom={5 * 24} />}
+
+      {/* Background — AI video (no zoom overlay) or fallback to image */}
       {sceneVideoUrl ? (
         <AbsoluteFill style={{ opacity: fadeIn, overflow: 'hidden' }}>
-          <Video
+          <OffthreadVideo
             src={sceneVideoUrl}
             style={{
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              transform: `scale(${videoScale})`,
             }}
           />
         </AbsoluteFill>
@@ -76,12 +76,12 @@ export const ProductReel: React.FC<ProductReelProps> = ({
       />
 
       {/* Brand — appears at 1s */}
-      <Sequence from={30} durationInFrames={durationInFrames - 30}>
+      <Sequence from={24} durationInFrames={durationInFrames - 24}>
         <Brand animated />
       </Sequence>
 
       {/* Headline — appears at 2s */}
-      <Sequence from={60} durationInFrames={durationInFrames - 60}>
+      <Sequence from={48} durationInFrames={durationInFrames - 48}>
         <Headline headline={headline} subheading={subheading} animated />
       </Sequence>
     </AbsoluteFill>
