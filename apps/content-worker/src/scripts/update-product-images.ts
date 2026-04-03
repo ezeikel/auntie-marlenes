@@ -28,6 +28,7 @@ import {
   selectBestReference,
   generateStudioShots,
 } from '../product-images';
+import { uploadFile } from '../storage';
 
 async function updateProductImages(product: AdminProduct, dryRun: boolean): Promise<void> {
   console.log(`\n${'='.repeat(60)}`);
@@ -64,11 +65,17 @@ async function updateProductImages(product: AdminProduct, dryRun: boolean): Prom
     return;
   }
 
-  // Step 4: Upload to Shopify (or dry run)
+  // Step 4: Upload to Shopify (or dry run with R2 preview)
   if (dryRun) {
     console.log(`[DRY RUN] Would replace ${product.images.edges.length} images with ${shots.length} new shots:`);
+    console.log(`\nPreview images (uploaded to R2):`);
     for (const shot of shots) {
-      console.log(`  - ${shot.name} (${shot.verdict}): ${shot.buffer.length} bytes`);
+      const preview = await uploadFile(
+        `content/products/${product.handle}/studio-preview-${shot.slug}.jpg`,
+        shot.buffer,
+        'image/jpeg',
+      );
+      console.log(`  - ${shot.name} (${shot.verdict}): ${preview.url}`);
     }
     return;
   }

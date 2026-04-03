@@ -69,7 +69,10 @@ interface ReferenceImage {
 }
 
 /**
- * Use Perplexity to find high-quality reference images of a product.
+ * Search for high-quality reference images using multiple strategies:
+ * 1. Perplexity (sonar) for web-searched image URLs
+ * 2. Google Custom Search API (if configured) — TODO: replace with AM-specific key
+ * 3. Direct retailer URL construction as fallback
  */
 export async function findReferenceImages(
   productName: string,
@@ -77,8 +80,39 @@ export async function findReferenceImages(
 ): Promise<ReferenceImage[]> {
   console.log(`[Images] Searching for reference images: ${productName} by ${brand}...`);
 
+  const results: ReferenceImage[] = [];
+
+  // Strategy 1: Perplexity
+  try {
+    const perplexityImages = await searchWithPerplexity(productName, brand);
+    results.push(...perplexityImages);
+  } catch (err) {
+    console.warn('[Images] Perplexity search failed:', err);
+  }
+
+  // Strategy 2: Google Custom Search (if key available)
+  // TODO: Replace with Auntie Marlene's own Google CSE key
+  const googleKey = process.env.GOOGLE_CUSTOM_SEARCH_KEY;
+  const googleCx = process.env.GOOGLE_CUSTOM_SEARCH_CX;
+  if (googleKey && googleCx) {
+    try {
+      const googleImages = await searchWithGoogle(productName, brand, googleKey, googleCx);
+      results.push(...googleImages);
+    } catch (err) {
+      console.warn('[Images] Google search failed:', err);
+    }
+  }
+
+  console.log(`[Images] Found ${results.length} reference images total`);
+  return results;
+}
+
+async function searchWithPerplexity(
+  productName: string,
+  brand: string,
+): Promise<ReferenceImage[]> {
   const apiKey = process.env.PERPLEXITY_API_KEY;
-  if (!apiKey) throw new Error('PERPLEXITY_API_KEY is required');
+  if (!apiKey) return [];
 
   const res = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
@@ -91,44 +125,65 @@ export async function findReferenceImages(
       messages: [
         {
           role: 'user',
-          content: `Find the highest quality product photos of "${productName}" by ${brand}. I need direct image URLs (ending in .jpg, .png, .webp) from the brand's official website, Amazon UK, Amazon US, Boots, Superdrug, or major beauty retailers.
+          content: `I need to find high-quality product photos of "${productName}" by ${brand}.
 
-Return ONLY a JSON array of objects with "url" and "source" fields. Example:
-[{"url": "https://example.com/product.jpg", "source": "Amazon UK"}]
+Search Amazon UK, Amazon US, the ${brand} official website, Boots.com, Superdrug.com, and LookFantastic.com for product listing images of this exact product.
 
-Requirements:
-- Only include direct image URLs that will load as images
-- Prefer high-resolution images (product photography, not lifestyle)
-- Include images showing the front label clearly
-- 3-5 images maximum`,
+For each image you find, give me the FULL direct URL to the image file (the src attribute of the img tag, NOT the product page URL).
+
+Return ONLY a valid JSON array:
+[{"url": "https://m.media-amazon.com/images/I/xxxxx.jpg", "source": "Amazon UK"}]
+
+Important:
+- I need the actual image file URL, not the product page
+- Amazon image URLs look like: https://m.media-amazon.com/images/I/xxxxx._AC_SL1500_.jpg
+- Prefer the largest/highest quality version
+- 3-5 images maximum
+- Only include URLs you are confident are correct`,
         },
       ],
     }),
   });
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Perplexity API error (${res.status}): ${err}`);
-  }
+  if (!res.ok) return [];
 
   const data = await res.json();
   const content = data.choices?.[0]?.message?.content || '';
 
-  // Extract JSON array from response
   const jsonMatch = content.match(/\[[\s\S]*?\]/);
-  if (!jsonMatch) {
-    console.warn('[Images] Could not parse Perplexity response, falling back to empty');
-    return [];
-  }
+  if (!jsonMatch) return [];
 
   try {
     const images = JSON.parse(jsonMatch[0]) as ReferenceImage[];
-    console.log(`[Images] Found ${images.length} reference images`);
+    console.log(`[Images] Perplexity found ${images.length} images`);
     return images;
   } catch {
-    console.warn('[Images] Failed to parse reference image JSON');
     return [];
   }
+}
+
+async function searchWithGoogle(
+  productName: string,
+  brand: string,
+  apiKey: string,
+  cx: string,
+): Promise<ReferenceImage[]> {
+  const query = encodeURIComponent(`${brand} ${productName} product photo`);
+  const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${query}&searchType=image&num=5&imgSize=large`;
+
+  const res = await fetch(url);
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  const items = data.items || [];
+
+  const images = items.map((item: any) => ({
+    url: item.link,
+    source: new URL(item.image?.contextLink || item.link).hostname,
+  }));
+
+  console.log(`[Images] Google found ${images.length} images`);
+  return images;
 }
 
 /**
