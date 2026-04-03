@@ -257,7 +257,8 @@ export interface PublishResult {
 export async function publishToInstagram(options: {
   imageUrl?: string;
   videoUrl?: string;
-  caption: string;
+  postCaption: string;
+  reelCaption: string;
   productTags?: ProductTag[];
 }): Promise<PublishResult[]> {
   const results: PublishResult[] = [];
@@ -268,7 +269,7 @@ export async function publishToInstagram(options: {
       console.log('[Social] Publishing IG image post...');
       const containerId = await createInstagramMediaContainer(
         options.imageUrl,
-        options.caption,
+        options.postCaption,
         options.productTags,
       );
       const mediaId = await publishInstagramMedia(containerId);
@@ -297,7 +298,7 @@ export async function publishToInstagram(options: {
       console.log('[Social] Publishing IG reel...');
       const containerId = await createInstagramReelContainer(
         options.videoUrl,
-        options.caption,
+        options.reelCaption,
         undefined,
         options.productTags,
       );
@@ -330,7 +331,8 @@ export async function publishToInstagram(options: {
 export async function publishToFacebook(options: {
   imageUrl?: string;
   videoUrl?: string;
-  caption: string;
+  postCaption: string;
+  reelCaption: string;
   productName: string;
 }): Promise<PublishResult[]> {
   const results: PublishResult[] = [];
@@ -338,7 +340,7 @@ export async function publishToFacebook(options: {
   if (options.imageUrl) {
     try {
       console.log('[Social] Publishing FB image post...');
-      const postId = await postToFacebookPage(options.caption, options.imageUrl);
+      const postId = await postToFacebookPage(options.postCaption, options.imageUrl);
       results.push({
         platform: 'facebook',
         type: 'post',
@@ -363,7 +365,7 @@ export async function publishToFacebook(options: {
       console.log('[Social] Publishing FB video...');
       const postId = await postVideoToFacebookPage(
         options.videoUrl,
-        options.caption,
+        options.reelCaption,
         options.productName,
       );
       results.push({

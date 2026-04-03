@@ -376,9 +376,9 @@ app.post('/publish/product', async (c) => {
   const {
     handle,
     platforms = ['instagram', 'facebook'],
-    types = ['post'],
-    image_model = 'flux-2-pro',
-    video_model = 'seedance',
+    types = ['post', 'reel'],
+    image_model = 'gemini',
+    video_model = 'runway',
   } = await c.req.json<{
     handle: string;
     platforms?: ('instagram' | 'facebook')[];
@@ -423,16 +423,29 @@ app.post('/publish/product', async (c) => {
   }
 
   if (types.includes('reel')) {
-    const videoBuffer = await animateWithVeo(content.sceneImage, product.productType);
-    const videoPath = `/tmp/veo-${Date.now()}.mp4`;
-    await writeFile(videoPath, videoBuffer);
+    const result = await animateWithKling(content.sceneImage, product.productType, video_model as any);
+    const videoPath = `/tmp/${video_model}-${Date.now()}.mp4`;
+    await writeFile(videoPath, result.video);
     const videoFilename = videoPath.split('/').pop();
     const sceneVideoUrl = `http://localhost:${port}/tmp/${videoFilename}`;
+
+    // Generate lofi background music
+    let audioUrl: string | undefined;
+    try {
+      const audioBuffer = await generateSceneAudio(result.scene, 5);
+      const audioPath = `/tmp/${video_model}-audio-${Date.now()}.mp3`;
+      await writeFile(audioPath, audioBuffer);
+      const audioFilename = audioPath.split('/').pop();
+      audioUrl = `http://localhost:${port}/tmp/${audioFilename}`;
+    } catch (err) {
+      console.warn('[Publish] Audio generation failed, continuing without:', err);
+    }
 
     const reelOutputPath = generateOutputPath('reel');
     await renderProductReel(
       {
         sceneVideoUrl,
+        audioUrl,
         headline: content.headline,
         subheading: content.subheading,
         durationInFrames: 120, // 5 seconds at 24fps
@@ -470,7 +483,8 @@ app.post('/publish/product', async (c) => {
     const igResults = await publishToInstagram({
       imageUrl: postUrl,
       videoUrl: reelUrl,
-      caption: formatInstagramCaption(captions.instagram),
+      postCaption: formatInstagramCaption(captions.instagram.post),
+      reelCaption: formatInstagramCaption(captions.instagram.reel),
       productTags,
     });
     publishResults.push(...igResults);
@@ -480,7 +494,8 @@ app.post('/publish/product', async (c) => {
     const fbResults = await publishToFacebook({
       imageUrl: postUrl,
       videoUrl: reelUrl,
-      caption: captions.facebook.text,
+      postCaption: captions.facebook.post,
+      reelCaption: captions.facebook.reel,
       productName: product.title,
     });
     publishResults.push(...fbResults);
@@ -549,7 +564,8 @@ app.post('/publish/content', async (c) => {
     const igResults = await publishToInstagram({
       imageUrl: post_url,
       videoUrl: reel_url,
-      caption: formatInstagramCaption(captions.instagram),
+      postCaption: formatInstagramCaption(captions.instagram.post),
+      reelCaption: formatInstagramCaption(captions.instagram.reel),
       productTags,
     });
     publishResults.push(...igResults);
@@ -559,7 +575,8 @@ app.post('/publish/content', async (c) => {
     const fbResults = await publishToFacebook({
       imageUrl: post_url,
       videoUrl: reel_url,
-      caption: captions.facebook.text,
+      postCaption: captions.facebook.post,
+      reelCaption: captions.facebook.reel,
       productName: product.title,
     });
     publishResults.push(...fbResults);
