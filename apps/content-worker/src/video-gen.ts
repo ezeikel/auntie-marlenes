@@ -1,24 +1,25 @@
 /**
  * Image-to-video generation via fal.ai.
  *
- * Default: Kling 3.0 Pro — best for smooth, stable product photography video.
- * Uses dynamic scene analysis to craft model-specific prompts.
+ * Each model gets its own optimised prompt template.
+ * Scene analysis via Claude (precise, controlled descriptions).
  */
 
 import { fal } from '@fal-ai/client';
 import { uploadFile } from './storage';
 import { generateText } from 'ai';
-import { google } from '@ai-sdk/google';
+import { anthropic } from '@ai-sdk/anthropic';
 
 // Configure fal.ai
 fal.config({
   credentials: process.env.FAL_KEY!,
 });
 
+// Claude for scene analysis
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const geminiFlash: any = google('gemini-3-flash-preview');
+const claude: any = anthropic('claude-sonnet-4-20250514');
 
-// Available fal.ai image-to-video models
+// Available models
 const FAL_MODELS = {
   'kling-v3': 'fal-ai/kling-video/v3/pro/image-to-video',
   'kling-o3': 'fal-ai/kling-video/o3/standard/image-to-video',
@@ -29,19 +30,19 @@ const FAL_MODELS = {
 
 export type FalVideoModel = keyof typeof FAL_MODELS;
 
-/**
- * Analyse scene and generate a Kling-optimised prompt.
- * Kling responds best to: precise descriptive phrasing, stability keywords,
- * and ONE clear ambient motion instruction.
- */
-async function generateKlingPrompt(sceneImage: Buffer): Promise<{
-  prompt: string;
-  negative_prompt: string;
-}> {
-  console.log('[Video] Analysing scene for Kling prompt...');
+// ─── Scene Analysis ──────────────────────────────────────────────────────────
+
+interface SceneAnalysis {
+  product: string;
+  surface: string;
+  lighting: string;
+}
+
+async function analyseScene(sceneImage: Buffer): Promise<SceneAnalysis> {
+  console.log('[Video] Analysing scene with Claude...');
 
   const result = await generateText({
-    model: geminiFlash,
+    model: claude,
     messages: [
       {
         role: 'user',
@@ -49,57 +50,125 @@ async function generateKlingPrompt(sceneImage: Buffer): Promise<{
           { type: 'image', image: sceneImage } as any,
           {
             type: 'text',
-            text: `Describe ONLY the product and the surface it sits on in one short sentence. Mention the lighting direction. Do NOT mention any other objects in the scene (no towels, plants, accessories — ignore them completely).
+            text: `Describe this product photo in exactly 3 short phrases separated by |
 
-Example: "A hair cream jar sits on a marble counter in warm side lighting."
+Format: product description | surface it sits on | lighting description
 
-Respond with ONLY the one-sentence description.`,
+Example: "A hair cream jar with orange lid | rustic wooden shelf | warm golden side light from a window"
+
+Rules:
+- Describe ONLY the product and its immediate surface
+- Do NOT mention any other objects (towels, plants, accessories)
+- Keep each phrase under 10 words
+- Respond with ONLY the 3 phrases separated by |`,
           },
         ],
       },
     ],
   });
 
-  const sceneDesc = result.text.trim();
-  console.log(`[Video] Scene: ${sceneDesc}`);
+  const parts = result.text.trim().split('|').map((s) => s.trim());
 
-  const prompt = [
-    `Ultra-stable cinematic product shot.`,
-    `${sceneDesc}`,
-    `Everything in the scene is completely still and motionless. Nothing moves except a very subtle, slow shift in ambient light across the surfaces.`,
-    `Rock-steady camera, buttery smooth, zero jitter, hyper-realistic, professional lighting, 5 seconds.`,
-  ].join(' ');
+  const analysis = {
+    product: parts[0] || 'beauty product',
+    surface: parts[1] || 'counter',
+    lighting: parts[2] || 'soft natural light',
+  };
 
-  const negative_prompt =
-    'motion, shake, jitter, blur, wobble, camera pan, zoom, dolly, distortion, flicker, unstable, moving objects, moving towel, moving fabric, wind, breeze, falling particles, powder, rain, snow';
-
-  return { prompt, negative_prompt };
+  console.log(`[Video] Scene: ${analysis.product} | ${analysis.surface} | ${analysis.lighting}`);
+  return analysis;
 }
+
+// ─── Model-Specific Prompt Templates ─────────────────────────────────────────
+
+function buildKlingPrompt(scene: SceneAnalysis): {
+  prompt: string;
+  negative_prompt: string;
+} {
+  return {
+    prompt: `Ultra-stable cinematic product shot. ${scene.product} on ${scene.surface}. Product completely motionless, locked in place. ${scene.lighting} gradually shifts across the surface. Everything perfectly still except subtle light movement. Rock-steady camera, buttery smooth 30fps, zero jitter, hyper-realistic, professional lighting, 5 seconds.`,
+    negative_prompt: 'motion, shake, jitter, blur, wobble, camera pan, zoom, dolly, distortion, flicker, unstable, moving objects, moving towel, moving fabric, wind, breeze, falling particles, powder, rain, snow',
+  };
+}
+
+function buildSeedancePrompt(scene: SceneAnalysis): {
+  prompt: string;
+  negative_prompt: string;
+} {
+  return {
+    prompt: `Cinematic product photography. ${scene.product} sits perfectly still on ${scene.surface}. ${scene.lighting}. Only the ambient light shifts very slowly and subtly across the scene. All objects remain completely motionless. Smooth, premium, luxury beauty aesthetic.`,
+    negative_prompt: 'shake, jitter, wobble, moving objects, wind, breeze, falling, particles, powder, fast motion',
+  };
+}
+
+function buildPixversePrompt(scene: SceneAnalysis): {
+  prompt: string;
+  negative_prompt: string;
+} {
+  return {
+    prompt: `Static product shot with subtle ambient light animation. ${scene.product} on ${scene.surface} in ${scene.lighting}. Product and all objects stay perfectly still. Only gentle light shifts across surfaces. Cinematic, smooth, premium quality.`,
+    negative_prompt: 'blur, distort, low quality, shake, jitter, moving objects, wind, particles',
+  };
+}
+
+function buildHailuoPrompt(scene: SceneAnalysis): {
+  prompt: string;
+  negative_prompt: string;
+} {
+  return {
+    prompt: `Premium product photography with subtle cinematic motion. ${scene.product} on ${scene.surface}. ${scene.lighting} shifts gently. Product remains perfectly still. Smooth, stable, luxury beauty brand aesthetic.`,
+    negative_prompt: '',
+  };
+}
+
+function buildPromptForModel(
+  model: FalVideoModel,
+  scene: SceneAnalysis,
+): { prompt: string; negative_prompt: string } {
+  switch (model) {
+    case 'kling-v3':
+    case 'kling-o3':
+      return buildKlingPrompt(scene);
+    case 'seedance':
+      return buildSeedancePrompt(scene);
+    case 'pixverse':
+      return buildPixversePrompt(scene);
+    case 'hailuo':
+      return buildHailuoPrompt(scene);
+    default:
+      return buildKlingPrompt(scene);
+  }
+}
+
+// ─── Main ────────────────────────────────────────────────────────────────────
 
 /**
  * Animate a scene image using a fal.ai video model.
- * Default: Kling 3.0 Pro (smoothest for product photography).
+ * Default: Seedance 1.5 Pro (best stability with camera_fixed).
  */
 export async function animateScene(
   sceneImage: Buffer,
   _category: string,
-  model: FalVideoModel = 'kling-v3',
+  model: FalVideoModel = 'seedance',
 ): Promise<Buffer> {
-  const { prompt, negative_prompt } = await generateKlingPrompt(sceneImage);
+  // Analyse scene with Claude
+  const scene = await analyseScene(sceneImage);
+
+  // Build model-specific prompt
+  const { prompt, negative_prompt } = buildPromptForModel(model, scene);
 
   const modelId = FAL_MODELS[model];
   console.log(`[Video] Animating with ${model} (${modelId})...`);
   console.log(`[Video] Prompt: ${prompt.substring(0, 120)}...`);
-  console.log(`[Video] Negative: ${negative_prompt.substring(0, 80)}...`);
 
-  // Upload scene image to R2 for fal.ai access
+  // Upload scene image to R2
   const imageUpload = await uploadFile(
     `content/tmp/scene-${Date.now()}.jpg`,
     sceneImage,
     'image/jpeg',
   );
 
-  // Build model-specific input
+  // Build model-specific input params
   const input: Record<string, unknown> = { prompt };
 
   switch (model) {
@@ -152,7 +221,6 @@ export async function animateScene(
     },
   });
 
-  // Extract video URL
   const data = result.data as any;
   const videoUrl = data?.video?.url || data?.output?.url;
 

@@ -91,7 +91,7 @@ app.get('/health', (c) => {
  *   video_model: ["veo", "pixverse", "hailuo"]
  */
 app.post('/generate/product', async (c) => {
-  const { handle, types = ['post'], image_model = 'gemini', video_model = 'kling-v3' } = await c.req.json<{
+  const { handle, types = ['post'], image_model = 'gemini', video_model = 'seedance' } = await c.req.json<{
     handle: string;
     types?: ('post' | 'reel')[];
     image_model?: 'gemini' | 'flux-kontext' | 'flux-2-pro';
@@ -361,7 +361,7 @@ app.post('/publish/product', async (c) => {
     platforms = ['instagram', 'facebook'],
     types = ['post'],
     image_model = 'flux-2-pro',
-    video_model = 'kling-v3',
+    video_model = 'seedance',
   } = await c.req.json<{
     handle: string;
     platforms?: ('instagram' | 'facebook')[];
