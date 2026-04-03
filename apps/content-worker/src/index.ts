@@ -339,7 +339,7 @@ app.get('/content/list', async (c) => {
 
 // ─── Publishing Endpoints ────────────────────────────────────────────────────
 
-import { generateCaption } from './caption';
+import { generateCaptions } from './caption';
 import { getCatalogProductId, buildProductTags } from './catalog';
 import { publishToInstagram, publishToFacebook, type PublishResult } from './social';
 
@@ -427,8 +427,8 @@ app.post('/publish/product', async (c) => {
     reelUrl = upload.url;
   }
 
-  // 3. Generate caption
-  const caption = await generateCaption({
+  // 3. Generate platform-specific captions
+  const captions = await generateCaptions({
     name: product.title,
     brand: product.vendor,
     category: product.productType,
@@ -453,7 +453,7 @@ app.post('/publish/product', async (c) => {
     const igResults = await publishToInstagram({
       imageUrl: postUrl,
       videoUrl: reelUrl,
-      caption,
+      caption: captions.instagram,
       productTags,
     });
     publishResults.push(...igResults);
@@ -463,7 +463,7 @@ app.post('/publish/product', async (c) => {
     const fbResults = await publishToFacebook({
       imageUrl: postUrl,
       videoUrl: reelUrl,
-      caption,
+      caption: captions.facebook,
       productName: product.title,
     });
     publishResults.push(...fbResults);
@@ -476,7 +476,7 @@ app.post('/publish/product', async (c) => {
       name: product.title,
       brand: product.vendor,
     },
-    caption,
+    captions,
     productTagged: !!catalogProductId,
     content: { post: postUrl, reel: reelUrl },
     publishing: publishResults,
@@ -513,8 +513,8 @@ app.post('/publish/content', async (c) => {
   const product = await getProductByHandle(handle);
   if (!product) return c.json({ error: `Product not found: ${handle}` }, 404);
 
-  // Generate caption
-  const caption = await generateCaption({
+  // Generate platform-specific captions
+  const captions = await generateCaptions({
     name: product.title,
     brand: product.vendor,
     category: product.productType,
@@ -532,7 +532,7 @@ app.post('/publish/content', async (c) => {
     const igResults = await publishToInstagram({
       imageUrl: post_url,
       videoUrl: reel_url,
-      caption,
+      caption: captions.instagram,
       productTags,
     });
     publishResults.push(...igResults);
@@ -542,7 +542,7 @@ app.post('/publish/content', async (c) => {
     const fbResults = await publishToFacebook({
       imageUrl: post_url,
       videoUrl: reel_url,
-      caption,
+      caption: captions.facebook,
       productName: product.title,
     });
     publishResults.push(...fbResults);
@@ -550,7 +550,7 @@ app.post('/publish/content', async (c) => {
 
   return c.json({
     success: publishResults.every((r) => r.success),
-    caption,
+    captions,
     productTagged: !!catalogProductId,
     publishing: publishResults,
   });
