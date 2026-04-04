@@ -22,10 +22,10 @@ const claude: any = anthropic('claude-sonnet-4-20250514');
 
 const STUDIO_STYLE = {
   size: 2048,
-  background: 'Pure white (#FFFFFF) seamless background',
-  lighting: 'Soft, even studio lighting with subtle shadow underneath',
-  colourTemp: 'Consistent warm-neutral colour temperature',
-  rules: 'No props, no hands, no text overlays, no lifestyle context',
+  background: 'Clean, warm off-white seamless studio background with a soft gradient. NOT harsh pure white — slightly warm cream/ivory tone',
+  lighting: 'Soft diffused studio key light from the upper left, gentle fill light from the right. Creates a natural soft shadow underneath and behind the product that gives depth and grounding. Slight shallow depth of field for premium feel',
+  colourTemp: 'Warm-neutral colour temperature, slightly warm like high-end beauty photography',
+  rules: 'No props, no hands, no text overlays, no lifestyle context. The product must look three-dimensional and physically present, NOT like a flat cutout pasted onto a background',
 };
 
 interface ShotConfig {
@@ -35,28 +35,28 @@ interface ShotConfig {
 }
 
 function getShotConfigs(productName: string, brand: string): ShotConfig[] {
-  const base = `Professional studio product photograph on a ${STUDIO_STYLE.background}. ${STUDIO_STYLE.lighting}. ${STUDIO_STYLE.colourTemp}. ${STUDIO_STYLE.rules}. The product should be instantly recognizable as ${productName} by ${brand}.`;
+  const base = `High-end studio product photograph. ${STUDIO_STYLE.background}. ${STUDIO_STYLE.lighting}. ${STUDIO_STYLE.colourTemp}. ${STUDIO_STYLE.rules}. The product should be instantly recognizable as ${productName} by ${brand}. Shot with a professional medium-format camera, 85mm lens, f/4 aperture for slight bokeh.`;
 
   return [
     {
       name: 'Hero (Front-Facing)',
       slug: 'hero',
-      prompt: `${base} Straight-on front view at eye level. Product label centered and perfectly straight, facing the camera. Product fills 80-85% of the frame. This is a clean e-commerce hero product shot.`,
+      prompt: `${base} Straight-on front view at eye level, shot slightly from below (about 5-10 degrees) to give the product presence and authority. Product label centered and perfectly straight, facing the camera. Product fills 80-85% of the frame. Soft shadow visible underneath grounding the product on the surface.`,
     },
     {
       name: 'Three-Quarter (45°)',
       slug: '45-degree',
-      prompt: `${base} Product rotated approximately 45 degrees to show depth and three-dimensional form. Shows the shape and form factor clearly. Product fills 75-80% of the frame.`,
+      prompt: `${base} Product rotated approximately 45 degrees to show depth and three-dimensional form. Shows the shape, curvature, and form factor clearly. Product fills 75-80% of the frame. The angle reveals the label wrapping around the bottle/jar, showing dimensionality.`,
     },
     {
       name: 'Back / Ingredients',
       slug: 'back',
-      prompt: `${base} Rear view of the product showing the back label with ingredients list and usage instructions. Product fills 80% of the frame. The text on the back should be as legible as possible.`,
+      prompt: `${base} Rear view of the product showing the back label with ingredients list and usage instructions. Product fills 80% of the frame. The text on the back should be as legible as possible. Same lighting setup as the hero shot for consistency.`,
     },
     {
       name: 'Top-Down',
       slug: 'top-down',
-      prompt: `${base} Bird's-eye view looking directly down at the product from above. Shows the cap, lid, or top of the product and its overall shape from above. Product fills 70-75% of the frame.`,
+      prompt: `${base} Bird's-eye view looking directly down at the product from above. Shows the cap, lid, or top of the product and its overall shape from above. Product fills 70-75% of the frame. Soft circular shadow visible around the base of the product.`,
     },
   ];
 }
@@ -250,27 +250,68 @@ Respond with ONLY the number (e.g. "1" or "3").`,
 
 // ─── Studio Shot Generation ─────────────────────────────────────────────────
 
+// Style reference image — a known good studio shot from our catalog.
+// Used as Image 2 in the two-image technique to show Gemini
+// what lighting/environment we want (product from Image 1, style from Image 2).
+// Permanent style reference stored in R2 — a known good studio shot with the
+// warm off-white background, soft shadows, and depth we want across all products.
+// This is a snapshot that won't change even if Shopify product images are updated.
+const STYLE_REFERENCE_URL = 'https://assets.auntiemarlenes.com/content/style-reference/studio-product-style.jpg';
+
+let styleReferenceCache: Buffer | null = null;
+
+async function getStyleReference(): Promise<Buffer | null> {
+  if (styleReferenceCache) return styleReferenceCache;
+  try {
+    const res = await fetch(STYLE_REFERENCE_URL);
+    if (!res.ok) return null;
+    styleReferenceCache = Buffer.from(await res.arrayBuffer());
+    console.log('[Images] Loaded style reference image');
+    return styleReferenceCache;
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Generate a single studio shot using Gemini with a reference image.
+ * Generate a single studio shot using Gemini with TWO reference images:
+ * - Image 1: Product cutout (for subject fidelity — shape, colours, labels)
+ * - Image 2: Style reference (for lighting, shadows, background, depth)
+ * This prevents Gemini from copying the flat white look of the product cutout.
  */
 async function generateSingleShot(
   referenceImage: Buffer,
   shotConfig: ShotConfig,
 ): Promise<Buffer> {
+  const styleRef = await getStyleReference();
+
+  const content: any[] = [
+    { type: 'image', image: referenceImage },
+    { type: 'text', text: 'IMAGE 1 (above): This is the product I want you to photograph. Use this for the product\'s exact appearance — shape, colours, label design, packaging text.' },
+  ];
+
+  if (styleRef) {
+    content.push({ type: 'image', image: styleRef });
+    content.push({
+      type: 'text',
+      text: 'IMAGE 2 (above): This is the PHOTOGRAPHIC STYLE I want. Match this studio lighting, warm off-white background, soft shadows underneath, and three-dimensional depth. The product should look physically present on a surface, not like a flat cutout.',
+    });
+  }
+
+  content.push({
+    type: 'text',
+    text: `Now generate a NEW studio photograph of the product from Image 1, using the photographic style and studio environment from Image 2.
+
+${shotConfig.prompt}
+
+CRITICAL lighting details: Warm directional light from the upper left illuminates the product, creating soft graduated shadows on the right side. A gentle fill light from the right prevents deep blacks. The product sits on a smooth cream-coloured surface, casting a soft diffused shadow beneath it that grounds it in the scene. Slight specular highlights on the product edges reveal its three-dimensional form.
+
+Output a square image (1:1 aspect ratio).`,
+  });
+
   const result = await generateText({
     model: geminiImage,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          { type: 'image', image: referenceImage } as any,
-          {
-            type: 'text',
-            text: `This is the actual product photo. Generate a new studio photograph of THIS EXACT product using this reference. The product packaging, colours, labels, and text must match the reference image faithfully.\n\n${shotConfig.prompt}\n\nOutput a square image (1:1 aspect ratio).`,
-          },
-        ],
-      },
-    ],
+    messages: [{ role: 'user', content }],
   });
 
   const imageFile = result.files?.find((f: any) =>
@@ -340,8 +381,10 @@ Score each criterion 1-5:
 1. Product recognition — would a customer recognize this as the real product?
 2. Label legibility — can you read the brand name and product name?
 3. AI artifacts — 5 = no artifacts, 1 = obviously fake (weird text, melted shapes, wrong colours)
-4. Style consistency — white background, centered, correct framing?
-5. Lighting match — soft even studio lighting with subtle shadow?
+4. Style consistency — warm off-white/cream background (NOT harsh pure white), product centered, correct framing, product looks 3D and physically present?
+5. Lighting & depth — soft directional lighting with visible shadows underneath grounding the product? Product has three-dimensional depth, not a flat cutout look?
+
+IMPORTANT: We WANT a warm off-white/cream background with visible soft shadows. Do NOT penalise for cream/beige tones or shadows — those are CORRECT. Penalise flat white backgrounds with no shadows.
 
 Also provide brief feedback on what needs fixing.`,
           },

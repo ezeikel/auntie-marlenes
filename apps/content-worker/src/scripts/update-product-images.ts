@@ -30,12 +30,49 @@ import {
 } from '../product-images';
 import { uploadFile } from '../storage';
 
-async function updateProductImages(product: AdminProduct, dryRun: boolean): Promise<void> {
+async function updateProductImages(product: AdminProduct, dryRun: boolean, refUrl?: string): Promise<void> {
   console.log(`\n${'='.repeat(60)}`);
   console.log(`Processing: ${product.title} (${product.handle})`);
   console.log(`${'='.repeat(60)}`);
 
-  // Step 1: Find reference images
+  // If a manual reference URL is provided, use it directly
+  if (refUrl) {
+    console.log(`[Images] Using provided reference: ${refUrl}`);
+    const res = await fetch(refUrl);
+    if (!res.ok) {
+      console.error(`[SKIP] Failed to download reference image: ${res.status}`);
+      return;
+    }
+    const bestRef = Buffer.from(await res.arrayBuffer());
+    const shots = await generateStudioShots(bestRef, product.title, product.vendor);
+    if (shots.length === 0) {
+      console.error(`[SKIP] No shots generated for ${product.handle}`);
+      return;
+    }
+    if (dryRun) {
+      const ts = Date.now();
+      console.log(`[DRY RUN] Would replace ${product.images.edges.length} images with ${shots.length} new shots:\n\nPreview images (uploaded to R2):`);
+      for (const shot of shots) {
+        const preview = await uploadFile(
+          `content/products/${product.handle}/studio-preview-${shot.slug}-${ts}.jpg`,
+          shot.buffer,
+          'image/jpeg',
+        );
+        console.log(`  - ${shot.name} (${shot.verdict}): ${preview.url}`);
+      }
+      return;
+    }
+    const existingMediaIds = product.images.edges.map((e) => e.node.id);
+    await replaceProductImages(product.id, existingMediaIds, shots.map((shot) => ({
+      buffer: shot.buffer,
+      filename: `${product.handle}-${shot.slug}.jpg`,
+      alt: `${product.title} - ${shot.name}`,
+    })));
+    console.log(`[DONE] ${product.handle}`);
+    return;
+  }
+
+  // Step 1: Find reference images via search
   const refs = await findReferenceImages(product.title, product.vendor);
 
   // Also include existing Shopify images as reference candidates
@@ -67,11 +104,12 @@ async function updateProductImages(product: AdminProduct, dryRun: boolean): Prom
 
   // Step 4: Upload to Shopify (or dry run with R2 preview)
   if (dryRun) {
+    const ts = Date.now();
     console.log(`[DRY RUN] Would replace ${product.images.edges.length} images with ${shots.length} new shots:`);
     console.log(`\nPreview images (uploaded to R2):`);
     for (const shot of shots) {
       const preview = await uploadFile(
-        `content/products/${product.handle}/studio-preview-${shot.slug}.jpg`,
+        `content/products/${product.handle}/studio-preview-${shot.slug}-${ts}.jpg`,
         shot.buffer,
         'image/jpeg',
       );
@@ -100,11 +138,14 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
   const isAll = args.includes('--all');
-  const handle = args.find((a) => !a.startsWith('--'));
+  const refIndex = args.indexOf('--ref');
+  const refUrl = refIndex !== -1 ? args[refIndex + 1] : undefined;
+  const handle = args.find((a) => !a.startsWith('--') && a !== refUrl);
 
   if (!isAll && !handle) {
     console.error('Usage:');
     console.error('  npx tsx --env-file=.env src/scripts/update-product-images.ts <handle>');
+    console.error('  npx tsx --env-file=.env src/scripts/update-product-images.ts <handle> --ref <image-url>');
     console.error('  npx tsx --env-file=.env src/scripts/update-product-images.ts --all');
     console.error('  npx tsx --env-file=.env src/scripts/update-product-images.ts --all --dry-run');
     process.exit(1);
@@ -136,7 +177,7 @@ async function main(): Promise<void> {
       console.error(`Product not found: ${handle}`);
       process.exit(1);
     }
-    await updateProductImages(product, dryRun);
+    await updateProductImages(product, dryRun, refUrl);
   }
 }
 
