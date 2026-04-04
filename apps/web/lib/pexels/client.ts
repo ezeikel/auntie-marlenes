@@ -99,9 +99,9 @@ export async function searchPhotos(
       Authorization: apiKey,
     },
     next: {
-      revalidate: 3600, // Cache for 1 hour
+      revalidate: 3600,
     },
-  });
+  } as RequestInit);
 
   if (!response.ok) {
     throw new Error(
@@ -153,7 +153,7 @@ export async function getCuratedPhotos(
     next: {
       revalidate: 3600,
     },
-  });
+  } as RequestInit);
 
   if (!response.ok) {
     throw new Error(
