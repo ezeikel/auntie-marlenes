@@ -15,7 +15,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'About Us',
   description:
-    "Auntie Marlene's is a Black-owned, family-run beauty store from South London. We curate the best products for textured hair with care, knowledge, and community spirit.",
+    "Auntie Marlene's is a Black-owned hair and beauty store from South London. For us, by us — curating the best products for textured hair with the knowledge that comes from living it.",
 };
 
 type AboutPageProps = {
@@ -34,7 +34,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
             About Us
           </h1>
           <p className="text-lg text-gray-600 mb-12">
-            The trusted auntie your hair has been waiting for.
+            For us, by us. The hair and beauty store we always deserved.
           </p>
 
           {/* Our Story */}
@@ -52,34 +52,32 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
             <div className="space-y-4 text-gray-700">
               <p>
-                If you grew up in the Black British community, you know the
-                auntie. Not necessarily your mum&apos;s sister &mdash; but that
-                woman in your life who always knew exactly what your hair
-                needed. The one who&apos;d take one look at your curls and say,
-                &ldquo;Come here, let me sort that out.&rdquo; She knew the
-                products, the techniques, the remedies. And she made you feel
-                beautiful while she did it.
+                Walk down any high street in the UK and you&apos;ll find a Black
+                hair and beauty shop. They stock our products. They serve our
+                community. But they&apos;re rarely owned by us.
               </p>
               <p>
-                That&apos;s who Auntie Marlene is. She&apos;s not one person
-                &mdash; she&apos;s every auntie who ever shared her wisdom in
-                the kitchen, at the salon, or over the garden fence. We built
-                this store to carry that same energy: warm, knowledgeable, and
-                always in your corner.
+                We started Auntie Marlene&apos;s to change that. Not with a
+                manifesto &mdash; just with a shop that does what those high
+                street stores have always done, but with the understanding that
+                comes from living it. We know these products because we use
+                them. We know what works because we&apos;ve tried everything
+                that doesn&apos;t.
               </p>
               <p>
-                We started Auntie Marlene&apos;s because we were tired. Tired of
-                walking into high street stores and finding our products shoved
-                in a corner. Tired of being an afterthought. Tired of brands
-                that didn&apos;t understand textured hair trying to sell us
-                things that didn&apos;t work. So we decided to build something
-                better &mdash; a place where our community comes first, always.
+                The name comes from a real auntie &mdash; but she&apos;s not
+                behind the counter. She&apos;s the feeling. That person in your
+                life who always knew what your hair needed before you did. Your
+                hairdresser. Your cousin. The woman at church who took one look
+                at your edges and said, &ldquo;Come here, let me sort that
+                out.&rdquo; That&apos;s the energy we built this on: warm,
+                knowing, no nonsense.
               </p>
               <p>
-                Based in South London, we&apos;re Black-owned, family-run, and
-                proud of it. Every product on our shelves has been tried,
-                tested, and chosen with care. Nothing ends up here by accident.
-                If it&apos;s on our site, it&apos;s because we believe in it.
+                Based in South London, Black-owned, and not going anywhere.
+                Every product here has been chosen with intention. If it&apos;s
+                on our shelves, someone on our team has used it, rated it, and
+                would recommend it to their own family.
               </p>
             </div>
           </section>
@@ -99,18 +97,17 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
             <div className="space-y-4 text-gray-700">
               <p>
-                Our mission is simple: to make sure no one ever has to settle
-                when it comes to their hair. We want every person with coils,
-                curls, kinks, and locs to have easy access to products that
-                actually work &mdash; and the knowledge to use them with
-                confidence.
+                Black hair care shouldn&apos;t be an afterthought on someone
+                else&apos;s shelf. It should have its own home &mdash; curated
+                by people who understand it, run by people who live it.
               </p>
               <p>
-                We&apos;re not here to just sell you things. We&apos;re here to
-                educate, support, and celebrate. Whether you&apos;re starting
-                your natural hair journey, maintaining your locs, or looking for
-                something new to try, we want you to feel guided, not
-                overwhelmed.
+                We exist so that every person with coils, curls, kinks, and locs
+                has a place to shop where the knowledge runs deep. Not just a
+                product catalogue &mdash; a trusted source. Whether you&apos;re
+                deep into your natural hair journey or just figuring out what
+                works, we want you to feel confident in every product you pick
+                up.
               </p>
             </div>
           </section>
@@ -130,22 +127,21 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
             <div className="space-y-4 text-gray-700">
               <p>
-                There are plenty of places to buy hair products online. So why
-                us?
+                You can buy these products anywhere. Pak&apos;s has them. Amazon
+                has them. Every high street shop has them. So why come here?
               </p>
               <p>
-                Because we don&apos;t just stock products &mdash; we curate
-                them. Every single item in our store has been chosen for a
-                reason. We think about ingredients, we think about results, and
-                we think about value. We&apos;re not trying to be the biggest
-                store on the internet. We&apos;re trying to be the most trusted
-                one.
+                Because we&apos;re not just stocking shelves &mdash; we&apos;re
+                curating them. We know which leave-in actually works on 4C hair
+                and which one just sits on top. We know the difference between a
+                product that smells nice and one that delivers. Every item here
+                has been chosen by someone who has the same hair as you.
               </p>
               <p>
-                When you shop with us, you&apos;re not just another order
-                number. You&apos;re part of a community. We read your messages,
-                we listen to your feedback, and we genuinely care about your
-                experience. That&apos;s the Auntie Marlene&apos;s difference.
+                And when you shop here, you&apos;re supporting a Black-owned
+                business. Not as a favour &mdash; because we&apos;re genuinely
+                the best place to find what you need. That&apos;s the standard
+                we hold ourselves to.
               </p>
               <div className="bg-sage-green/5 border border-sage-green/20 rounded-lg p-5 mt-4">
                 <ul className="space-y-2 text-sm">
@@ -201,9 +197,9 @@ export default async function AboutPage({ params }: AboutPageProps) {
                   <h3 className="font-semibold text-cocoa">Authenticity</h3>
                 </div>
                 <p className="text-sm text-gray-700">
-                  We keep it real. No gimmicks, no empty promises. Just honest
-                  recommendations from people who actually use these products
-                  and understand your hair.
+                  No gimmicks, no trends we don&apos;t believe in. If we
+                  recommend something, it&apos;s because we&apos;ve used it
+                  ourselves. That trust is everything to us.
                 </p>
               </div>
 
@@ -216,9 +212,9 @@ export default async function AboutPage({ params }: AboutPageProps) {
                   <h3 className="font-semibold text-cocoa">Community</h3>
                 </div>
                 <p className="text-sm text-gray-700">
-                  Everything we do is rooted in community. We exist because of
-                  you, and we grow with you. Your voice shapes what we stock,
-                  how we show up, and where we go next.
+                  This shop exists because our community needed it. What we
+                  stock, how we show up, where we go next &mdash; that&apos;s
+                  shaped by you, not by us guessing from the outside.
                 </p>
               </div>
 
@@ -232,8 +228,8 @@ export default async function AboutPage({ params }: AboutPageProps) {
                 </div>
                 <p className="text-sm text-gray-700">
                   If it&apos;s not good enough for our own hair, it&apos;s not
-                  going on our shelves. We test, we research, and we only stock
-                  products we genuinely stand behind.
+                  going on our shelves. Simple as that. We&apos;d rather stock
+                  less and stand behind everything.
                 </p>
               </div>
 
@@ -246,9 +242,9 @@ export default async function AboutPage({ params }: AboutPageProps) {
                   <h3 className="font-semibold text-cocoa">Knowledge</h3>
                 </div>
                 <p className="text-sm text-gray-700">
-                  Like any good auntie, we share what we know. Through our blog,
-                  our socials, and our customer care, we&apos;re here to help
-                  you learn and grow on your hair journey.
+                  We share what we know &mdash; through our blog, our socials,
+                  and honest product advice. Not to sell more, but because
+                  that&apos;s what community looks like.
                 </p>
               </div>
             </div>
