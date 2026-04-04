@@ -590,6 +590,220 @@ app.post('/publish/content', async (c) => {
   });
 });
 
+// ─── Scheduled Publishing ───────────────────────────────────────────────────
+
+import { loadSchedule, saveSchedule, pickNextProduct, recordPost } from './schedule';
+
+/**
+ * Publish the next product in the rotation.
+ * Picks the next unposted product, generates fresh content, publishes to IG+FB.
+ *
+ * POST /publish/next
+ * Body: {
+ *   dry_run?: boolean,         // Generate content but don't post to social
+ *   platforms?: ('instagram' | 'facebook')[],
+ *   image_model?: string,
+ *   video_model?: string
+ * }
+ */
+app.post('/publish/next', async (c) => {
+  const {
+    dry_run = false,
+    platforms = ['instagram', 'facebook'],
+    image_model = 'gemini',
+    video_model = 'seedance',
+  } = await c.req.json<{
+    dry_run?: boolean;
+    platforms?: ('instagram' | 'facebook')[];
+    image_model?: string;
+    video_model?: string;
+  }>().catch(() => ({
+    dry_run: false,
+    platforms: ['instagram', 'facebook'] as const,
+    image_model: 'gemini',
+    video_model: 'seedance',
+  }));
+
+  console.log(`[Publish/Next] Starting (dry_run: ${dry_run})`);
+
+  // 1. Load all products + schedule state
+  const [allProducts, schedule] = await Promise.all([
+    getAllProducts(),
+    loadSchedule(),
+  ]);
+
+  const allHandles = allProducts.map((p) => p.handle);
+  const pick = pickNextProduct(allHandles, schedule);
+
+  if (!pick) {
+    return c.json({ error: 'No products available' }, 404);
+  }
+
+  // Start new cycle if needed
+  if (pick.startNewCycle) {
+    schedule.currentCycle += 1;
+    console.log(`[Publish/Next] Starting cycle ${schedule.currentCycle}`);
+  }
+
+  const { handle } = pick;
+  const product = allProducts.find((p) => p.handle === handle)!;
+  const productImageUrl = product.images.edges[0]?.node.url;
+
+  console.log(`[Publish/Next] Selected: ${product.title} (cycle ${schedule.currentCycle})`);
+
+  // 2. Generate content
+  const content = await generateProductContent(
+    {
+      name: product.title,
+      brand: product.vendor,
+      category: product.productType,
+      imageUrl: productImageUrl,
+    },
+    image_model as any,
+  );
+
+  // Static post
+  const postImage = await compositePost({
+    sceneImage: content.sceneImage,
+    headline: content.headline,
+    subheading: content.subheading,
+  });
+  const postUpload = await uploadProductPost(handle, postImage);
+
+  // Reel
+  const videoResult = await animateWithKling(content.sceneImage, product.productType, video_model as any);
+  const videoPath = `/tmp/${video_model}-${Date.now()}.mp4`;
+  await writeFile(videoPath, videoResult.video);
+  const videoFilename = videoPath.split('/').pop();
+  const sceneVideoUrl = `http://localhost:${port}/tmp/${videoFilename}`;
+
+  let audioUrl: string | undefined;
+  if (videoResult.scene) {
+    try {
+      const audioBuffer = await generateSceneAudio(videoResult.scene, 5);
+      const audioPath = `/tmp/${video_model}-audio-${Date.now()}.mp3`;
+      await writeFile(audioPath, audioBuffer);
+      const audioFilename = audioPath.split('/').pop();
+      audioUrl = `http://localhost:${port}/tmp/${audioFilename}`;
+    } catch (err) {
+      console.warn('[Publish/Next] Audio generation failed, continuing without:', err);
+    }
+  }
+
+  const reelOutputPath = generateOutputPath('reel');
+  await renderProductReel(
+    {
+      sceneVideoUrl,
+      audioUrl,
+      headline: content.headline,
+      subheading: content.subheading,
+      durationInFrames: 120,
+    },
+    reelOutputPath,
+  );
+  const reelBuffer = await readFile(reelOutputPath);
+  const reelUpload = await uploadProductReel(handle, reelBuffer);
+
+  // 3. Generate captions
+  const captions = await generateCaptions({
+    name: product.title,
+    brand: product.vendor,
+    category: product.productType,
+  });
+
+  // 4. If dry run, stop here
+  if (dry_run) {
+    console.log('[Publish/Next] Dry run — skipping social posting');
+    return c.json({
+      success: true,
+      dry_run: true,
+      product: { handle, name: product.title, brand: product.vendor },
+      cycle: schedule.currentCycle,
+      headline: content.headline,
+      subheading: content.subheading,
+      captions,
+      content: { post: postUpload.url, reel: reelUpload.url },
+    });
+  }
+
+  // 5. Publish to social
+  const catalogProductId = await getCatalogProductId(handle, product.title);
+  const productTags = catalogProductId ? buildProductTags(catalogProductId) : undefined;
+
+  const publishResults: PublishResult[] = [];
+
+  if (platforms.includes('instagram')) {
+    const igResults = await publishToInstagram({
+      imageUrl: postUpload.url,
+      videoUrl: reelUpload.url,
+      postCaption: formatInstagramCaption(captions.instagram.post),
+      reelCaption: formatInstagramCaption(captions.instagram.reel),
+      productTags,
+    });
+    publishResults.push(...igResults);
+  }
+
+  if (platforms.includes('facebook')) {
+    const fbResults = await publishToFacebook({
+      imageUrl: postUpload.url,
+      videoUrl: reelUpload.url,
+      postCaption: captions.facebook.post,
+      reelCaption: captions.facebook.reel,
+      productName: product.title,
+    });
+    publishResults.push(...fbResults);
+  }
+
+  // 6. Update schedule state
+  const allSucceeded = publishResults.every((r) => r.success);
+  if (allSucceeded) {
+    const updated = recordPost(schedule, handle, {
+      postUrl: postUpload.url,
+      reelUrl: reelUpload.url,
+      platforms,
+    });
+    await saveSchedule(updated);
+  } else {
+    console.error('[Publish/Next] Some posts failed — not recording in schedule');
+  }
+
+  return c.json({
+    success: allSucceeded,
+    product: { handle, name: product.title, brand: product.vendor },
+    cycle: schedule.currentCycle,
+    headline: content.headline,
+    subheading: content.subheading,
+    captions,
+    productTagged: !!catalogProductId,
+    content: { post: postUpload.url, reel: reelUpload.url },
+    publishing: publishResults,
+  });
+});
+
+/**
+ * View the current schedule state.
+ */
+app.get('/schedule', async (c) => {
+  const schedule = await loadSchedule();
+  const allProducts = await getAllProducts();
+  const allHandles = allProducts.map((p) => p.handle);
+  const pick = pickNextProduct(allHandles, schedule);
+
+  const postedThisCycle = schedule.posts
+    .filter((p) => p.cycle === schedule.currentCycle)
+    .map((p) => p.handle);
+
+  return c.json({
+    currentCycle: schedule.currentCycle,
+    totalProducts: allHandles.length,
+    postedThisCycle: postedThisCycle.length,
+    remainingThisCycle: allHandles.length - postedThisCycle.length,
+    nextProduct: pick?.handle || null,
+    willStartNewCycle: pick?.startNewCycle || false,
+    recentPosts: schedule.posts.slice(-10),
+  });
+});
+
 // Start server
 import { serve } from '@hono/node-server';
 

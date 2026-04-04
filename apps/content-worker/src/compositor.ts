@@ -123,7 +123,7 @@ export async function compositePost({
               maxWidth: '80%',
             },
           },
-          mainWords + ' ',
+          mainWords + '\u00A0',
           React.createElement(
             'span',
             { style: { color: '#f5e6d3' } },
@@ -158,7 +158,7 @@ export async function compositePost({
           React.createElement(
             'span',
             { style: { color: 'white' } },
-            'Shop at ',
+            'Shop at\u00A0',
           ),
           React.createElement(
             'span',
