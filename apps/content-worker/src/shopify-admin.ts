@@ -48,7 +48,7 @@ export interface AdminProduct {
   vendor: string;
   productType: string;
   descriptionHtml: string;
-  images: { edges: Array<{ node: { id: string; url: string } }> };
+  media: { edges: Array<{ node: { id: string; image?: { url: string } } }> };
 }
 
 export interface CreateProductInput {
@@ -71,11 +71,15 @@ const PRODUCT_BY_HANDLE_QUERY = `
       vendor
       productType
       descriptionHtml
-      images(first: 10) {
+      media(first: 10) {
         edges {
           node {
-            id
-            url
+            ... on MediaImage {
+              id
+              image {
+                url
+              }
+            }
           }
         }
       }
@@ -101,11 +105,15 @@ const ALL_PRODUCTS_QUERY = `
           title
           vendor
           productType
-          images(first: 10) {
+          media(first: 10) {
             edges {
               node {
-                id
-                url
+                ... on MediaImage {
+                  id
+                  image {
+                    url
+                  }
+                }
               }
             }
           }

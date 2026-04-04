@@ -35,15 +35,21 @@ async function updateProductImages(product: AdminProduct, dryRun: boolean, refUr
   console.log(`Processing: ${product.title} (${product.handle})`);
   console.log(`${'='.repeat(60)}`);
 
-  // If a manual reference URL is provided, use it directly
+  // If a manual reference URL or file path is provided, use it directly
   if (refUrl) {
     console.log(`[Images] Using provided reference: ${refUrl}`);
-    const res = await fetch(refUrl);
-    if (!res.ok) {
-      console.error(`[SKIP] Failed to download reference image: ${res.status}`);
-      return;
+    let bestRef: Buffer;
+    if (refUrl.startsWith('http')) {
+      const res = await fetch(refUrl);
+      if (!res.ok) {
+        console.error(`[SKIP] Failed to download reference image: ${res.status}`);
+        return;
+      }
+      bestRef = Buffer.from(await res.arrayBuffer());
+    } else {
+      const { readFile } = await import('fs/promises');
+      bestRef = await readFile(refUrl);
     }
-    const bestRef = Buffer.from(await res.arrayBuffer());
     const shots = await generateStudioShots(bestRef, product.title, product.vendor);
     if (shots.length === 0) {
       console.error(`[SKIP] No shots generated for ${product.handle}`);
@@ -51,7 +57,7 @@ async function updateProductImages(product: AdminProduct, dryRun: boolean, refUr
     }
     if (dryRun) {
       const ts = Date.now();
-      console.log(`[DRY RUN] Would replace ${product.images.edges.length} images with ${shots.length} new shots:\n\nPreview images (uploaded to R2):`);
+      console.log(`[DRY RUN] Would replace ${product.media.edges.length} images with ${shots.length} new shots:\n\nPreview images (uploaded to R2):`);
       for (const shot of shots) {
         const preview = await uploadFile(
           `content/products/${product.handle}/studio-preview-${shot.slug}-${ts}.jpg`,
@@ -62,7 +68,7 @@ async function updateProductImages(product: AdminProduct, dryRun: boolean, refUr
       }
       return;
     }
-    const existingMediaIds = product.images.edges.map((e) => e.node.id);
+    const existingMediaIds = product.media.edges.map((e) => e.node.id);
     await replaceProductImages(product.id, existingMediaIds, shots.map((shot) => ({
       buffer: shot.buffer,
       filename: `${product.handle}-${shot.slug}.jpg`,
@@ -76,10 +82,12 @@ async function updateProductImages(product: AdminProduct, dryRun: boolean, refUr
   const refs = await findReferenceImages(product.title, product.vendor);
 
   // Also include existing Shopify images as reference candidates
-  const existingImages = product.images.edges.map((e) => ({
-    url: e.node.url,
-    source: 'Shopify (existing)',
-  }));
+  const existingImages = product.media.edges
+    .filter((e) => e.node.image?.url)
+    .map((e) => ({
+      url: e.node.image!.url,
+      source: 'Shopify (existing)',
+    }));
   const allRefs = [...refs, ...existingImages];
 
   if (allRefs.length === 0) {
@@ -105,7 +113,7 @@ async function updateProductImages(product: AdminProduct, dryRun: boolean, refUr
   // Step 4: Upload to Shopify (or dry run with R2 preview)
   if (dryRun) {
     const ts = Date.now();
-    console.log(`[DRY RUN] Would replace ${product.images.edges.length} images with ${shots.length} new shots:`);
+    console.log(`[DRY RUN] Would replace ${product.media.edges.length} images with ${shots.length} new shots:`);
     console.log(`\nPreview images (uploaded to R2):`);
     for (const shot of shots) {
       const preview = await uploadFile(
@@ -118,7 +126,7 @@ async function updateProductImages(product: AdminProduct, dryRun: boolean, refUr
     return;
   }
 
-  const existingMediaIds = product.images.edges.map((e) => e.node.id);
+  const existingMediaIds = product.media.edges.map((e) => e.node.id);
 
   await replaceProductImages(
     product.id,

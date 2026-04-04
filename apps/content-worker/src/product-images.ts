@@ -114,50 +114,73 @@ async function searchWithPerplexity(
   const apiKey = process.env.PERPLEXITY_API_KEY;
   if (!apiKey) return [];
 
-  const res = await fetch('https://api.perplexity.ai/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'sonar',
-      messages: [
-        {
-          role: 'user',
-          content: `I need to find high-quality product photos of "${productName}" by ${brand}.
+  const allImages: ReferenceImage[] = [];
 
-Search Amazon UK, Amazon US, the ${brand} official website, Boots.com, Superdrug.com, and LookFantastic.com for product listing images of this exact product.
+  // Search for front image
+  const frontImages = await perplexityImageSearch(
+    apiKey,
+    `Find a high quality product image of solely the front of "${productName}" by ${brand}. I need a clear photo showing the front label of the product only, on a white or plain background. Give me the direct image URL.`,
+    'front',
+  );
+  allImages.push(...frontImages);
 
-For each image you find, give me the FULL direct URL to the image file (the src attribute of the img tag, NOT the product page URL).
+  // Search for back image
+  const backImages = await perplexityImageSearch(
+    apiKey,
+    `Find a high quality product image of the back of "${productName}" by ${brand} showing the ingredients list. I need a clear photo of the back label only. Give me the direct image URL.`,
+    'back',
+  );
+  allImages.push(...backImages);
 
-Return ONLY a valid JSON array:
-[{"url": "https://m.media-amazon.com/images/I/xxxxx.jpg", "source": "Amazon UK"}]
+  console.log(`[Images] Perplexity found ${allImages.length} images total`);
+  return allImages;
+}
 
-Important:
-- I need the actual image file URL, not the product page
-- Amazon image URLs look like: https://m.media-amazon.com/images/I/xxxxx._AC_SL1500_.jpg
-- Prefer the largest/highest quality version
-- 3-5 images maximum
-- Only include URLs you are confident are correct`,
-        },
-      ],
-    }),
-  });
-
-  if (!res.ok) return [];
-
-  const data = await res.json();
-  const content = data.choices?.[0]?.message?.content || '';
-
-  const jsonMatch = content.match(/\[[\s\S]*?\]/);
-  if (!jsonMatch) return [];
-
+async function perplexityImageSearch(
+  apiKey: string,
+  query: string,
+  label: string,
+): Promise<ReferenceImage[]> {
   try {
-    const images = JSON.parse(jsonMatch[0]) as ReferenceImage[];
-    console.log(`[Images] Perplexity found ${images.length} images`);
+    const res = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'sonar-pro',
+        messages: [
+          {
+            role: 'user',
+            content: `${query}
+
+Respond with ONLY the direct image URL(s) — one per line. No other text, no markdown, no explanation. Just the raw URL(s) that end in .jpg, .png, .webp, or similar image extensions. If the URL has query params that's fine.`,
+          },
+        ],
+      }),
+    });
+
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content || '';
+
+    // Extract all URLs from the response
+    const urlRegex = /https?:\/\/[^\s"'<>)\]]+\.(jpg|jpeg|png|webp)(\?[^\s"'<>)\]]*)?/gi;
+    const urls = content.match(urlRegex) || [];
+
+    const images = urls.map((url: string) => ({
+      url: url.trim(),
+      source: `Perplexity (${label})`,
+    }));
+
+    if (images.length > 0) {
+      console.log(`[Images] Perplexity ${label}: found ${images.length} URLs`);
+    }
     return images;
-  } catch {
+  } catch (err) {
+    console.warn(`[Images] Perplexity ${label} search failed:`, err);
     return [];
   }
 }
