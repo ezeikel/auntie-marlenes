@@ -28,6 +28,10 @@ const serverSchema = z.object({
   // Cron
   CRON_SECRET: z.string().min(1).optional(),
 
+  // Content worker (Hetzner) — triggered by daily social posting cron
+  CONTENT_WORKER_URL: z.string().url().optional(),
+  CONTENT_WORKER_SECRET: z.string().min(1).optional(),
+
   // AI / Blog generation
   PEXELS_API_KEY: z.string().min(1).optional(),
 

@@ -1,0 +1,16 @@
+[Unit]
+Description=Auntie Marlene's Content Worker
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/auntie-marlenes/apps/content-worker
+EnvironmentFile=/opt/auntie-marlenes/apps/content-worker/.env
+ExecStart=/usr/bin/xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" /root/.bun/bin/bun run src/index.ts
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

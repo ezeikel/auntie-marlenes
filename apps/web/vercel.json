@@ -12,6 +12,10 @@
     {
       "path": "/api/cron/restock-reminder",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/cron/publish-next",
+      "schedule": "0 12 * * *"
     }
   ]
 }

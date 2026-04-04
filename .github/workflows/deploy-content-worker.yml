@@ -1,0 +1,68 @@
+name: Deploy Content Worker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/content-worker/**'
+      - '.github/workflows/deploy-content-worker.yml'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'What to do'
+        required: true
+        default: 'deploy-and-restart'
+        type: choice
+        options:
+          - deploy-and-restart
+          - deploy-only
+          - restart-only
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute on Hetzner
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            set -e
+
+            ACTION="${{ inputs.action || 'deploy-and-restart' }}"
+            cd /opt/auntie-marlenes
+
+            if [[ "$ACTION" == deploy* ]]; then
+              echo "Pulling latest code..."
+              git checkout -- . || true
+              git clean -fd apps/content-worker/ || true
+              git pull origin main
+              echo "Code pulled"
+
+              echo "Installing content-worker dependencies..."
+              cd apps/content-worker
+              rm -rf node_modules
+              ~/.bun/bin/bun install
+              echo "Dependencies installed"
+              cd /opt/auntie-marlenes
+            fi
+
+            if [[ "$ACTION" != deploy-only ]]; then
+              echo "Restarting content-worker service..."
+              systemctl restart content-worker
+              echo "Service restarted"
+            fi
+
+            sleep 3
+            echo ""
+            echo "=== Service Status ==="
+            systemctl status content-worker --no-pager -l || true
+            echo ""
+            echo "=== Recent Logs ==="
+            journalctl -u content-worker --no-pager -n 30 || true
+            echo ""
+            echo "=== Health Check ==="
+            curl -s http://localhost:3020/health || echo "Health check failed"

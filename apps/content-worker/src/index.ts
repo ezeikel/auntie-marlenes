@@ -27,6 +27,30 @@ const app = new Hono();
 
 app.use('*', logger());
 
+// Bearer auth for publishing endpoints — only the web app cron should call these.
+// Skipped if WORKER_SECRET is not set (local dev convenience).
+app.use('/publish/*', async (c, next) => {
+  const secret = process.env.WORKER_SECRET;
+  if (!secret) return next();
+
+  const auth = c.req.header('authorization');
+  if (auth !== `Bearer ${secret}`) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+  return next();
+});
+
+app.use('/schedule', async (c, next) => {
+  const secret = process.env.WORKER_SECRET;
+  if (!secret) return next();
+
+  const auth = c.req.header('authorization');
+  if (auth !== `Bearer ${secret}`) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+  return next();
+});
+
 // Serve temp files for Remotion — supports range requests for video seeking
 app.get('/tmp/:filename', async (c) => {
   const filename = c.req.param('filename');
