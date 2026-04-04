@@ -160,14 +160,24 @@ async function main(): Promise<void> {
   }
 
   if (isAll) {
+    const force = args.includes('--force');
     console.log('Fetching all products...');
     const products = await getAllProducts();
     console.log(`Found ${products.length} products\n`);
 
     let success = 0;
     let failed = 0;
+    let skipped = 0;
 
     for (const product of products) {
+      // Skip products that already have exactly 4 images (already processed)
+      const imageCount = product.media.edges.filter((e) => e.node.image?.url).length;
+      if (imageCount === 4 && !force) {
+        console.log(`[SKIP] ${product.handle} — already has 4 images (use --force to regenerate)`);
+        skipped++;
+        continue;
+      }
+
       try {
         await updateProductImages(product, dryRun);
         success++;
@@ -178,7 +188,7 @@ async function main(): Promise<void> {
     }
 
     console.log(`\n${'='.repeat(60)}`);
-    console.log(`Complete: ${success} success, ${failed} failed out of ${products.length} products`);
+    console.log(`Complete: ${success} success, ${failed} failed, ${skipped} skipped out of ${products.length} products`);
   } else {
     const product = await getProductByHandle(handle!);
     if (!product) {
