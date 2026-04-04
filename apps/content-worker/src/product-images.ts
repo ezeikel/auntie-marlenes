@@ -34,8 +34,25 @@ interface ShotConfig {
   prompt: string;
 }
 
-function getShotConfigs(productName: string, brand: string): ShotConfig[] {
+// Product types that don't have ingredients labels
+const NO_INGREDIENTS_TYPES = ['Accessories', 'Wigs & Extensions', 'Braiding Hair'];
+
+function getShotConfigs(productName: string, brand: string, productType?: string): ShotConfig[] {
   const base = `High-end studio product photograph. ${STUDIO_STYLE.background}. ${STUDIO_STYLE.lighting}. ${STUDIO_STYLE.colourTemp}. ${STUDIO_STYLE.rules}. The product should be instantly recognizable as ${productName} by ${brand}. Shot with a professional medium-format camera, 85mm lens, f/4 aperture for slight bokeh.`;
+
+  const hasIngredients = !NO_INGREDIENTS_TYPES.includes(productType || '');
+
+  const shot3 = hasIngredients
+    ? {
+        name: 'Back / Ingredients',
+        slug: 'back',
+        prompt: `${base} Rear view of the product showing the back label with ingredients list and usage instructions. Product fills 80% of the frame. The text on the back should be as legible as possible. Same lighting setup as the hero shot for consistency.`,
+      }
+    : {
+        name: 'Detail / Texture',
+        slug: 'detail',
+        prompt: `${base} Close-up detail shot showing the product's texture, material quality, and craftsmanship. For brushes/combs: show the bristles, teeth, or grip detail. For wigs/hair: show the hair texture, lace detail, or fibre quality. For fabric items: show the weave, sheen, or stitching. Product fills 85-90% of the frame. Macro-style photography emphasising tactile quality.`,
+      };
 
   return [
     {
@@ -48,11 +65,7 @@ function getShotConfigs(productName: string, brand: string): ShotConfig[] {
       slug: '45-degree',
       prompt: `${base} Product rotated approximately 45 degrees to show depth and three-dimensional form. Shows the shape, curvature, and form factor clearly. Product fills 75-80% of the frame. The angle reveals the label wrapping around the bottle/jar, showing dimensionality.`,
     },
-    {
-      name: 'Back / Ingredients',
-      slug: 'back',
-      prompt: `${base} Rear view of the product showing the back label with ingredients list and usage instructions. Product fills 80% of the frame. The text on the back should be as legible as possible. Same lighting setup as the hero shot for consistency.`,
-    },
+    shot3,
     {
       name: 'Top-Down',
       slug: 'top-down',
@@ -465,9 +478,10 @@ export async function generateStudioShots(
   referenceImage: Buffer,
   productName: string,
   brand: string,
+  productType?: string,
   maxRetries: number = 3,
 ): Promise<StudioShot[]> {
-  const configs = getShotConfigs(productName, brand);
+  const configs = getShotConfigs(productName, brand, productType);
   const results: StudioShot[] = [];
 
   for (const config of configs) {

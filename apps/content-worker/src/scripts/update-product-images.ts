@@ -50,7 +50,7 @@ async function updateProductImages(product: AdminProduct, dryRun: boolean, refUr
       const { readFile } = await import('fs/promises');
       bestRef = await readFile(refUrl);
     }
-    const shots = await generateStudioShots(bestRef, product.title, product.vendor);
+    const shots = await generateStudioShots(bestRef, product.title, product.vendor, product.productType);
     if (shots.length === 0) {
       console.error(`[SKIP] No shots generated for ${product.handle}`);
       return;
@@ -103,7 +103,7 @@ async function updateProductImages(product: AdminProduct, dryRun: boolean, refUr
   }
 
   // Step 3: Generate 4 studio shots
-  const shots = await generateStudioShots(bestRef, product.title, product.vendor);
+  const shots = await generateStudioShots(bestRef, product.title, product.vendor, product.productType);
 
   if (shots.length === 0) {
     console.error(`[SKIP] No shots generated for ${product.handle}`);

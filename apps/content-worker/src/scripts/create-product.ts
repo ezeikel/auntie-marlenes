@@ -98,7 +98,7 @@ async function main(): Promise<void> {
 
   // Step 4: Generate studio shots
   console.log('\nStep 4: Generating 4 studio shots...');
-  const shots = await generateStudioShots(bestRef, name, brand);
+  const shots = await generateStudioShots(bestRef, name, brand, category);
 
   if (shots.length === 0) {
     console.error('No studio shots generated.');
