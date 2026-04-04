@@ -38,9 +38,14 @@ interface ShotConfig {
 const NO_INGREDIENTS_TYPES = ['Accessories', 'Wigs & Extensions', 'Braiding Hair'];
 
 function getShotConfigs(productName: string, brand: string, productType?: string): ShotConfig[] {
-  const base = `High-end studio product photograph. ${STUDIO_STYLE.background}. ${STUDIO_STYLE.lighting}. ${STUDIO_STYLE.colourTemp}. ${STUDIO_STYLE.rules}. The product should be instantly recognizable as ${productName} by ${brand}. Shot with a professional medium-format camera, 85mm lens, f/4 aperture for slight bokeh.`;
-
   const hasIngredients = !NO_INGREDIENTS_TYPES.includes(productType || '');
+
+  // Accessories/wigs/hair don't have labels — tell Gemini NOT to add text
+  const textRule = hasIngredients
+    ? `The product should be instantly recognizable as ${productName} by ${brand}.`
+    : `The product should be instantly recognizable as ${productName} by ${brand}. CRITICAL: This product does NOT have any printed text, labels, ingredients lists, or stickers on it. Do NOT add any text, writing, labels, or branding to the product surface. Show the product exactly as it is — a clean physical object with no printed text.`;
+
+  const base = `High-end studio product photograph. ${STUDIO_STYLE.background}. ${STUDIO_STYLE.lighting}. ${STUDIO_STYLE.colourTemp}. ${STUDIO_STYLE.rules}. ${textRule} Shot with a professional medium-format camera, 85mm lens, f/4 aperture for slight bokeh.`;
 
   const shot3 = hasIngredients
     ? {
@@ -397,6 +402,7 @@ async function judgeShot(
   referenceImage: Buffer,
   shotConfig: ShotConfig,
   productName: string,
+  productType?: string,
 ): Promise<JudgeResult> {
   // @ts-expect-error — model type mismatch from pnpm hoisting
   const result = await generateObject({
@@ -421,6 +427,8 @@ Score each criterion 1-5:
 5. Lighting & depth — soft directional lighting with visible shadows underneath grounding the product? Product has three-dimensional depth, not a flat cutout look?
 
 IMPORTANT: We WANT a warm off-white/cream background with visible soft shadows. Do NOT penalise for cream/beige tones or shadows — those are CORRECT. Penalise flat white backgrounds with no shadows.
+
+${NO_INGREDIENTS_TYPES.includes(productType || '') ? 'CRITICAL: This is an accessory/wig/hair product. It should NOT have any printed text, ingredients labels, usage instructions, or stickers on it. If the generated image has hallucinated text or fake labels on the product, score AI artifacts as 1 and verdict should be REDO.' : ''}
 
 Also provide brief feedback on what needs fixing.`,
           },
@@ -493,7 +501,7 @@ export async function generateStudioShots(
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const shot = await generateSingleShot(referenceImage, config);
-        const judge = await judgeShot(shot, referenceImage, config, productName);
+        const judge = await judgeShot(shot, referenceImage, config, productName, productType);
 
         if (judge.verdict === 'PASS') {
           bestShot = shot;
