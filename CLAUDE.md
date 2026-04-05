@@ -82,3 +82,11 @@ Cron job at `/api/cron/blog` runs Tue/Thu/Sat at 9AM UTC. Generates blog posts u
 ## GitHub CLI
 
 Use `gh` CLI when referencing GitHub repos that I own or public repos (e.g., `gh repo view`, `gh issue list`, `gh pr list`).
+
+## Hetzner Worker Deploy
+
+The `apps/content-worker` package runs as a systemd service (`content-worker.service`) on a shared Hetzner box at `157.90.168.197`, alongside PTP's worker. The box is managed as part of a Chewy Bytes umbrella setup, with conventions for directory naming, port allocation, systemd units, and deploy workflows shared across all projects hosting workers there.
+
+**Before touching the worker deploy, SSHing into the box, or adding a new project to the host:** read [`HETZNER_BOX.md`](./HETZNER_BOX.md) at the repo root. It is the canonical runbook — the same file lives in `parking-ticket-pal-worker` and stays byte-identical across both repos. Covers current inhabitants, SSH access, port allocation, systemd unit templates, the deploy workflow pattern, a step-by-step guide for adding a new project, common operations, capacity, and known gotchas.
+
+Auto-deploy is wired via `.github/workflows/deploy-content-worker.yml` — every push to `main` that touches `apps/content-worker/**` triggers an SSH deploy that pulls, installs, and restarts the service on the box. Requires `HETZNER_HOST`, `HETZNER_USER`, `HETZNER_SSH_KEY` secrets on the repo (already set).
