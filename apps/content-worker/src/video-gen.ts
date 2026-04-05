@@ -142,8 +142,8 @@ function buildSeedancePrompt(scene: SceneAnalysis): {
   negative_prompt: string;
 } {
   return {
-    prompt: `Cinematic product photography. ${scene.product} sits perfectly still on ${scene.surface}. ${scene.lighting}. Only the ambient light shifts very slowly and subtly across the scene. All objects remain completely motionless. Smooth, premium, luxury beauty aesthetic.`,
-    negative_prompt: 'shake, jitter, wobble, moving objects, wind, breeze, falling, particles, powder, fast motion',
+    prompt: `Static, locked-off product photograph. ${scene.product} on ${scene.surface}. ${scene.lighting}. Absolutely nothing moves. Completely frozen scene like a photograph. No light shifts, no motion of any kind. Still life. Premium beauty product.`,
+    negative_prompt: 'camera movement, pan, zoom, dolly, motion, shake, jitter, wobble, moving objects, wind, breeze, light shift, animation, particles',
   };
 }
 
