@@ -8,7 +8,15 @@
     "start": "npx tsx --env-file=.env src/index.ts",
     "remotion:studio": "npx remotion studio src/video/index.ts --port 3010",
     "create-product": "npx tsx --env-file=.env src/scripts/create-product.ts",
-    "update-images": "npx tsx --env-file=.env src/scripts/update-product-images.ts"
+    "update-images": "npx tsx --env-file=.env src/scripts/update-product-images.ts",
+    "gen:hero": "npx tsx --env-file=.env src/scripts/generate-hero-images.ts",
+    "gen:hero-videos": "npx tsx --env-file=.env src/scripts/generate-hero-videos.ts",
+    "gen:hero-videos-ab": "npx tsx --env-file=.env src/scripts/generate-hero-videos-ab.ts",
+    "gen:hero-videos-runway": "npx tsx --env-file=.env src/scripts/generate-hero-videos-runway.ts",
+    "gen:hero-video-sora": "npx tsx --env-file=.env src/scripts/generate-hero-video-sora.ts",
+    "gen:hero-videos-sora": "npx tsx --env-file=.env src/scripts/generate-hero-videos-sora.ts",
+    "gen:hero-videos-runway-batch": "npx tsx --env-file=.env src/scripts/generate-hero-videos-runway-batch.ts",
+    "upload:hero-finals": "npx tsx --env-file=.env src/scripts/upload-hero-finals.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.64",

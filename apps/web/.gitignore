@@ -41,3 +41,8 @@ next-env.d.ts
 
 # data
 /data
+
+# Hero image/video archive — v1 generations, experiments, iteration history.
+# Kept on disk for reference but not tracked in git (too large, not used at
+# runtime). See apps/web/public/hero-archive/README.md for what's in there.
+/public/hero-archive/
