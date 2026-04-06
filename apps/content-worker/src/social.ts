@@ -218,6 +218,7 @@ export async function postVideoToFacebookPage(
   videoUrl: string,
   description: string,
   title: string,
+  thumbUrl?: string,
 ): Promise<string> {
   const { fbPageId, token } = getConfig();
   if (!fbPageId) throw new Error('FACEBOOK_PAGE_ID is required');
@@ -229,6 +230,7 @@ export async function postVideoToFacebookPage(
       file_url: videoUrl,
       description,
       title,
+      ...(thumbUrl ? { thumb: thumbUrl } : {}),
       access_token: token,
     }),
   });
@@ -299,7 +301,7 @@ export async function publishToInstagram(options: {
       const containerId = await createInstagramReelContainer(
         options.videoUrl,
         options.reelCaption,
-        undefined,
+        options.imageUrl,
         options.productTags,
       );
       const mediaId = await publishInstagramMedia(containerId);
@@ -367,6 +369,7 @@ export async function publishToFacebook(options: {
         options.videoUrl,
         options.reelCaption,
         options.productName,
+        options.imageUrl,
       );
       results.push({
         platform: 'facebook',
