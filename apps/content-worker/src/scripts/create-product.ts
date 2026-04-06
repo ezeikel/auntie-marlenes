@@ -17,6 +17,7 @@
  */
 
 import 'dotenv/config';
+import { readFileSync } from 'fs';
 import {
   createProduct,
   uploadImageToProduct,
@@ -34,39 +35,55 @@ function parseArgs(args: string[]): {
   name: string;
   brand: string;
   category: string;
+  price: string;
+  refImage: string;
+  extraCollections: string[];
   dryRun: boolean;
 } {
   const dryRun = args.includes('--dry-run');
-  const filtered = args.filter((a) => !a.startsWith('--') || a.startsWith('--brand') || a.startsWith('--category'));
 
   let name = '';
   let brand = '';
   let category = '';
+  let price = '';
+  let refImage = '';
+  const extraCollections: string[] = [];
 
-  for (let i = 0; i < filtered.length; i++) {
-    if (filtered[i] === '--brand' && filtered[i + 1]) {
-      brand = filtered[++i];
-    } else if (filtered[i] === '--category' && filtered[i + 1]) {
-      category = filtered[++i];
-    } else if (!filtered[i].startsWith('--')) {
-      name = filtered[i];
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--brand' && args[i + 1]) {
+      brand = args[++i];
+    } else if (args[i] === '--category' && args[i + 1]) {
+      category = args[++i];
+    } else if (args[i] === '--price' && args[i + 1]) {
+      price = args[++i];
+    } else if (args[i] === '--ref-image' && args[i + 1]) {
+      refImage = args[++i];
+    } else if (args[i] === '--collection' && args[i + 1]) {
+      extraCollections.push(args[++i]);
+    } else if (args[i] === '--dry-run') {
+      continue;
+    } else if (!args[i].startsWith('--')) {
+      name = args[i];
     }
   }
 
-  return { name, brand, category, dryRun };
+  return { name, brand, category, price, refImage, extraCollections, dryRun };
 }
 
 async function main(): Promise<void> {
-  const { name, brand, category, dryRun } = parseArgs(process.argv.slice(2));
+  const { name, brand, category, price, refImage, extraCollections, dryRun } = parseArgs(process.argv.slice(2));
 
   if (!name || !brand || !category) {
     console.error('Usage:');
-    console.error('  npx tsx --env-file=.env src/scripts/create-product.ts "Product Name" --brand "Brand" --category "Hair Care"');
+    console.error('  npx tsx --env-file=.env src/scripts/create-product.ts "Product Name" --brand "Brand" --category "Kids" --price "7.49"');
     console.error('');
     console.error('Options:');
-    console.error('  --brand     Product brand name (required)');
-    console.error('  --category  Product category (required)');
-    console.error('  --dry-run   Preview without creating in Shopify');
+    console.error('  --brand        Product brand name (required)');
+    console.error('  --category     Product category (required)');
+    console.error('  --price        Product price in GBP (optional)');
+    console.error('  --ref-image    Path to local reference image (skips image search)');
+    console.error('  --collection   Extra collection to add to (repeatable)');
+    console.error('  --dry-run      Preview without creating in Shopify');
     process.exit(1);
   }
 
@@ -74,21 +91,30 @@ async function main(): Promise<void> {
   console.log(`Creating product: ${name} by ${brand} (${category})`);
   console.log(`${'='.repeat(60)}\n`);
 
-  // Step 1: Find reference images
-  console.log('Step 1: Searching for reference images...');
-  const refs = await findReferenceImages(name, brand);
+  let bestRef: Buffer | null = null;
 
-  if (refs.length === 0) {
-    console.error('No reference images found. Cannot generate studio shots without a reference.');
-    process.exit(1);
+  if (refImage) {
+    // Use provided local reference image
+    console.log(`Step 1-2: Using local reference image: ${refImage}`);
+    bestRef = readFileSync(refImage);
+    console.log(`  Loaded ${bestRef.length} bytes`);
+  } else {
+    // Step 1: Find reference images
+    console.log('Step 1: Searching for reference images...');
+    const refs = await findReferenceImages(name, brand);
+
+    if (refs.length === 0) {
+      console.error('No reference images found. Use --ref-image to provide a local reference.');
+      process.exit(1);
+    }
+
+    // Step 2: Select best reference
+    console.log('\nStep 2: Selecting best reference image...');
+    bestRef = await selectBestReference(refs, name);
   }
 
-  // Step 2: Select best reference
-  console.log('\nStep 2: Selecting best reference image...');
-  const bestRef = await selectBestReference(refs, name);
-
   if (!bestRef) {
-    console.error('Could not download any reference images.');
+    console.error('Could not load reference image.');
     process.exit(1);
   }
 
@@ -110,10 +136,12 @@ async function main(): Promise<void> {
   console.log('Preview:');
   console.log(`  Title: ${copy.title}`);
   console.log(`  Type: ${copy.productType}`);
+  if (price) console.log(`  Price: £${price}`);
   console.log(`  Tags: ${copy.tags.join(', ')}`);
   console.log(`  SEO Title: ${copy.seoTitle}`);
   console.log(`  SEO Desc: ${copy.seoDescription}`);
   console.log(`  Images: ${shots.map((s) => `${s.name} (${s.verdict})`).join(', ')}`);
+  if (extraCollections.length > 0) console.log(`  Extra collections: ${extraCollections.join(', ')}`);
   console.log(`${'─'.repeat(40)}\n`);
 
   if (dryRun) {
@@ -131,6 +159,7 @@ async function main(): Promise<void> {
     descriptionHtml: copy.descriptionHtml,
     tags: copy.tags,
     status: 'ACTIVE',
+    ...(price ? { price } : {}),
   });
 
   // Step 6: Upload images
@@ -146,7 +175,7 @@ async function main(): Promise<void> {
 
   // Step 7: Assign to collections + publish
   console.log('\nStep 7: Assigning to collections...');
-  await assignToCollections(product.id, copy.productType);
+  await assignToCollections(product.id, copy.productType, extraCollections);
   await publishToOnlineStore(product.id);
 
   console.log(`\n${'='.repeat(60)}`);

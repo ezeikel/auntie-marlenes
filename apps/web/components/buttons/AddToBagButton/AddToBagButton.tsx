@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useAnalytics } from '@/utils/analytics-client';
 import { TRACKING_EVENTS } from '@/constants/events';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 
 type AddToBagButtonProps = {
   productId: string;
@@ -124,6 +125,14 @@ const AddToBagButton = ({
           cartAction: cart ? 'added_to_existing' : 'created_new_cart',
         });
 
+        // Show success toast
+        toast.success(`${productName || 'Item'} added to bag`, {
+          action: {
+            label: 'View Bag',
+            onClick: () => router.push('/bag'),
+          },
+        });
+
         // Refresh the page to update cart count in header
         console.log('🔄 [AddToBag] Refreshing page...');
         router.refresh();
@@ -136,6 +145,7 @@ const AddToBagButton = ({
       } catch (err) {
         console.error('❌ [AddToBag] Error adding to bag:', err);
         setError('Failed to add item to bag');
+        toast.error('Failed to add item to bag. Please try again.');
 
         // Track error
         track(TRACKING_EVENTS.ADD_TO_BAG_FAILED, {

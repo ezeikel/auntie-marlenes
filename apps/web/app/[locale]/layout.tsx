@@ -13,6 +13,7 @@ import SavedItemsSync from '@/components/SavedItemsSync';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import Header from '@/components/HeaderWrapper';
 import Footer from '@/components/Footer';
+import { Toaster } from '@/components/ui/sonner';
 import { locales, type Locale } from '@/i18n/config';
 // Validate environment variables at startup
 import '@/lib/env';
@@ -182,6 +183,7 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
             <Suspense fallback={<div className="h-64 bg-deep-earth" />}>
               <Footer />
             </Suspense>
+            <Toaster position="bottom-right" richColors closeButton />
           </Providers>
         </Suspense>
         <Analytics />

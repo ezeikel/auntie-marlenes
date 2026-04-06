@@ -58,6 +58,7 @@ export interface CreateProductInput {
   descriptionHtml: string;
   tags: string[];
   status?: 'ACTIVE' | 'DRAFT';
+  price?: string;
 }
 
 // ─── Product Queries ────────────────────────────────────────────────────────
@@ -167,12 +168,10 @@ const CREATE_PRODUCT_MUTATION = `
 `;
 
 export async function createProduct(input: CreateProductInput): Promise<{ id: string; handle: string; title: string }> {
-  const data = await adminFetch<{
-    productCreate: {
-      product: { id: string; handle: string; title: string } | null;
-      userErrors: Array<{ field: string; message: string }>;
-    };
-  }>(CREATE_PRODUCT_MUTATION, {
+  // Note: In Shopify Admin API 2024-01+, variants are set separately via
+  // productVariantsBulkCreate. Create the product first, then update the
+  // default variant's price.
+  const variables: Record<string, unknown> = {
     input: {
       title: input.title,
       vendor: input.vendor,
@@ -181,7 +180,14 @@ export async function createProduct(input: CreateProductInput): Promise<{ id: st
       tags: input.tags,
       status: input.status || 'ACTIVE',
     },
-  });
+  };
+
+  const data = await adminFetch<{
+    productCreate: {
+      product: { id: string; handle: string; title: string } | null;
+      userErrors: Array<{ field: string; message: string }>;
+    };
+  }>(CREATE_PRODUCT_MUTATION, variables);
 
   if (data.productCreate.userErrors.length > 0) {
     throw new Error(`Product creation failed: ${JSON.stringify(data.productCreate.userErrors)}`);
@@ -191,8 +197,44 @@ export async function createProduct(input: CreateProductInput): Promise<{ id: st
     throw new Error('Product creation returned null');
   }
 
-  console.log(`[Shopify] Product created: ${data.productCreate.product.handle}`);
-  return data.productCreate.product;
+  const product = data.productCreate.product;
+  console.log(`[Shopify] Product created: ${product.handle}`);
+
+  // Set price on the default variant if provided
+  if (input.price) {
+    await setDefaultVariantPrice(product.id, input.price);
+  }
+
+  return product;
+}
+
+/**
+ * Set the price on a product's default variant.
+ * Shopify creates a default variant automatically; we fetch its ID and update the price.
+ * Uses productVariantsBulkUpdate (2024-01+ API).
+ */
+async function setDefaultVariantPrice(productId: string, price: string): Promise<void> {
+  // Fetch the default variant ID
+  const variantData = await adminFetch<{
+    product: { variants: { edges: Array<{ node: { id: string } }> } } | null;
+  }>(`query GetVariant($id: ID!) { product(id: $id) { variants(first: 1) { edges { node { id } } } } }`, { id: productId });
+
+  const variantId = variantData.product?.variants?.edges?.[0]?.node?.id;
+  if (!variantId) {
+    console.warn('[Shopify] Could not find default variant to set price');
+    return;
+  }
+
+  await adminFetch(`
+    mutation UpdateVariants($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+      productVariantsBulkUpdate(productId: $productId, variants: $variants) {
+        productVariants { id }
+        userErrors { field message }
+      }
+    }
+  `, { productId, variants: [{ id: variantId, price }] });
+
+  console.log(`[Shopify] Set price to £${price}`);
 }
 
 // ─── Image Upload ───────────────────────────────────────────────────────────
@@ -396,31 +438,39 @@ const COLLECTION_ADD_PRODUCTS_MUTATION = `
 `;
 
 /**
- * Add a product to collections matching its category.
+ * Add a product to collections matching its categories.
+ * Always adds to "New Arrivals" as well.
  */
-export async function assignToCollections(productId: string, category: string): Promise<void> {
+export async function assignToCollections(productId: string, category: string, extraCategories: string[] = []): Promise<void> {
   const data = await adminFetch<{
     collections: { edges: Array<{ node: { id: string; title: string; handle: string } }> };
   }>(COLLECTIONS_QUERY, { first: 50 });
 
   const collections = data.collections.edges.map((e) => e.node);
 
-  // Find matching collection by category name
-  const categoryLower = category.toLowerCase();
-  const match = collections.find(
-    (c) =>
-      c.handle.toLowerCase().includes(categoryLower.replace(/\s+/g, '-')) ||
-      c.title.toLowerCase().includes(categoryLower),
-  );
+  // All categories to match (primary + extras + always "New Arrivals")
+  const categoriesToMatch = [category, ...extraCategories, 'New Arrivals'];
+  const matched = new Set<string>();
 
-  if (match) {
-    await adminFetch(COLLECTION_ADD_PRODUCTS_MUTATION, {
-      id: match.id,
-      productIds: [productId],
-    });
-    console.log(`[Shopify] Added to collection: ${match.title}`);
-  } else {
-    console.warn(`[Shopify] No collection found matching category: ${category}`);
+  for (const cat of categoriesToMatch) {
+    const catLower = cat.toLowerCase();
+    const match = collections.find(
+      (c) =>
+        (c.handle.toLowerCase().includes(catLower.replace(/\s+/g, '-')) ||
+        c.title.toLowerCase().includes(catLower)) &&
+        !matched.has(c.id),
+    );
+
+    if (match) {
+      await adminFetch(COLLECTION_ADD_PRODUCTS_MUTATION, {
+        id: match.id,
+        productIds: [productId],
+      });
+      matched.add(match.id);
+      console.log(`[Shopify] Added to collection: ${match.title}`);
+    } else {
+      console.warn(`[Shopify] No collection found matching: ${cat}`);
+    }
   }
 }
 

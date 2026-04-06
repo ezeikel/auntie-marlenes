@@ -168,8 +168,16 @@ const ProductDetail = ({
               Home
             </Link>
             <span className="mx-2">/</span>
-            <Link href="/search" className="hover:text-cocoa">
-              Search results
+            <Link
+              href={`/${
+                product.category
+                  ?.toLowerCase()
+                  .replace(/\s+&\s+/g, '-')
+                  .replace(/\s+/g, '-') || 'shop'
+              }`}
+              className="hover:text-cocoa"
+            >
+              {product.category || 'Shop'}
             </Link>
             <span className="mx-2">/</span>
             <span className="text-gray-900 truncate">{product.name}</span>
@@ -297,11 +305,7 @@ const ProductDetail = ({
                     size="md"
                   />
                 </div>
-              ) : (
-                <p className="text-xs text-gray-400 mb-4">
-                  No reviews yet — be the first!
-                </p>
-              )}
+              ) : null}
               {/* PPR: Use dynamic price slot if provided, otherwise format inline */}
               <div>
                 {priceSlot || (
@@ -416,11 +420,10 @@ const ProductDetail = ({
             {/* Seller Info */}
             <div className="bg-gray-50 rounded-lg p-4 text-sm">
               <p className="text-gray-600">
-                Sold by{' '}
                 <span className="font-semibold text-gray-900">
                   {product.brand}
-                </span>
-                , shipped by{' '}
+                </span>{' '}
+                — curated and shipped by{' '}
                 <span className="font-semibold text-gray-900">
                   Auntie Marlene's
                 </span>
@@ -467,6 +470,7 @@ const ProductDetail = ({
             <Accordion
               type="single"
               collapsible
+              defaultValue="details"
               className="border-t border-gray-200"
             >
               <AccordionItem value="details">
