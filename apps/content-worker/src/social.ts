@@ -155,6 +155,7 @@ export async function waitForInstagramMediaReady(
 
 /**
  * Publish an Instagram media container.
+ * Retries up to 3 times on transient errors (code 2).
  */
 export async function publishInstagramMedia(
   creationId: string,
@@ -164,21 +165,36 @@ export async function publishInstagramMedia(
 
   await waitForInstagramMediaReady(creationId);
 
-  const res = await fetch(`${GRAPH_API}/${igAccountId}/media_publish`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      creation_id: creationId,
-      access_token: token,
-    }),
-  });
+  const maxRetries = 3;
 
-  const data = await res.json();
-  if (!data.id) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const res = await fetch(`${GRAPH_API}/${igAccountId}/media_publish`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        creation_id: creationId,
+        access_token: token,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.id) return data.id;
+
+    const isTransient = data.error?.is_transient || data.error?.code === 2;
+    if (isTransient && attempt < maxRetries) {
+      const delay = attempt * 5000;
+      console.warn(
+        `[Social] IG publish transient error (attempt ${attempt}/${maxRetries}), retrying in ${delay / 1000}s...`,
+      );
+      await new Promise((r) => setTimeout(r, delay));
+      continue;
+    }
+
     throw new Error(`Failed to publish IG media: ${JSON.stringify(data)}`);
   }
 
-  return data.id;
+  throw new Error('IG publish: exhausted retries');
 }
 
 // ─── Facebook ────────────────────────────────────────────────────────────────
@@ -218,11 +234,12 @@ export async function postVideoToFacebookPage(
   videoUrl: string,
   description: string,
   title: string,
-  thumbUrl?: string,
 ): Promise<string> {
   const { fbPageId, token } = getConfig();
   if (!fbPageId) throw new Error('FACEBOOK_PAGE_ID is required');
 
+  // Note: the `thumb` parameter requires multipart file upload, not a URL.
+  // FB auto-extracts a thumbnail from the video, which works well enough.
   const res = await fetch(`${GRAPH_API}/${fbPageId}/videos`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -230,7 +247,6 @@ export async function postVideoToFacebookPage(
       file_url: videoUrl,
       description,
       title,
-      ...(thumbUrl ? { thumb: thumbUrl } : {}),
       access_token: token,
     }),
   });
@@ -369,7 +385,6 @@ export async function publishToFacebook(options: {
         options.videoUrl,
         options.reelCaption,
         options.productName,
-        options.imageUrl,
       );
       results.push({
         platform: 'facebook',
