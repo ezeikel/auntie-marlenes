@@ -1,10 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { blogPosts } from '@/lib/blog-data';
+import { getAllPostsLegacy } from '@/lib/sanity-blog';
 
-const BlogSection = () => {
-  const recentPosts = blogPosts.slice(0, 3);
+const BlogSection = async () => {
+  const allPosts = await getAllPostsLegacy();
+  const recentPosts = allPosts.slice(0, 3);
 
   return (
     <section className="py-16 sm:py-24 bg-white">

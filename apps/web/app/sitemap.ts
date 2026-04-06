@@ -1,15 +1,16 @@
 import { MetadataRoute } from 'next';
 import { getProducts, getCategories } from '@/app/actions';
-import { blogPosts } from '@/lib/blog-data';
+import { getAllPosts } from '@/lib/sanity-blog';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com';
 
   // Get all products and categories in parallel
-  const [products, categories] = await Promise.all([
+  const [products, categories, blogPosts] = await Promise.all([
     getProducts(),
     getCategories(),
+    getAllPosts(),
   ]);
 
   // Static pages
@@ -58,8 +59,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Blog posts
   const blogPages: MetadataRoute.Sitemap = blogPosts.map((post) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(post.date),
+    url: `${baseUrl}/blog/${post.slug.current}`,
+    lastModified: new Date(post.publishedAt),
     changeFrequency: 'monthly' as const,
     priority: 0.6,
   }));
