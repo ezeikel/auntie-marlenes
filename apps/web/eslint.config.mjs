@@ -13,6 +13,12 @@ export default tseslint.config(
       '**/coverage/**',
       'components/ui/**',
       '.react-email/**',
+      // Build / tool config files at the repo root. They aren't in tsconfig's
+      // `include`, so type-aware linting errors out on them — and they don't
+      // need linting anyway.
+      'eslint.config.mjs',
+      'next.config.mjs',
+      'postcss.config.js',
     ],
   },
 
@@ -39,9 +45,6 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',
       'no-console': 'warn',
-
-      // Disable rules that don't exist in current setup
-      'import/prefer-default-export': 'off',
     },
   },
 );
