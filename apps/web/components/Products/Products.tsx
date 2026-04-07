@@ -69,7 +69,7 @@ async function CachedCategoryProducts({
     productType: categoryName,
     sortKey,
     reverse,
-    first: 50,
+    first: 250,
     countryCode: country,
     userId, // Pass userId for analytics tracking
   });

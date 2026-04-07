@@ -62,7 +62,7 @@ async function CachedProductList({
   const products = await searchProducts({
     sortKey,
     reverse,
-    first: 50, // Fetch more products for shop page
+    first: 250, // Shopify max per request — no pagination needed at current scale
     countryCode: country,
     userId, // Pass userId for analytics tracking
   });

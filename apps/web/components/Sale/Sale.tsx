@@ -56,7 +56,7 @@ async function CachedSaleProducts({
   const products = await searchProducts({
     sortKey,
     reverse,
-    first: 50,
+    first: 250,
     onSale: true, // Filter for products with compareAtPrice
     countryCode: country,
     userId, // Pass userId for analytics tracking

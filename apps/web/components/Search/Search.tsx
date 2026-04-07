@@ -59,7 +59,7 @@ const Search = async ({ searchParams }: SearchProps) => {
     query,
     sortKey,
     reverse,
-    first: 50,
+    first: 250,
     countryCode: country,
   });
 
