@@ -304,6 +304,7 @@ async function handleProductCreate(product: any) {
   revalidateTag('bundle-deals', 'max');
   revalidateTag('category-products', 'max');
   revalidateTag('sale-products', 'max');
+  revalidateTag('new-arrivals', 'max');
   console.log('[Shopify Webhook] Revalidated all product caches');
 }
 
@@ -323,6 +324,7 @@ async function handleProductUpdate(product: any) {
   revalidateTag('bundle-deals', 'max');
   revalidateTag('category-products', 'max');
   revalidateTag('sale-products', 'max');
+  revalidateTag('new-arrivals', 'max');
   console.log('[Shopify Webhook] Revalidated all product caches');
 }
 
@@ -340,6 +342,7 @@ async function handleProductDelete(product: any) {
   revalidateTag('bundle-deals', 'max');
   revalidateTag('category-products', 'max');
   revalidateTag('sale-products', 'max');
+  revalidateTag('new-arrivals', 'max');
   console.log('[Shopify Webhook] Revalidated all product caches');
 }
 
