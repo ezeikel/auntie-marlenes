@@ -10,6 +10,7 @@ import {
 } from '@fortawesome/pro-regular-svg-icons';
 import { getUserAccountData } from '@/app/actions';
 import { redirect } from 'next/navigation';
+import SignOutButton from '@/components/buttons/SignOutButton/SignOutButton';
 
 const Account = async () => {
   const userData = await getUserAccountData();
@@ -151,6 +152,26 @@ const Account = async () => {
             >
               <Link href="/shop">Continue Shopping</Link>
             </Button>
+          </div>
+        </div>
+
+        {/* Sign Out — fallback outside the header account dropdown */}
+        <div className="bg-white rounded-xl shadow-md p-6 mt-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-inter font-semibold text-cocoa mb-1">
+                Sign out
+              </h3>
+              <p className="text-sm text-gray-600">
+                Sign out of your account on this device.
+              </p>
+            </div>
+            <SignOutButton
+              label="Sign Out"
+              showIcon
+              variant="outline"
+              className="w-full sm:w-auto border-destructive text-destructive hover:bg-destructive hover:text-white"
+            />
           </div>
         </div>
       </div>
