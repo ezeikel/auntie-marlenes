@@ -2,16 +2,16 @@ import NextAuth from 'next-auth';
 import type { Profile, Account, User, Session } from '@auth/core/types';
 import type { AdapterUser } from '@auth/core/adapters';
 import GoogleProvider from 'next-auth/providers/google';
-// import FacebookProvider from 'next-auth/providers/facebook';
-// import AppleProvider from 'next-auth/providers/apple';
-// import Resend from 'next-auth/providers/resend';
+import FacebookProvider from 'next-auth/providers/facebook';
+import AppleProvider from 'next-auth/providers/apple';
+import Resend from 'next-auth/providers/resend';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from '@auntie-marlenes/db';
 import { sendWelcomeEmail } from '@/lib/email';
-// import { render } from '@react-email/render';
-// import MagicLinkEmail from '@/components/emails/MagicLinkEmail';
-// import resendClient from '@/lib/resend';
-// import { generateAppleClientSecret } from '@/lib/apple';
+import { render } from '@react-email/render';
+import MagicLinkEmail from '@/components/emails/MagicLinkEmail';
+import resendClient from '@/lib/resend';
+import { generateAppleClientSecret } from '@/lib/apple';
 
 type AppleProfile = Profile & {
   user?: {
@@ -20,13 +20,36 @@ type AppleProfile = Profile & {
   };
 };
 
-// Uncomment when Apple auth is enabled
-// const clientSecret = await generateAppleClientSecret({
-//   teamId: process.env.APPLE_TEAM_ID as string,
-//   keyId: process.env.APPLE_KEY_ID as string,
-//   clientId: process.env.APPLE_CLIENT_ID as string,
-//   privateKey: (process.env.APPLE_PRIVATE_KEY as string).replace(/\\n/g, '\n'),
-// });
+// Apple's client secret is a short-lived ES256 JWT, generated at module init.
+// CRITICALLY wrapped in try/catch: a malformed APPLE_PRIVATE_KEY (bad PEM / wrong
+// newline encoding) makes generateAppleClientSecret throw "Failed to read private
+// key", and because this runs at module init that thrown error takes down the
+// ENTIRE NextAuth handler — every /api/auth/* route 500s, so NO provider works,
+// not just Apple. On failure we leave clientSecret empty and omit the Apple
+// provider below, keeping Google / Facebook / magic-link alive. Skip generation
+// entirely when any of the Apple env vars are missing so the build/dev server
+// still starts on machines that haven't provisioned them yet.
+let clientSecret = '';
+if (
+  process.env.APPLE_TEAM_ID &&
+  process.env.APPLE_KEY_ID &&
+  process.env.APPLE_CLIENT_ID &&
+  process.env.APPLE_PRIVATE_KEY
+) {
+  try {
+    clientSecret = await generateAppleClientSecret({
+      teamId: process.env.APPLE_TEAM_ID,
+      keyId: process.env.APPLE_KEY_ID,
+      clientId: process.env.APPLE_CLIENT_ID,
+      privateKey: process.env.APPLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    });
+  } catch (error) {
+    console.error(
+      'Apple client secret generation failed; Apple sign-in disabled.',
+      error,
+    );
+  }
+}
 
 const config = {
   adapter: PrismaAdapter(db),
@@ -44,40 +67,47 @@ const config = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       allowDangerousEmailAccountLinking: true,
     }),
-    // FacebookProvider({
-    //   clientId: process.env.FACEBOOK_CLIENT_ID as string,
-    //   clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
-    //   allowDangerousEmailAccountLinking: true,
-    //   authorization: {
-    //     params: {
-    //       scope: 'public_profile email',
-    //     },
-    //   },
-    // }),
-    // AppleProvider({
-    //   clientId: process.env.APPLE_CLIENT_ID as string,
-    //   clientSecret,
-    //   allowDangerousEmailAccountLinking: true,
-    // }),
-    // Resend({
-    //   apiKey: process.env.RESEND_API_KEY as string,
-    //   from: process.env.EMAIL_FROM || 'no-reply@auntiemarlenes.com',
-    //   async sendVerificationRequest({ identifier: email, url }) {
-    //     try {
-    //       const emailHtml = await render(MagicLinkEmail({ magicLink: url }));
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID as string,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
+      allowDangerousEmailAccountLinking: true,
+      authorization: {
+        params: {
+          scope: 'public_profile email',
+        },
+      },
+    }),
+    // Only include Apple when its client secret generated successfully — a bad
+    // APPLE_PRIVATE_KEY leaves clientSecret '' (see above) and Apple is omitted
+    // rather than added with an unusable secret.
+    ...(clientSecret
+      ? [
+          AppleProvider({
+            clientId: process.env.APPLE_CLIENT_ID as string,
+            clientSecret,
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
+    Resend({
+      apiKey: process.env.RESEND_API_KEY as string,
+      from: process.env.EMAIL_FROM || 'no-reply@auntiemarlenes.com',
+      async sendVerificationRequest({ identifier: email, url }) {
+        try {
+          const emailHtml = await render(MagicLinkEmail({ magicLink: url }));
 
-    //       await resendClient.emails.send({
-    //         from: process.env.EMAIL_FROM || 'no-reply@auntiemarlenes.com',
-    //         to: email,
-    //         subject: "Sign in to Auntie Marlene's",
-    //         html: emailHtml,
-    //       });
-    //     } catch (error) {
-    //       console.error('Failed to send verification email', { email }, error);
-    //       throw error;
-    //     }
-    //   },
-    // }),
+          await resendClient.emails.send({
+            from: process.env.EMAIL_FROM || 'no-reply@auntiemarlenes.com',
+            to: email,
+            subject: "Sign in to Auntie Marlene's",
+            html: emailHtml,
+          });
+        } catch (error) {
+          console.error('Failed to send verification email', { email }, error);
+          throw error;
+        }
+      },
+    }),
   ],
   callbacks: {
     async signIn({
@@ -90,10 +120,6 @@ const config = {
       profile?: Profile;
       email?: { verificationRequest?: boolean };
     }) {
-      console.log('account', account);
-      console.log('profile', profile);
-      console.log('email', email);
-
       // handle magic link request
       if (email?.verificationRequest) {
         return true;
