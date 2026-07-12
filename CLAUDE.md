@@ -72,7 +72,7 @@ Use semantic commit style (`type(scope): message`). Keep messages as one-liners,
 
 ## Blog Auto-Generation
 
-Cron job at `/api/cron/blog` runs Tue/Thu/Sat at 9AM UTC. Generates blog posts using AI with Pexels images (AI Judge evaluates suitability). See `apps/web/app/actions/blog.ts`.
+Cron job at `/api/cron/blog` runs daily at 9AM UTC. Generates blog posts using AI with Pexels images (AI Judge evaluates suitability), auto-publishing them (`status: 'published'`). The fixed topic list (`lib/blog/topics.ts`) falls back to a never-dry dynamic topic generator (`lib/blog/dynamic-topics.ts`) once exhausted, so the pipeline never runs out. See `apps/web/app/actions/blog.ts`.
 
 ## Known Issues
 

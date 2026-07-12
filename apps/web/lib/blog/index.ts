@@ -6,9 +6,13 @@ export {
   getRandomTopicFromCategory,
   getTotalTopicsCount,
   getTopicsCountByCategory,
+  seedTopicSlugs,
+  pickUncoveredTopic,
   type BlogTopic,
   type BlogCategory,
 } from './topics';
+
+export { generateDynamicTopics } from './dynamic-topics';
 
 export {
   GUEST_AUTHORS,

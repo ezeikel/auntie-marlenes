@@ -20,7 +20,12 @@ import {
   formatPhotoCredit,
   type PexelsPhoto,
 } from '@/lib/pexels';
-import { getRandomTopic, type BlogTopic } from '@/lib/blog/topics';
+import {
+  pickUncoveredTopic,
+  seedTopicSlugs,
+  type BlogTopic,
+} from '@/lib/blog/topics';
+import { generateDynamicTopics } from '@/lib/blog/dynamic-topics';
 import { getAuthorBySpecialty, GUEST_AUTHORS } from '@/lib/blog/authors';
 
 // Types
@@ -813,13 +818,43 @@ export async function generateRandomBlogPost(publishDate?: Date): Promise<{
   success: boolean;
   error?: string;
 }> {
-  // Get recently covered topics to avoid repetition
-  const recentTopics: string[] = await writeClient.fetch(coveredTopicsQuery);
+  // Build the set of already-covered topic titles for deduplication.
+  // coveredTopicsQuery returns [{ topic: string }] objects.
+  const coveredRows: Array<{ topic: string }> =
+    await writeClient.fetch(coveredTopicsQuery);
+  const covered = new Set(
+    coveredRows
+      .map((row) => row?.topic)
+      .filter((topic): topic is string => Boolean(topic)),
+  );
 
-  // Get a random topic that hasn't been covered
-  const randomTopic = getRandomTopic(recentTopics);
+  // 1. Prefer an uncovered topic from the fixed seed list.
+  let topic = pickUncoveredTopic(covered);
 
-  return generateBlogPostForTopic(randomTopic, publishDate);
+  // 2. When the seed list is exhausted, fall back to the never-dry dynamic
+  //    generator so the pipeline never runs out of topics and never throws.
+  if (!topic) {
+    console.log(
+      'Seed topic list exhausted, generating dynamic topics as fallback',
+    );
+    const dynamicTopics = await generateDynamicTopics(
+      covered,
+      seedTopicSlugs(),
+    );
+
+    if (dynamicTopics.length === 0) {
+      return {
+        slug: '',
+        title: '',
+        success: false,
+        error: 'No uncovered topics available and dynamic generation failed',
+      };
+    }
+
+    topic = dynamicTopics[0];
+  }
+
+  return generateBlogPostForTopic(topic, publishDate);
 }
 
 /**

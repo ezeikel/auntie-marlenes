@@ -1231,6 +1231,34 @@ export function getRandomTopic(recentTopics: string[] = []): BlogTopic {
 }
 
 /**
+ * Get the set of seed topic titles (the fixed BLOG_TOPICS list).
+ *
+ * Used by the dynamic topic generator to avoid regenerating anything that is
+ * already part of the curated seed list.
+ */
+export function seedTopicSlugs(): Set<string> {
+  return new Set(BLOG_TOPICS.map((t) => t.topic));
+}
+
+/**
+ * Pick a fixed seed topic that has not yet been covered.
+ *
+ * Returns a random uncovered BlogTopic, or null once the seed list is
+ * exhausted (all topics covered). A null return is the signal for callers to
+ * fall back to the dynamic never-dry generator.
+ */
+export function pickUncoveredTopic(covered: Set<string>): BlogTopic | null {
+  const available = BLOG_TOPICS.filter((topic) => !covered.has(topic.topic));
+
+  if (available.length === 0) {
+    return null;
+  }
+
+  const randomIndex = Math.floor(Math.random() * available.length);
+  return available[randomIndex];
+}
+
+/**
  * Get topics by category
  */
 export function getTopicsByCategory(category: BlogCategory): BlogTopic[] {

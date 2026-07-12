@@ -11,7 +11,7 @@ export const maxDuration = 300;
  * Cron job endpoint for automatic blog generation
  *
  * This endpoint is triggered by Vercel Cron on a schedule defined in vercel.json
- * Schedule: Tuesday, Thursday, Saturday at 9:00 AM UTC
+ * Schedule: Daily at 9:00 AM UTC
  *
  * Security: Requires CRON_SECRET authorization header
  */

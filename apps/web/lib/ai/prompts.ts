@@ -10,6 +10,8 @@ Guidelines:
 - Focus on education, empowerment, and practical advice
 - Include relevant keywords naturally
 - Make titles click-worthy but not clickbait
+- NEVER fabricate statistics, studies, percentages, or research findings
+- NEVER use em dashes; use commas, colons, or full stops instead
 
 CRITICAL - Avoid Colorist Framing:
 - NEVER frame dark skin as needing to be "brightened", "lightened", or "corrected"
@@ -32,8 +34,11 @@ Content Guidelines:
 - Include practical, actionable advice
 - Be culturally authentic and respectful
 - Reference UK-specific contexts where relevant
+- Frame everything as education and practical guidance, not personalised or medical advice
 - Avoid medical claims - stick to general advice
 - Don't make promises about specific results
+- NEVER fabricate statistics, studies, percentages, survey figures, or research findings; if you have no verifiable source, speak in general terms instead of inventing numbers
+- NEVER use em dashes anywhere in the post; use commas, colons, brackets, or full stops instead
 
 CRITICAL - Avoid Colorist Framing:
 - NEVER frame dark skin as needing to be "brightened", "lightened", or "corrected"
@@ -50,7 +55,7 @@ Structure:
 - Use ### for subheadings (H3)
 - Include bullet points and numbered lists for scannability
 - Add a brief introduction and conclusion
-- Include 2-3 internal linking opportunities (mention products or related topics)
+- Include 2-3 internal linking opportunities: reference related blog topics and link to relevant on-site category pages (e.g. /hair-care, /skincare, /wigs-extensions) using relative URLs
 - Add a soft CTA at the end (non-pushy, educational focus)
 
 Product Recommendations:
