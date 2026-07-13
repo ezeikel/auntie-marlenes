@@ -23,6 +23,7 @@ import BagCheckoutFooter from '@/components/BagCheckoutFooter';
 import BagHeader from '@/components/BagHeader';
 import EmptyBagState from '@/components/EmptyBagState';
 import { useCart } from '@/contexts/cart';
+import * as logger from '@/lib/logger';
 
 export default function BagScreen() {
   const {
@@ -69,7 +70,7 @@ export default function BagScreen() {
       (event) => {
         const orderId = event.orderDetails.id;
         // TODO: send this to analytics
-        console.log('Checkout completed! Order ID:', orderId);
+        logger.info('Checkout completed! Order ID:', orderId);
 
         // Clear the cart after successful checkout
         clearCart();
@@ -88,7 +89,7 @@ export default function BagScreen() {
     // Handle checkout cancellation
     const closeListener = shopifyCheckout.addEventListener('close', () => {
       // TODO: send this to analytics
-      console.log('Checkout closed');
+      logger.info('Checkout closed');
       setIsCheckoutProcessing(false);
     });
 

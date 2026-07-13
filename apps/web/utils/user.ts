@@ -10,8 +10,6 @@ export const getUserId = async (action?: string) => {
 
     const userId = session?.user?.id || headersList.get('x-user-id');
 
-    console.log('userId', userId);
-
     // TODO: create action constants
     if (
       action === 'get the current user' ||
@@ -38,7 +36,6 @@ export const getUserId = async (action?: string) => {
         (error as any).digest === 'HANGING_PROMISE_REJECTION')
     ) {
       // Return null gracefully during prerendering
-      console.log('[getUserId] Headers not available during prerendering');
       return null;
     }
     // Re-throw other unexpected errors

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 export const maxDuration = 300;
 
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log('[cron/publish-next] Triggering content worker');
+    logger.info('[cron/publish-next] Triggering content worker');
 
     const res = await fetch(`${workerUrl}/publish/next`, {
       method: 'POST',
@@ -71,7 +72,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('[cron/publish-next] Published successfully', {
+    logger.info('[cron/publish-next] Published successfully', {
       product: data.product?.handle,
       cycle: data.cycle,
     });

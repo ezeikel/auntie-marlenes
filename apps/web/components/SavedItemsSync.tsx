@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { syncLocalSavesToDB } from '@/app/actions';
 import { useSession } from '@/hooks/useSession';
 import { clearLocalSaves, getLocalSaves } from '@/lib/localStorage-saves';
+import { logger } from '@/lib/logger';
 
 /**
  * Component that syncs localStorage saved items to database after sign in/up
@@ -26,7 +27,9 @@ export default function SavedItemsSync() {
             const result = await syncLocalSavesToDB({ productIds: localSaves });
 
             if (result.success) {
-              console.log(`Synced ${result.synced} saved items to database`);
+              logger.info('Synced saved items to database', {
+                synced: result.synced,
+              });
               clearLocalSaves();
             }
           } catch (error) {

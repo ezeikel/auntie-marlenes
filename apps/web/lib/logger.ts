@@ -108,6 +108,7 @@ const logToConsole = (
 
   switch (level) {
     case 'debug':
+      // biome-ignore lint/suspicious/noConsole: logger is the single sanctioned console sink
       console.debug(prefix, message, context || '');
       break;
     case 'info':

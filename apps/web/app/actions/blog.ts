@@ -19,6 +19,7 @@ import {
   pickUncoveredTopic,
   seedTopicSlugs,
 } from '@/lib/blog/topics';
+import { logger } from '@/lib/logger';
 import {
   downloadPhoto,
   fetchBlogPhotosForEvaluation,
@@ -139,9 +140,7 @@ const generateImageWithGemini = async (
   const prompt = IMAGE_GENERATION_PROMPT.replace('{{TITLE}}', title);
 
   try {
-    console.log(
-      'Generating image with Gemini 3 Pro Image (Nano Banana Pro)...',
-    );
+    logger.info('Generating image with Gemini 3 Pro Image (Nano Banana Pro)');
 
     // Use Gemini 3 Pro Image via Vercel AI SDK
     const result = await generateText({
@@ -156,7 +155,7 @@ const generateImageWithGemini = async (
     );
 
     if (imageFile) {
-      console.log('Gemini 3 Pro Image generated image successfully');
+      logger.info('Gemini 3 Pro Image generated image successfully');
       // Use uint8Array to create buffer (more efficient than base64 decoding)
       const buffer = Buffer.from(imageFile.uint8Array);
 
@@ -210,7 +209,7 @@ const getFeaturedImage = async (
 }> => {
   try {
     // 1. Generate search terms
-    console.log('Generating image search terms for:', title);
+    logger.info('Generating image search terms', { title });
     const searchTerms = await generateImageSearchTerms(
       title,
       excerpt,
@@ -218,7 +217,9 @@ const getFeaturedImage = async (
     );
 
     // 2. Fetch multiple candidate photos from Pexels
-    console.log('Searching Pexels with terms:', searchTerms.searchTerms);
+    logger.info('Searching Pexels', {
+      searchTerms: searchTerms.searchTerms.join(', '),
+    });
     const pexelsResult = await fetchBlogPhotosForEvaluation(
       searchTerms.searchTerms,
       { orientation: 'landscape', size: 'large' },
@@ -230,9 +231,9 @@ const getFeaturedImage = async (
 
     if (pexelsResult.photos.length > 0) {
       // 3. Evaluate photos with AI vision model (Gemini 3 Pro)
-      console.log(
-        `Evaluating ${pexelsResult.photos.length} candidate images with AI`,
-      );
+      logger.info('Evaluating candidate images with AI', {
+        candidateCount: pexelsResult.photos.length,
+      });
 
       const { selectedIndex, evaluations } = await findBestImage(
         pexelsResult.photos.map((p) => ({
@@ -248,7 +249,7 @@ const getFeaturedImage = async (
         selectedSearchTerm = pexelsResult.photos[selectedIndex].searchTerm;
         evaluationResult = evaluations[selectedIndex];
 
-        console.log('AI selected Pexels image:', {
+        logger.info('AI selected Pexels image', {
           photographer: selectedPhoto.photographer,
           confidence: evaluationResult.confidence,
           reasoning: evaluationResult.reasoning,
@@ -258,10 +259,10 @@ const getFeaturedImage = async (
           (best, curr) => (curr.confidence > best.confidence ? curr : best),
           evaluations[0],
         );
-        console.log('AI rejected all Pexels images:', {
+        logger.info('AI rejected all Pexels images', {
           bestConfidence: bestEvaluation?.confidence ?? 0,
           threshold: IMAGE_EVALUATION_THRESHOLD,
-          concerns: bestEvaluation?.concerns,
+          concerns: bestEvaluation?.concerns?.join('; '),
         });
       }
     }
@@ -290,7 +291,7 @@ const getFeaturedImage = async (
     }
 
     // 5. Fallback to Gemini 3 Pro Image generation (Nano Banana Pro)
-    console.log(
+    logger.info(
       'No suitable Pexels image found, generating with Gemini 3 Pro Image',
     );
     const geminiResult = await generateImageWithGemini(title);
@@ -313,7 +314,7 @@ const getFeaturedImage = async (
       };
     }
 
-    console.log('Gemini 3 Pro Image generation failed, no image available');
+    logger.info('Gemini 3 Pro Image generation failed, no image available');
     return { image: null, source: 'gemini' };
   } catch (error) {
     console.error('Error getting featured image:', error);
@@ -707,7 +708,7 @@ export async function generateBlogPostForTopic(
   error?: string;
 }> {
   try {
-    console.log('Generating blog post for topic:', blogTopic.topic);
+    logger.info('Generating blog post for topic', { topic: blogTopic.topic });
 
     // 1. Check if topic already exists
     const topicExists = await writeClient.fetch(topicExistsQuery, {
@@ -724,7 +725,7 @@ export async function generateBlogPostForTopic(
       blogTopic.category,
       blogTopic.keywords,
     );
-    console.log('Generated metadata:', { title: meta.title, slug: meta.slug });
+    logger.info('Generated metadata', { title: meta.title, slug: meta.slug });
 
     // 3. Check if slug already exists
     const existingPost = await writeClient.fetch(
@@ -740,7 +741,7 @@ export async function generateBlogPostForTopic(
     const recentTopics: string[] = await writeClient.fetch(coveredTopicsQuery);
 
     // 5-8. Generate content, image, author, and category in parallel
-    console.log('Generating content for:', meta.title);
+    logger.info('Generating content', { title: meta.title });
     const [content, imageResult, authorRef, categoryRef] = await Promise.all([
       generateBlogContent(
         blogTopic.topic,
@@ -780,7 +781,7 @@ export async function generateBlogPostForTopic(
     };
 
     // 11. Create post in Sanity
-    console.log('Creating post in Sanity:', meta.title);
+    logger.info('Creating post in Sanity', { title: meta.title });
     await createSanityPost(
       meta,
       portableText,
@@ -791,7 +792,7 @@ export async function generateBlogPostForTopic(
       publishDate,
     );
 
-    console.log('Successfully generated blog post:', meta.slug);
+    logger.info('Successfully generated blog post', { slug: meta.slug });
 
     return {
       slug: meta.slug,
@@ -834,7 +835,7 @@ export async function generateRandomBlogPost(publishDate?: Date): Promise<{
   // 2. When the seed list is exhausted, fall back to the never-dry dynamic
   //    generator so the pipeline never runs out of topics and never throws.
   if (!topic) {
-    console.log(
+    logger.info(
       'Seed topic list exhausted, generating dynamic topics as fallback',
     );
     const dynamicTopics = await generateDynamicTopics(
@@ -936,9 +937,9 @@ export async function repairCorruptedBlogPosts(): Promise<{
       }`,
     );
 
-    console.log(
-      `Found ${corruptedPosts.length} corrupted blog posts to repair`,
-    );
+    logger.info('Found corrupted blog posts to repair', {
+      count: corruptedPosts.length,
+    });
 
     for (const post of corruptedPosts) {
       try {
@@ -963,7 +964,7 @@ export async function repairCorruptedBlogPosts(): Promise<{
         // Update the post with corrected body
         await writeClient.patch(post._id).set({ body: portableText }).commit();
 
-        console.log(`Repaired post: ${post.title}`);
+        logger.info('Repaired post', { title: post.title });
         repaired++;
       } catch (postError) {
         const errorMsg =
@@ -1021,7 +1022,7 @@ export async function regenerateBlogImage(postId: string): Promise<{
       return { success: false, postId, error: 'Post not found' };
     }
 
-    console.log(`Regenerating image for: ${post.title}`);
+    logger.info('Regenerating image', { title: post.title });
 
     // Get new featured image
     const imageResult = await getFeaturedImage(
@@ -1064,9 +1065,10 @@ export async function regenerateBlogImage(postId: string): Promise<{
       })
       .commit();
 
-    console.log(
-      `Successfully regenerated image for: ${post.title} (${imageResult.source})`,
-    );
+    logger.info('Successfully regenerated image', {
+      title: post.title,
+      source: imageResult.source,
+    });
 
     return {
       success: true,
@@ -1139,7 +1141,7 @@ export async function regenerateAllBlogImages(options?: {
     const posts =
       await writeClient.fetch<Array<{ _id: string; title: string }>>(query);
 
-    console.log(`Found ${posts.length} posts to process`);
+    logger.info('Found posts to process', { count: posts.length });
 
     for (const post of posts) {
       const result = await regenerateBlogImage(post._id);

@@ -8,6 +8,7 @@ import {
   sendOrderConfirmationEmail,
   sendShippingUpdateEmail,
 } from '@/lib/email';
+import { logger } from '@/lib/logger';
 import { db } from '@/lib/prisma';
 import { track } from '@/utils/analytics-server';
 
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
     const topic = headersList.get('x-shopify-topic');
     const shopDomain = headersList.get('x-shopify-shop-domain');
 
-    console.log('[Shopify Webhook] Received:', { topic, shopDomain });
+    logger.info('[Shopify Webhook] Received', { topic, shopDomain });
 
     // Verify the webhook is from Shopify
     if (!hmacHeader || !(await verifyShopifyWebhook(body, hmacHeader))) {
@@ -119,7 +120,7 @@ export async function POST(request: Request) {
         break;
 
       default:
-        console.log(`[Shopify Webhook] Unhandled topic: ${topic}`);
+        logger.info('[Shopify Webhook] Unhandled topic', { topic });
     }
 
     return NextResponse.json({ received: true }, { status: 200 });
@@ -139,7 +140,7 @@ async function handleOrderCreate(order: any) {
   const lineItems = extractLineItems(order.line_items);
   const itemCount = lineItems.reduce((sum, item) => sum + item.quantity, 0);
 
-  console.log('[Shopify Webhook] Order created:', {
+  logger.info('[Shopify Webhook] Order created', {
     id: order.id,
     orderNumber: order.order_number,
     email: order.email,
@@ -171,7 +172,7 @@ async function handleOrderCreate(order: any) {
  * Handle order updates
  */
 async function handleOrderUpdate(order: any) {
-  console.log('[Shopify Webhook] Order updated:', {
+  logger.info('[Shopify Webhook] Order updated', {
     id: order.id,
     orderNumber: order.order_number,
     status: order.financial_status,
@@ -218,7 +219,7 @@ async function handleOrderUpdate(order: any) {
  * Handle order cancellation
  */
 async function handleOrderCancelled(order: any) {
-  console.log('[Shopify Webhook] Order cancelled:', {
+  logger.info('[Shopify Webhook] Order cancelled', {
     id: order.id,
     orderNumber: order.order_number,
     cancelReason: order.cancel_reason,
@@ -238,7 +239,7 @@ async function handleOrderPaid(order: any) {
   const lineItems = extractLineItems(order.line_items);
   const itemCount = lineItems.reduce((sum, item) => sum + item.quantity, 0);
 
-  console.log('[Shopify Webhook] Order paid:', {
+  logger.info('[Shopify Webhook] Order paid', {
     id: order.id,
     orderNumber: order.order_number,
     total: order.total_price,
@@ -292,7 +293,7 @@ async function handleOrderPaid(order: any) {
  * Revalidates all product-related cache tags
  */
 async function handleProductCreate(product: any) {
-  console.log('[Shopify Webhook] Product created:', {
+  logger.info('[Shopify Webhook] Product created', {
     id: product.id,
     title: product.title,
     handle: product.handle,
@@ -305,7 +306,7 @@ async function handleProductCreate(product: any) {
   revalidateTag('category-products', 'max');
   revalidateTag('sale-products', 'max');
   revalidateTag('new-arrivals', 'max');
-  console.log('[Shopify Webhook] Revalidated all product caches');
+  logger.info('[Shopify Webhook] Revalidated all product caches');
 }
 
 /**
@@ -313,7 +314,7 @@ async function handleProductCreate(product: any) {
  * Revalidates all product-related cache tags
  */
 async function handleProductUpdate(product: any) {
-  console.log('[Shopify Webhook] Product updated:', {
+  logger.info('[Shopify Webhook] Product updated', {
     id: product.id,
     title: product.title,
     handle: product.handle,
@@ -325,7 +326,7 @@ async function handleProductUpdate(product: any) {
   revalidateTag('category-products', 'max');
   revalidateTag('sale-products', 'max');
   revalidateTag('new-arrivals', 'max');
-  console.log('[Shopify Webhook] Revalidated all product caches');
+  logger.info('[Shopify Webhook] Revalidated all product caches');
 }
 
 /**
@@ -333,7 +334,7 @@ async function handleProductUpdate(product: any) {
  * Revalidates all product-related cache tags
  */
 async function handleProductDelete(product: any) {
-  console.log('[Shopify Webhook] Product deleted:', {
+  logger.info('[Shopify Webhook] Product deleted', {
     id: product.id,
   });
 
@@ -343,7 +344,7 @@ async function handleProductDelete(product: any) {
   revalidateTag('category-products', 'max');
   revalidateTag('sale-products', 'max');
   revalidateTag('new-arrivals', 'max');
-  console.log('[Shopify Webhook] Revalidated all product caches');
+  logger.info('[Shopify Webhook] Revalidated all product caches');
 }
 
 /**
@@ -354,11 +355,11 @@ async function handleCheckout(checkout: any) {
   const token = checkout.token || checkout.cart_token;
 
   if (!email || !token) {
-    console.log('[Shopify Webhook] Checkout missing email or token, skipping');
+    logger.info('[Shopify Webhook] Checkout missing email or token, skipping');
     return;
   }
 
-  console.log('[Shopify Webhook] Checkout tracked:', {
+  logger.info('[Shopify Webhook] Checkout tracked', {
     token,
     email,
     totalPrice: checkout.total_price,

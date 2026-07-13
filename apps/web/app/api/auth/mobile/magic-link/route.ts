@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { Resend } from 'resend';
 import { createMagicLinkToken } from '@/lib/auth-mobile';
+import { logger } from '@/lib/logger';
 import { db } from '@/lib/prisma';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
         `,
       });
 
-      console.log('[Auth] Magic link email sent to:', email);
+      logger.info('[Auth] Magic link email sent', { email });
     } catch (emailError) {
       console.error('[Auth] Error sending magic link email:', emailError);
       return Response.json({ error: 'Failed to send email' }, { status: 500 });

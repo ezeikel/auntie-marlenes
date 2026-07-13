@@ -62,16 +62,9 @@ export function useSaved() {
   const toggleSave = useCallback(
     async (productId: string) => {
       const currentlySaved = isSaved(productId);
-      console.log('🔵 toggleSave called:', {
-        productId,
-        currentlySaved,
-        isAuthenticated,
-      });
-
       startTransition(async () => {
         if (currentlySaved) {
           // Remove from local state immediately (optimistic)
-          console.log('🔴 Removing from saves...');
           setLocalSaves((prev) => prev.filter((id) => id !== productId));
           removeLocalSave(productId);
 
@@ -85,9 +78,7 @@ export function useSaved() {
           // Remove from DB if authenticated
           if (isAuthenticated) {
             try {
-              console.log('🔴 Calling removeProductFromSaved server action...');
               await removeProductFromSaved({ productId });
-              console.log('✅ Successfully removed from DB');
               setDbSaves((prev) => prev.filter((id) => id !== productId));
 
               logger.info('Product unsaved from database', {
@@ -111,11 +102,9 @@ export function useSaved() {
               );
             }
           } else {
-            console.log('👤 Not authenticated, only removed from localStorage');
           }
         } else {
           // Add to local state immediately (optimistic)
-          console.log('💚 Adding to saves...');
           setLocalSaves((prev) => [...prev, productId]);
           addLocalSave(productId);
 
@@ -129,9 +118,7 @@ export function useSaved() {
           // Add to DB if authenticated
           if (isAuthenticated) {
             try {
-              console.log('💚 Calling addProductToSaved server action...');
               await addProductToSaved({ productId });
-              console.log('✅ Successfully added to DB');
               setDbSaves((prev) => [...prev, productId]);
 
               logger.info('Product saved to database', {
@@ -155,7 +142,6 @@ export function useSaved() {
               );
             }
           } else {
-            console.log('👤 Not authenticated, only saved to localStorage');
           }
         }
       });

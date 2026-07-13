@@ -10,6 +10,7 @@ import React, {
 import { toast } from 'sonner-native';
 import * as savedApi from '../lib/api/saved';
 import * as savedStorage from '../lib/asyncStorage/saved';
+import * as logger from '../lib/logger';
 import { useAuthContext } from './auth';
 
 type SavedContextType = {
@@ -149,7 +150,7 @@ export const SavedProvider = ({ children }: { children: ReactNode }) => {
     },
     onSuccess: async (data) => {
       // TODO: send this to analytics
-      console.log(`Synced ${data.synced} saved items to backend`);
+      logger.info(`Synced ${data.synced} saved items to backend`);
       // Refetch saved items from API to get merged list
       await queryClient.invalidateQueries({ queryKey: ['saved'] });
       toast.success('Saved items synced');

@@ -54,25 +54,6 @@ export default function ThankYouPage() {
           currency: currency,
           customer_email: email || '',
         });
-
-        // Log for debugging
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[Thank You Page] Purchase tracked:', {
-            orderId,
-            orderName,
-            value: purchaseValue,
-            currency,
-            email,
-            itemCount,
-          });
-        }
-      } else {
-        // If no order details in URL, still track page view
-        console.log('[Thank You Page] No order details found in URL params');
-        console.log(
-          'Available params:',
-          Object.fromEntries(searchParams.entries()),
-        );
       }
     };
 

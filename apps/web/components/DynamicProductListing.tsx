@@ -51,14 +51,6 @@ const DynamicProductListing = ({
 
   // Fetch localized products if user's country differs from static
   useEffect(() => {
-    console.log('[DynamicProductListing] useEffect:', {
-      title,
-      locationLoading,
-      currentCountry: country.code,
-      staticCountry,
-      hasLocalizedProducts: localizedProducts !== null,
-    });
-
     // Skip if location is still loading
     if (locationLoading) {
       return;
@@ -67,17 +59,11 @@ const DynamicProductListing = ({
     // If user's country matches the static country, clear any localized products and use static
     if (country.code === staticCountry) {
       if (localizedProducts !== null) {
-        console.log(
-          '[DynamicProductListing] Country matches static, clearing localized',
-        );
         setLocalizedProducts(null);
       }
       return;
     }
 
-    console.log(
-      '[DynamicProductListing] Country differs, fetching localized products',
-    );
     const fetchLocalizedProducts = async () => {
       setIsLoading(true);
       try {
@@ -94,11 +80,6 @@ const DynamicProductListing = ({
         const response = await fetch(`/api/products/search?${params}`);
         if (response.ok) {
           const data = await response.json();
-          console.log(
-            '[DynamicProductListing] Fetched localized products:',
-            data.length,
-            'products',
-          );
           setLocalizedProducts(data);
         }
       } catch (error) {

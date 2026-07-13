@@ -97,12 +97,6 @@ export const LocationProvider = ({
       setCountryState((prev) => {
         const previousCountry = prev.code;
 
-        console.log('[LocationContext] Setting country:', {
-          from: previousCountry,
-          to: newCountry.code,
-          currency: newCountry.currency.code,
-        });
-
         // Track country change
         track(TRACKING_EVENTS.COUNTRY_CHANGED, {
           previous_country: previousCountry,
@@ -119,10 +113,6 @@ export const LocationProvider = ({
       try {
         localStorage.setItem(STORAGE_KEY_COUNTRY, newCountry.code);
         localStorage.setItem(STORAGE_KEY_CURRENCY, newCountry.currency.code);
-        console.log(
-          '[LocationContext] Saved to localStorage:',
-          newCountry.code,
-        );
       } catch (error) {
         console.error('Error saving country preference:', error);
         logger.error(
@@ -135,7 +125,6 @@ export const LocationProvider = ({
       // Set cookie for server-side country detection
       try {
         await setCountryCookie(newCountry.code);
-        console.log('[LocationContext] Set cookie:', newCountry.code);
       } catch (error) {
         console.error('Error setting country cookie:', error);
         logger.error(
@@ -148,7 +137,6 @@ export const LocationProvider = ({
       // Update Shopify cart buyer identity
       try {
         await updateCartCountryCode(newCountry.code);
-        console.log('[LocationContext] Updated cart country:', newCountry.code);
 
         logger.info('Country changed successfully', {
           newCountry: newCountry.code,
@@ -163,7 +151,6 @@ export const LocationProvider = ({
       }
 
       // Refresh server components to re-render with new country
-      console.log('[LocationContext] Calling router.refresh()');
       router.refresh();
     },
     [router, track],

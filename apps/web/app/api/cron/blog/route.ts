@@ -4,6 +4,7 @@ import {
   seedAuthors,
   seedCategories,
 } from '@/app/actions/blog';
+import { logger } from '@/lib/logger';
 
 export const maxDuration = 300;
 
@@ -34,13 +35,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log('Starting blog generation cron job');
+    logger.info('Starting blog generation cron job');
 
     // Generate a random blog post
     const result = await generateRandomBlogPost();
 
     if (result.success) {
-      console.log('Blog post generated successfully:', {
+      logger.info('Blog post generated successfully', {
         title: result.title,
         slug: result.slug,
       });
@@ -106,15 +107,19 @@ export async function POST(request: NextRequest) {
     const action = body.action || 'seed';
 
     if (action === 'seed') {
-      console.log('Seeding authors and categories');
+      logger.info('Seeding authors and categories');
 
       // Seed authors and categories in parallel
       const [authorsResult, categoriesResult] = await Promise.all([
         seedAuthors(),
         seedCategories(),
       ]);
-      console.log('Authors seeding result:', authorsResult);
-      console.log('Categories seeding result:', categoriesResult);
+      logger.info('Authors seeding result', {
+        authorsResult: JSON.stringify(authorsResult),
+      });
+      logger.info('Categories seeding result', {
+        categoriesResult: JSON.stringify(categoriesResult),
+      });
 
       return NextResponse.json({
         success: true,

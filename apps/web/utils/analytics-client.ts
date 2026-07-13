@@ -158,10 +158,6 @@ export const useAnalytics = () => {
 
         // Track Facebook Pixel events
         trackFacebookPixelEvent(event, properties);
-
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[Analytics Client]', event, enrichedProperties);
-        }
       } catch (error) {
         console.error('Client-side analytics tracking error:', error);
       }

@@ -1,6 +1,7 @@
 import { revalidateTag } from 'next/cache';
 import { type NextRequest, NextResponse } from 'next/server';
 import { parseBody } from 'next-sanity/webhook';
+import { logger } from '@/lib/logger';
 
 type SanityWebhookPayload = {
   _type: string;
@@ -84,10 +85,11 @@ export async function POST(req: NextRequest) {
         });
     }
 
-    console.log(
-      `[Sanity Webhook] Revalidated tags for ${_type} (${_id}):`,
-      revalidatedTags,
-    );
+    logger.info('[Sanity Webhook] Revalidated tags', {
+      type: _type,
+      id: _id,
+      revalidatedTags: JSON.stringify(revalidatedTags),
+    });
 
     return NextResponse.json({
       message: 'Revalidation successful',

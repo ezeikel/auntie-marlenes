@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendAbandonedCartEmail } from '@/lib/email';
+import { logger } from '@/lib/logger';
 import { db } from '@/lib/prisma';
 
 /**
@@ -39,9 +40,9 @@ export async function GET(request: NextRequest) {
       take: 50,
     });
 
-    console.log(
-      `[Abandoned Cart Cron] Found ${abandonedCheckouts.length} abandoned checkouts to email`,
-    );
+    logger.info('[Abandoned Cart Cron] Found abandoned checkouts to email', {
+      count: abandonedCheckouts.length,
+    });
 
     let sent = 0;
     for (const checkout of abandonedCheckouts) {
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (cleaned > 0) {
-      console.log(`[Abandoned Cart Cron] Cleaned up ${cleaned} old records`);
+      logger.info('[Abandoned Cart Cron] Cleaned up old records', { cleaned });
     }
 
     return NextResponse.json({

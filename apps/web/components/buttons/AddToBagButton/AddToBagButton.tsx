@@ -41,11 +41,6 @@ const AddToBagButton = ({
   const { track } = useAnalytics();
 
   const handleAddToBag = () => {
-    console.log('🛒 [AddToBag] Button clicked!', {
-      productId,
-      selectedOptions,
-    });
-
     // Track add to bag initiated
     track(TRACKING_EVENTS.ADD_TO_BAG_CLICKED, {
       product_id: productId,
@@ -58,13 +53,10 @@ const AddToBagButton = ({
     startTransition(async () => {
       try {
         // Get the variant ID for the product (or first variant if no options)
-        console.log('🛒 [AddToBag] Getting product variant ID...');
         const productVariantId = await getProductVariantId({
           productId,
           selectedOptions,
         });
-
-        console.log('🛒 [AddToBag] Got variant ID:', productVariantId);
 
         if (!productVariantId) {
           setError('No variant found for product');
@@ -85,28 +77,19 @@ const AddToBagButton = ({
           return;
         }
 
-        console.log('🛒 [AddToBag] Getting existing cart...');
         const cart = await getCart();
-        console.log(
-          '🛒 [AddToBag] Cart:',
-          cart ? `Found (ID: ${cart.id})` : 'Not found',
-        );
 
         if (cart) {
           // add to existing cart
-          console.log('🛒 [AddToBag] Adding to existing cart...');
           await addProductsToCart({
             cartId: cart.id,
             productVariantId,
           });
-          console.log('✅ [AddToBag] Added to existing cart successfully');
         } else {
           // create a new cart
-          console.log('🛒 [AddToBag] Creating new cart...');
           await createCart({
             productVariantId,
           });
-          console.log('✅ [AddToBag] Created new cart successfully');
         }
 
         // Track success
@@ -134,9 +117,7 @@ const AddToBagButton = ({
         });
 
         // Refresh the page to update cart count in header
-        console.log('🔄 [AddToBag] Refreshing page...');
         router.refresh();
-        console.log('✅ [AddToBag] Complete!');
 
         // Call onSuccess callback if provided
         if (onSuccess) {

@@ -18,11 +18,6 @@ export async function getServerCountry(): Promise<string> {
   const savedCountry = cookieStore.get('auntie-marlenes-country')?.value;
   const country = savedCountry || 'GB';
 
-  console.log('[server-location] Country from cookie:', {
-    cookieValue: savedCountry,
-    finalCountry: country,
-  });
-
   return country;
 }
 
@@ -40,13 +35,8 @@ export async function getServerUserId(): Promise<string | null> {
 
   try {
     const userId = await getUserId('get the current user');
-    console.log(
-      '[server-location] User ID retrieved:',
-      userId ? 'Found' : 'Not found',
-    );
     return userId;
-  } catch (error) {
-    console.log('[server-location] Could not retrieve user ID:', error);
+  } catch {
     return null;
   }
 }

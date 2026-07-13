@@ -26,6 +26,7 @@ import { updateCartBuyerIdentity } from '@/lib/api/cart';
 import { syncSavedItems } from '@/lib/api/saved';
 import * as cartStorage from '@/lib/asyncStorage/cart';
 import * as savedStorage from '@/lib/asyncStorage/saved';
+import * as logger from '@/lib/logger';
 
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -75,7 +76,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       // Sync saved items from AsyncStorage to backend
       const localSaves = await savedStorage.getLocalSaves();
       if (localSaves.length > 0) {
-        console.log(
+        logger.info(
           `[Auth] Syncing ${localSaves.length} saved items to backend`,
         );
         await syncSavedItems(localSaves);
@@ -84,7 +85,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       // Update cart buyer identity if cart exists
       const cartId = await cartStorage.getCartId();
       if (cartId) {
-        console.log('[Auth] Updating cart buyer identity');
+        logger.info('[Auth] Updating cart buyer identity');
         await updateCartBuyerIdentity(cartId, userEmail);
       }
     } catch (error) {
@@ -113,7 +114,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
                   email: response.user.email,
                   name: response.user.name || null,
                 });
-                console.log(
+                logger.info(
                   '[Auth] User identified with PostHog:',
                   response.user.id,
                 );
@@ -133,7 +134,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
                   email: response.user.email,
                   username: response.user.name || undefined,
                 });
-                console.log(
+                logger.info(
                   '[Auth] User identified with Sentry:',
                   response.user.id,
                 );
@@ -181,7 +182,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
             email: response.user.email,
             name: response.user.name || null,
           });
-          console.log('[Auth] User identified with PostHog:', response.user.id);
+          logger.info('[Auth] User identified with PostHog:', response.user.id);
         } catch (error) {
           console.error('[Auth] Error identifying user with PostHog:', error);
         }
@@ -195,7 +196,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
             email: response.user.email,
             username: response.user.name || undefined,
           });
-          console.log('[Auth] User identified with Sentry:', response.user.id);
+          logger.info('[Auth] User identified with Sentry:', response.user.id);
         } catch (error) {
           console.error('[Auth] Error identifying user with Sentry:', error);
         }
@@ -252,7 +253,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
             email: response.user.email,
             name: response.user.name || null,
           });
-          console.log('[Auth] User identified with PostHog:', response.user.id);
+          logger.info('[Auth] User identified with PostHog:', response.user.id);
         } catch (error) {
           console.error('[Auth] Error identifying user with PostHog:', error);
         }
@@ -266,7 +267,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
             email: response.user.email,
             username: response.user.name || undefined,
           });
-          console.log('[Auth] User identified with Sentry:', response.user.id);
+          logger.info('[Auth] User identified with Sentry:', response.user.id);
         } catch (error) {
           console.error('[Auth] Error identifying user with Sentry:', error);
         }
@@ -309,7 +310,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
               email: response.user.email,
               name: response.user.name || null,
             });
-            console.log(
+            logger.info(
               '[Auth] User identified with PostHog:',
               response.user.id,
             );
@@ -326,7 +327,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
               email: response.user.email,
               username: response.user.name || undefined,
             });
-            console.log(
+            logger.info(
               '[Auth] User identified with Sentry:',
               response.user.id,
             );
@@ -364,7 +365,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       // Reset PostHog user identity
       try {
         posthog?.reset();
-        console.log('[Auth] User identity reset in PostHog');
+        logger.info('[Auth] User identity reset in PostHog');
       } catch (error) {
         console.error('[Auth] Error resetting PostHog:', error);
       }
@@ -372,7 +373,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       // Clear Sentry user identity
       try {
         Sentry.setUser(null);
-        console.log('[Auth] User identity cleared in Sentry');
+        logger.info('[Auth] User identity cleared in Sentry');
       } catch (error) {
         console.error('[Auth] Error clearing Sentry user:', error);
       }

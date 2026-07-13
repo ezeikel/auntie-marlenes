@@ -111,10 +111,6 @@ export const track = async <TEvent extends TrackingEvent>(
     }
 
     await vercelTrackServer(event, cleanVercelProperties(enrichedProperties));
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Analytics Server]', event, enrichedProperties);
-    }
   } catch (error) {
     console.error('Server-side analytics tracking error:', error);
   }

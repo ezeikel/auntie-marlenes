@@ -106,7 +106,7 @@
         "noWith": "error",
         "useGetterReturn": "error",
         "noConsole": {
-          "level": "warn",
+          "level": "error",
           "options": {
             "allow": ["warn", "error", "info"]
           }

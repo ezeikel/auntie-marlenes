@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { createToken, verifyToken } from '@/lib/auth-mobile';
+import { logger } from '@/lib/logger';
 import { db } from '@/lib/prisma';
 
 /**
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
       id: user.id,
     });
 
-    console.log('[Auth] Magic link verified for:', user.email);
+    logger.info('[Auth] Magic link verified', { email: user.email });
 
     return Response.json(
       { sessionToken },

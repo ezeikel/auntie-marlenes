@@ -6,6 +6,7 @@ import QuizResultsEmail from '@/emails/quiz-results';
 import RestockReminderEmail from '@/emails/restock-reminder';
 import ShippingUpdateEmail from '@/emails/shipping-update';
 import WelcomeEmail from '@/emails/welcome';
+import { logger } from '@/lib/logger';
 import resend from '@/lib/resend';
 
 const FROM = "Auntie Marlene's <hello@auntiemarlenes.com>";
@@ -66,9 +67,10 @@ export async function sendOrderConfirmationEmail(order: {
     html,
   });
 
-  console.log(
-    `[Email] Order confirmation sent to ${order.email} for #${order.order_number}`,
-  );
+  logger.info('[Email] Order confirmation sent', {
+    email: order.email,
+    orderNumber: order.order_number,
+  });
 }
 
 export async function sendShippingUpdateEmail(order: {
@@ -107,9 +109,10 @@ export async function sendShippingUpdateEmail(order: {
     html,
   });
 
-  console.log(
-    `[Email] Shipping update sent to ${order.email} for #${order.order_number}`,
-  );
+  logger.info('[Email] Shipping update sent', {
+    email: order.email,
+    orderNumber: order.order_number,
+  });
 }
 
 export async function sendAbandonedCartEmail(checkout: {
@@ -146,7 +149,7 @@ export async function sendAbandonedCartEmail(checkout: {
     html,
   });
 
-  console.log(`[Email] Abandoned cart email sent to ${checkout.email}`);
+  logger.info('[Email] Abandoned cart email sent', { email: checkout.email });
 }
 
 export async function sendRestockReminderEmail(data: {
@@ -170,7 +173,7 @@ export async function sendRestockReminderEmail(data: {
     html,
   });
 
-  console.log(`[Email] Restock reminder sent to ${data.email}`);
+  logger.info('[Email] Restock reminder sent', { email: data.email });
 }
 
 export async function sendWelcomeEmail(data: { email: string; name?: string }) {
@@ -189,7 +192,7 @@ export async function sendWelcomeEmail(data: { email: string; name?: string }) {
     html,
   });
 
-  console.log(`[Email] Welcome email sent to ${data.email}`);
+  logger.info('[Email] Welcome email sent', { email: data.email });
 }
 
 export async function sendOrderCancellationEmail(order: {
@@ -215,9 +218,10 @@ export async function sendOrderCancellationEmail(order: {
     html,
   });
 
-  console.log(
-    `[Email] Cancellation email sent to ${order.email} for #${order.order_number}`,
-  );
+  logger.info('[Email] Cancellation email sent', {
+    email: order.email,
+    orderNumber: order.order_number,
+  });
 }
 
 export async function sendQuizResultsEmail(data: {
@@ -247,5 +251,5 @@ export async function sendQuizResultsEmail(data: {
     html,
   });
 
-  console.log(`[Email] Quiz results email sent to ${data.email}`);
+  logger.info('[Email] Quiz results email sent', { email: data.email });
 }

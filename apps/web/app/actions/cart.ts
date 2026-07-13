@@ -62,11 +62,8 @@ export const createCart = async ({
   productVariantId: string;
   countryCode?: string;
 }) => {
-  console.log('🛒 [SERVER] createCart called with:', productVariantId);
-
   // Get user session to pre-fill buyer identity
   const session = await auth();
-  console.log('🛒 [SERVER] Session:', session?.user?.email || 'No user');
 
   // Build cart input with buyer identity if user is logged in
   const cartInput: any = {
@@ -80,7 +77,6 @@ export const createCart = async ({
     };
   }
 
-  console.log('🛒 [SERVER] Calling Shopify API to create cart...');
   const res = await fetch(
     process.env.SHOPIFY_STOREFRONT_API_ENDPOINT as string,
     {
@@ -100,15 +96,12 @@ export const createCart = async ({
   );
 
   const result = await res.json();
-  console.log('🛒 [SERVER] Shopify response:', result);
 
   const {
     data: {
       cartCreate: { cart },
     },
   } = result;
-
-  console.log('🛒 [SERVER] Cart created:', cart.id);
 
   // TODO: only set for session
   // set cart id in cookie
@@ -120,7 +113,6 @@ export const createCart = async ({
     secure: process.env.NODE_ENV === 'production',
   });
 
-  console.log('🛒 [SERVER] Cookie set, revalidating cache...');
   // update cache - immediate invalidation (no profile for instant expiration)
   revalidateTag('cart', 'max');
 
@@ -148,7 +140,6 @@ export const createCart = async ({
     }
   });
 
-  console.log('✅ [SERVER] createCart complete!');
   return cart;
 };
 
@@ -352,11 +343,6 @@ export const removeProductFromCart = async ({
   );
 
   const responseData = await res.json();
-
-  console.log(
-    '[removeProductFromCart] Response:',
-    JSON.stringify(responseData, null, 2),
-  );
 
   if (!responseData.data?.cartLinesRemove) {
     console.error(

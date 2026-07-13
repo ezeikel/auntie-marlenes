@@ -173,11 +173,6 @@ export const searchProducts = async ({
     country: countryCode,
   };
 
-  console.log(
-    '[searchProducts] GraphQL variables:',
-    JSON.stringify(variables, null, 2),
-  );
-
   // Use caching for default country (GB) to enable static generation
   // Use no-store for non-GB countries (dynamic, user-specific)
   const cacheStrategy =
@@ -206,18 +201,8 @@ export const searchProducts = async ({
     data: { products },
   } = await res.json();
 
-  console.log(
-    '[searchProducts] Shopify response (first product):',
-    JSON.stringify(products.edges[0]?.node, null, 2),
-  );
-
   const shopifyProducts = products.edges.map((edge: ProductEdge) => edge.node);
   let adaptedProducts = adaptShopifyProducts(shopifyProducts);
-
-  console.log(
-    '[searchProducts] Adapted product (first):',
-    JSON.stringify(adaptedProducts[0], null, 2),
-  );
 
   // Client-side filter for onSale if needed (compareAtPrice > price)
   if (onSale) {

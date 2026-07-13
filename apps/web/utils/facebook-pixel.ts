@@ -88,18 +88,6 @@ export const trackFacebookPixelEvent = (
 
   try {
     window.fbq?.('track', eventName, params);
-    if (process.env.NODE_ENV === 'development') {
-      console.log(
-        '%c[Facebook Pixel] Event Tracked',
-        'background: #4267B2; color: white; padding: 2px 6px; border-radius: 3px;',
-        '\nEvent:',
-        eventName,
-        '\nParameters:',
-        params,
-        '\nPixel Loaded:',
-        isFacebookPixelLoaded(),
-      );
-    }
   } catch (error) {
     console.error('[Facebook Pixel] Error tracking event:', error);
   }
@@ -124,18 +112,6 @@ export const trackFacebookPixelCustomEvent = (
 
   try {
     window.fbq?.('trackCustom', eventName, params);
-    if (process.env.NODE_ENV === 'development') {
-      console.log(
-        '%c[Facebook Pixel] Custom Event Tracked',
-        'background: #4267B2; color: white; padding: 2px 6px; border-radius: 3px;',
-        '\nEvent:',
-        eventName,
-        '\nParameters:',
-        params,
-        '\nPixel Loaded:',
-        isFacebookPixelLoaded(),
-      );
-    }
   } catch (error) {
     console.error('[Facebook Pixel] Error tracking custom event:', error);
   }

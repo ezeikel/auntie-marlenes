@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendRestockReminderEmail } from '@/lib/email';
+import { logger } from '@/lib/logger';
 import { db } from '@/lib/prisma';
 
 /**
@@ -26,9 +27,9 @@ export async function GET(request: NextRequest) {
       take: 50,
     });
 
-    console.log(
-      `[Restock Cron] Found ${deliveredOrders.length} orders for restock reminders`,
-    );
+    logger.info('[Restock Cron] Found orders for restock reminders', {
+      count: deliveredOrders.length,
+    });
 
     let sent = 0;
     for (const order of deliveredOrders) {

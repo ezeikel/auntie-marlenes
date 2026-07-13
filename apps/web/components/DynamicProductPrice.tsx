@@ -36,14 +36,6 @@ const DynamicProductPrice = ({
 
   // Fetch localized price if user's country differs from static
   useEffect(() => {
-    console.log('[DynamicProductPrice] useEffect:', {
-      productHandle,
-      locationLoading,
-      countryCurrency: country.currency.code,
-      staticCurrency: staticCurrencyCode,
-      currentLocalizedPrice: localizedPrice,
-    });
-
     // Skip if location is still loading
     if (locationLoading) {
       return;
@@ -51,18 +43,12 @@ const DynamicProductPrice = ({
 
     // If user's currency matches the static currency, clear any localized price and use static
     if (country.currency.code === staticCurrencyCode) {
-      console.log(
-        '[DynamicProductPrice] Currency matches static, clearing localized',
-      );
       if (localizedPrice !== null) {
         setLocalizedPrice(null);
       }
       return;
     }
 
-    console.log(
-      '[DynamicProductPrice] Currency differs, fetching localized price',
-    );
     const fetchLocalizedPrice = async () => {
       setIsLoading(true);
       try {
@@ -71,7 +57,6 @@ const DynamicProductPrice = ({
         );
         if (response.ok) {
           const data = await response.json();
-          console.log('[DynamicProductPrice] Fetched localized price:', data);
           setLocalizedPrice({
             price: data.price,
             currencyCode: data.currencyCode,
