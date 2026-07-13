@@ -77,7 +77,6 @@ NEGATIVE criteria (decreases confidence):
 Analyze the attached image and determine if it's a good match for this blog post.`;
 
   try {
-    // @ts-expect-error — AI SDK type instantiation too deep with Zod schema
     const { object: evaluation } = await generateObject({
       model: models.vision,
       schema: imageEvaluationSchema,

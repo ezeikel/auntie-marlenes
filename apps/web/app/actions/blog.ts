@@ -92,7 +92,6 @@ const generateBlogMeta = async (
     .replace('{{CATEGORY}}', category)
     .replace('{{KEYWORDS}}', keywords.join(', '));
 
-  // @ts-expect-error — AI SDK type instantiation too deep with Zod schema
   const { object: meta } = await generateObject({
     model: models.textFast,
     schema: blogMetaSchema,
@@ -119,7 +118,6 @@ const generateImageSearchTerms = async (
     .replace('{{EXCERPT}}', excerpt)
     .replace('{{CATEGORY}}', category);
 
-  // @ts-expect-error — AI SDK type instantiation too deep with Zod schema
   const { object: searchTerms } = await generateObject({
     model: models.textFast,
     schema: imageSearchSchema,

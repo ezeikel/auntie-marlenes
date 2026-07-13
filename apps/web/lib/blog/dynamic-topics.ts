@@ -74,7 +74,6 @@ ${avoidSample.length > 0 ? `- ${avoidSample.join('\n- ')}` : 'None yet.'}
 Return exactly ${count} distinct topics, each with a fitting category and 3-5 keywords.`;
 
   try {
-    // @ts-expect-error — AI SDK type instantiation too deep with Zod schema
     const { object } = await generateObject({
       model: models.textFast,
       schema: dynamicTopicsSchema,
