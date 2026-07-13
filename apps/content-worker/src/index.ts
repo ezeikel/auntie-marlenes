@@ -15,6 +15,7 @@ import 'dotenv/config';
 import { readFile, writeFile } from 'fs/promises';
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
+import { runBlogCron } from './blog/pipeline';
 import { compositePost } from './compositor';
 import { generateProductContent } from './generate';
 import { getAllProducts, getProductByHandle } from './shopify';
@@ -49,6 +50,20 @@ app.use('/publish/*', async (c, next) => {
 });
 
 app.use('/schedule', async (c, next) => {
+  const secret = process.env.WORKER_SECRET;
+  if (!secret) return next();
+
+  const auth = c.req.header('authorization');
+  if (auth !== `Bearer ${secret}`) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+  return next();
+});
+
+// Guard only the blog generation endpoint with the WORKER_SECRET bearer. The
+// existing /generate/product and /generate/all routes stay open (local/dev
+// tooling); the daily Vercel blog cron is the only caller of /generate/blog.
+app.use('/generate/blog', async (c, next) => {
   const secret = process.env.WORKER_SECRET;
   if (!secret) return next();
 
@@ -107,6 +122,23 @@ app.get('/tmp/:filename', async (c) => {
 // Health check
 app.get('/health', (c) => {
   return c.json({ status: 'ok', service: 'content-worker' });
+});
+
+/**
+ * Generate + auto-publish one AI blog post into Sanity.
+ *
+ * POST /generate/blog  (guarded by WORKER_SECRET)
+ *
+ * Fire-and-forget: acknowledge immediately with 202 (the Vercel cron caller has
+ * a short function budget) and run the pipeline in the background. The post is
+ * auto-published (status:'published'); compliance is enforced in the prompts.
+ */
+app.post('/generate/blog', (c) => {
+  console.log('[/generate/blog] kickoff');
+  runBlogCron().catch((err) =>
+    console.error('[/generate/blog] uncaught:', err),
+  );
+  return c.json({ ok: true, accepted: true }, 202);
 });
 
 /**

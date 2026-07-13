@@ -1,25 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
-import {
-  generateRandomBlogPost,
-  seedAuthors,
-  seedCategories,
-} from '@/app/actions/blog';
-import { logger } from '@/lib/logger';
-
-export const maxDuration = 300;
+import { NextResponse } from 'next/server';
+import { postToWorker } from '@/lib/worker';
 
 /**
- * Cron job endpoint for automatic blog generation
+ * Daily blog-generation cron.
  *
- * This endpoint is triggered by Vercel Cron on a schedule defined in vercel.json
- * Schedule: Daily at 9:00 AM UTC
+ * Blog generation now runs on the Hetzner content worker (flat-cost box)
+ * instead of Vercel compute. This route stays thin: authenticate the cron
+ * caller, hand off to the worker's guarded /generate/blog (which drafts +
+ * auto-publishes one post into Sanity), and return immediately. Vercel
+ * auto-sends CRON_SECRET as a bearer on scheduled invocations.
  *
- * Security: Requires CRON_SECRET authorization header
+ * Schedule: daily at 09:00 UTC (see vercel.json).
  */
-export async function GET(request: NextRequest) {
-  // Verify the request is from Vercel Cron
-  const authHeader = request.headers.get('authorization');
+export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
+  const auth = request.headers.get('authorization');
 
   if (!cronSecret) {
     console.error('CRON_SECRET environment variable not set');
@@ -29,66 +24,40 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (auth !== `Bearer ${cronSecret}`) {
     console.error('Unauthorized cron request');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    logger.info('Starting blog generation cron job');
-
-    // Generate a random blog post
-    const result = await generateRandomBlogPost();
-
-    if (result.success) {
-      logger.info('Blog post generated successfully', {
-        title: result.title,
-        slug: result.slug,
-      });
-
-      return NextResponse.json({
-        success: true,
-        message: 'Blog post generated successfully',
-        data: {
-          title: result.title,
-          slug: result.slug,
-        },
-      });
-    } else {
-      console.error('Blog generation failed:', result.error);
-
+    const res = await postToWorker('/generate/blog', {});
+    if (!res.ok) {
       return NextResponse.json(
-        {
-          success: false,
-          message: 'Blog generation failed',
-          error: result.error,
-        },
-        { status: 500 },
+        { error: 'worker rejected', status: res.status },
+        { status: 502 },
       );
     }
+    return NextResponse.json(
+      { success: true, accepted: true, message: 'blog cron handed off' },
+      { status: 202 },
+    );
   } catch (error) {
-    console.error('Cron job error:', error);
-
     return NextResponse.json(
       {
-        success: false,
-        message: 'Internal server error',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : 'worker unreachable',
       },
-      { status: 500 },
+      { status: 502 },
     );
   }
 }
 
 /**
- * POST endpoint for seeding initial data
- *
- * Use this once to seed authors and categories before the first cron run
+ * Manual trigger — same handoff to the worker, useful for kicking a generation
+ * outside the schedule. Guarded by CRON_SECRET.
  */
-export async function POST(request: NextRequest) {
-  // Verify authorization
-  const authHeader = request.headers.get('authorization');
+export async function POST(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
+  const auth = request.headers.get('authorization');
 
   if (!cronSecret) {
     return NextResponse.json(
@@ -97,68 +66,28 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (auth !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    // Get action from request body
-    const body = await request.json().catch(() => ({}));
-    const action = body.action || 'seed';
-
-    if (action === 'seed') {
-      logger.info('Seeding authors and categories');
-
-      // Seed authors and categories in parallel
-      const [authorsResult, categoriesResult] = await Promise.all([
-        seedAuthors(),
-        seedCategories(),
-      ]);
-      logger.info('Authors seeding result', {
-        authorsResult: JSON.stringify(authorsResult),
-      });
-      logger.info('Categories seeding result', {
-        categoriesResult: JSON.stringify(categoriesResult),
-      });
-
-      return NextResponse.json({
-        success: true,
-        message: 'Seeding completed',
-        data: {
-          authors: authorsResult,
-          categories: categoriesResult,
-        },
-      });
+    const res = await postToWorker('/generate/blog', {});
+    if (!res.ok) {
+      return NextResponse.json(
+        { error: 'worker rejected', status: res.status },
+        { status: 502 },
+      );
     }
-
-    if (action === 'generate') {
-      // Manual trigger for blog generation
-      const result = await generateRandomBlogPost();
-
-      return NextResponse.json({
-        success: result.success,
-        message: result.success
-          ? 'Blog post generated successfully'
-          : 'Blog generation failed',
-        data: result.success
-          ? { title: result.title, slug: result.slug }
-          : { error: result.error },
-      });
-    }
-
     return NextResponse.json(
-      { error: 'Invalid action. Use "seed" or "generate"' },
-      { status: 400 },
+      { success: true, accepted: true, message: 'blog generation handed off' },
+      { status: 202 },
     );
   } catch (error) {
-    console.error('POST endpoint error:', error);
-
     return NextResponse.json(
       {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : 'worker unreachable',
       },
-      { status: 500 },
+      { status: 502 },
     );
   }
 }
