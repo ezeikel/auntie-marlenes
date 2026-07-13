@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { getProducts, getCategories } from '@/app/actions';
+import { getCategories, getProducts } from '@/app/actions';
 import { getAllPosts } from '@/lib/sanity-blog';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

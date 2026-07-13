@@ -7,9 +7,9 @@ import {
   Section,
   Text,
 } from '@react-email/components';
-import EmailHeader from '@/components/emails/EmailHeader';
-import EmailFooter from '@/components/emails/EmailFooter';
 import EmailButton from '@/components/emails/EmailButton';
+import EmailFooter from '@/components/emails/EmailFooter';
+import EmailHeader from '@/components/emails/EmailHeader';
 
 type MagicLinkEmailProps = {
   magicLink: string;

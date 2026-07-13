@@ -1,29 +1,29 @@
 export {
-  getCartId,
-  getCart,
+  addProductsToCart,
   createCart,
+  getCart,
+  getCartId,
+  removeProductFromCart,
   updateCartBuyerIdentity,
   updateCartCountryCode,
-  addProductsToCart,
-  removeProductFromCart,
   updateCartLineQuantity,
 } from './cart';
 
 export {
+  getCategories,
   getProduct,
   getProductByHandle,
   getProducts,
-  searchProducts,
   getProductVariantId,
-  getCategories,
+  searchProducts,
 } from './products';
 
 export {
   addProductToSaved,
-  removeProductFromSaved,
-  getSaved,
   getProductSaveCount,
   getProductsSaveCounts,
+  getSaved,
+  removeProductFromSaved,
   syncLocalSavesToDB,
 } from './saved';
 

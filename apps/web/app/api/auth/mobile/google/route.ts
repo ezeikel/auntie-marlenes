@@ -1,6 +1,6 @@
 import { OAuth2Client } from 'google-auth-library';
-import { db } from '@/lib/prisma';
 import { createToken } from '@/lib/auth-mobile';
+import { db } from '@/lib/prisma';
 
 const client = new OAuth2Client(process.env.GOOGLE_WEB_CLIENT_ID);
 

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
+import { createToken, verifyToken } from '@/lib/auth-mobile';
 import { db } from '@/lib/prisma';
-import { verifyToken, createToken } from '@/lib/auth-mobile';
 
 /**
  * POST /api/auth/mobile/magic-link/verify - Verify magic link token

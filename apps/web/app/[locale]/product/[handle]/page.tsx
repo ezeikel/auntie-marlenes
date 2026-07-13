@@ -1,19 +1,19 @@
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { setRequestLocale } from 'next-intl/server';
+import { Suspense } from 'react';
 import {
   getProductByHandle,
-  searchProducts,
   getProductSaveCount,
   getProducts,
+  searchProducts,
 } from '@/app/actions';
-import ProductDetail from '@/components/ProductDetail';
 import DynamicProductPrice from '@/components/DynamicProductPrice';
-import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
-import { setRequestLocale } from 'next-intl/server';
-import { generateProductMetadata } from '@/lib/metadata';
-import { generateProductSchema, generateBreadcrumbSchema } from '@/lib/schema';
+import ProductDetail from '@/components/ProductDetail';
 import { locales } from '@/i18n/config';
 import { formatCurrency } from '@/lib/currency';
-import type { Metadata } from 'next';
+import { generateProductMetadata } from '@/lib/metadata';
+import { generateBreadcrumbSchema, generateProductSchema } from '@/lib/schema';
 
 // Default country for static pre-rendering
 const DEFAULT_COUNTRY = 'GB';
@@ -29,7 +29,7 @@ export async function generateStaticParams() {
       products.map((product) => ({
         locale,
         handle: product.handle,
-      }))
+      })),
     );
   } catch (error) {
     console.error('Failed to generate static params:', error);
@@ -50,7 +50,10 @@ export async function generateMetadata({
   setRequestLocale(locale);
 
   try {
-    const product = await getProductByHandle({ handle, countryCode: DEFAULT_COUNTRY });
+    const product = await getProductByHandle({
+      handle,
+      countryCode: DEFAULT_COUNTRY,
+    });
 
     // Extract plain text from HTML description
     const plainDescription = product.description
@@ -67,7 +70,7 @@ export async function generateMetadata({
       compareAtPrice: product.compareAtPrice,
       inStock: product.inStock,
     });
-  } catch (error) {
+  } catch {
     // Fallback metadata if product not found
     return {
       title: 'Product Not Found',
@@ -90,7 +93,10 @@ const ProductPage = async ({ params }: ProductPageProps) => {
   // Dynamic pricing is handled client-side via DynamicProductPrice component
   let product;
   try {
-    product = await getProductByHandle({ handle, countryCode: DEFAULT_COUNTRY });
+    product = await getProductByHandle({
+      handle,
+      countryCode: DEFAULT_COUNTRY,
+    });
   } catch (error) {
     console.error(`Failed to fetch product with handle "${handle}":`, error);
     notFound();
@@ -184,7 +190,10 @@ const ProductPage = async ({ params }: ProductPageProps) => {
             />
           }
           // Static fallback price for SSR
-          staticPriceFallback={formatCurrency(product.price, product.currencyCode)}
+          staticPriceFallback={formatCurrency(
+            product.price,
+            product.currencyCode,
+          )}
         />
       </div>
     </>

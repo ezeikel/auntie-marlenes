@@ -2,12 +2,12 @@ import {
   Body,
   Container,
   Head,
+  Hr,
   Html,
   Link,
   Preview,
   Section,
   Text,
-  Hr,
 } from '@react-email/components';
 import * as React from 'react';
 

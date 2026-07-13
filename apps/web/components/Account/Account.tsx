@@ -1,16 +1,16 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faCalendar,
+  faEnvelope,
   faHeart,
   faUser,
-  faEnvelope,
-  faCalendar,
 } from '@fortawesome/pro-regular-svg-icons';
-import { getUserAccountData } from '@/app/actions';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Image from 'next/image';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getUserAccountData } from '@/app/actions';
 import SignOutButton from '@/components/buttons/SignOutButton/SignOutButton';
+import { Button } from '@/components/ui/button';
 
 const Account = async () => {
   const userData = await getUserAccountData();

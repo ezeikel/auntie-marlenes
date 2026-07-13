@@ -1,19 +1,19 @@
-import { setRequestLocale } from 'next-intl/server';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import {
-  faEnvelope,
-  faClock,
-  faCommentDots,
-} from '@fortawesome/pro-regular-svg-icons';
-import {
+  faFacebook,
   faInstagram,
   faTiktok,
-  faFacebook,
-  faYoutube,
   faWhatsapp,
+  faYoutube,
 } from '@fortawesome/free-brands-svg-icons';
+import {
+  faClock,
+  faCommentDots,
+  faEnvelope,
+} from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Metadata } from 'next';
-import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { setRequestLocale } from 'next-intl/server';
 import { socialLinks } from '@/lib/constants';
 
 export const metadata: Metadata = {

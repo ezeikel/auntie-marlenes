@@ -8,8 +8,8 @@
  * Based on Perplexity deep research on Veo 3.1 prompting best practices.
  */
 
-import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
+import { generateText } from 'ai';
 
 // Gemini Flash for fast image analysis (not image generation)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,12 +67,19 @@ async function analyseScene(sceneImage: Buffer): Promise<SceneAnalysis> {
   });
 
   try {
-    const text = result.text.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+    const text = result.text
+      .replace(/```json?\n?/g, '')
+      .replace(/```/g, '')
+      .trim();
     const analysis = JSON.parse(text) as SceneAnalysis;
-    console.log(`[VideoPrompt] Scene analysis: ${analysis.scene_type}, ${analysis.mood}, ${analysis.animatable_elements.length} animatable elements`);
+    console.log(
+      `[VideoPrompt] Scene analysis: ${analysis.scene_type}, ${analysis.mood}, ${analysis.animatable_elements.length} animatable elements`,
+    );
     return analysis;
   } catch {
-    console.warn('[VideoPrompt] Failed to parse scene analysis, using defaults');
+    console.warn(
+      '[VideoPrompt] Failed to parse scene analysis, using defaults',
+    );
     return {
       product_description: 'beauty product',
       surface: 'surface',
@@ -150,8 +157,12 @@ export async function generateVeoPrompt(sceneImage: Buffer): Promise<{
   const analysis = await analyseScene(sceneImage);
   const veoPrompt = buildVeoPrompt(analysis);
 
-  console.log(`[VideoPrompt] Generated prompt (${veoPrompt.prompt.length} chars)`);
-  console.log(`[VideoPrompt] Preview: ${veoPrompt.prompt.substring(0, 120)}...`);
+  console.log(
+    `[VideoPrompt] Generated prompt (${veoPrompt.prompt.length} chars)`,
+  );
+  console.log(
+    `[VideoPrompt] Preview: ${veoPrompt.prompt.substring(0, 120)}...`,
+  );
 
   return veoPrompt;
 }

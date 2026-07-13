@@ -1,10 +1,10 @@
-import { after } from 'next/server';
-import DynamicProductListing from '@/components/DynamicProductListing';
-import { searchProducts } from '@/app/actions';
 import { cacheLife, cacheTag } from 'next/cache';
+import { after } from 'next/server';
+import { searchProducts } from '@/app/actions';
+import DynamicProductListing from '@/components/DynamicProductListing';
+import { TRACKING_EVENTS } from '@/constants/events';
 import { getServerCountry, getServerUserId } from '@/lib/server-location';
 import { track } from '@/utils/analytics-server';
-import { TRACKING_EVENTS } from '@/constants/events';
 
 type ShopProps = {
   searchParams: Promise<{

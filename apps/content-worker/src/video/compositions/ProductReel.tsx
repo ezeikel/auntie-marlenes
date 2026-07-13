@@ -1,4 +1,11 @@
-import { AbsoluteFill, Audio, Sequence, OffthreadVideo, useCurrentFrame, interpolate } from 'remotion';
+import {
+  AbsoluteFill,
+  Audio,
+  interpolate,
+  OffthreadVideo,
+  Sequence,
+  useCurrentFrame,
+} from 'remotion';
 import { Background } from '../components/Background';
 import { Brand } from '../components/Brand';
 import { Headline } from '../components/Headline';

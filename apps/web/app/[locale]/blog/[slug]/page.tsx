@@ -1,14 +1,14 @@
-import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
+import { Suspense } from 'react';
 import Blog from '@/components/Blog/Blog';
+import { generateBlogPostMetadata } from '@/lib/metadata';
 import {
   getPostBySlug,
   getPostSlugs,
   getSanityImageUrl,
 } from '@/lib/sanity-blog';
-import { generateBlogPostMetadata } from '@/lib/metadata';
 import { generateArticleSchema, generateBreadcrumbSchema } from '@/lib/schema';
-import type { Metadata } from 'next';
 
 type BlogPostPageProps = {
   params: Promise<{ locale: string; slug: string }>;

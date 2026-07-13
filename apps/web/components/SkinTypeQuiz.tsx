@@ -1,22 +1,22 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import Link from 'next/link';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useAnalytics } from '@/utils/analytics-client';
-import { TRACKING_EVENTS } from '@/constants/events';
 import {
   faArrowLeft,
   faArrowRight,
   faCheck,
-  faSparkles,
   faDroplet,
-  faShieldHalved,
-  faSun,
   faFaceSmile,
-  faRotateLeft,
   faFlask,
+  faRotateLeft,
+  faShieldHalved,
+  faSparkles,
+  faSun,
 } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
+import { TRACKING_EVENTS } from '@/constants/events';
+import { useAnalytics } from '@/utils/analytics-client';
 
 // ---------------------------------------------------------------------------
 // Types

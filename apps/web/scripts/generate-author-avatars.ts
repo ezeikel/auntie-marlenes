@@ -3,6 +3,7 @@
 // CRITICAL: Load environment variables FIRST before any imports
 import { config } from 'dotenv';
 import { resolve } from 'path';
+
 config({ path: resolve(process.cwd(), '.env.local') });
 
 // Now import modules that depend on env vars

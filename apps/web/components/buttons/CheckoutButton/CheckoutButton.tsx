@@ -1,8 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { useAnalytics } from '@/utils/analytics-client';
 import { TRACKING_EVENTS } from '@/constants/events';
+import { useAnalytics } from '@/utils/analytics-client';
 
 type CheckoutButtonProps = {
   url: string;

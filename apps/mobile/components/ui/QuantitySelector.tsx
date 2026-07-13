@@ -1,7 +1,7 @@
-import { View, Pressable, Text } from 'react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faMinus, faPlus } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import * as Haptics from 'expo-haptics';
+import { Pressable, Text, View } from 'react-native';
 
 type QuantitySelectorProps = {
   quantity: number;

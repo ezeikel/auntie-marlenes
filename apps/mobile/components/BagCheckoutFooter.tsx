@@ -1,5 +1,5 @@
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import type { ShopifyCart } from '@auntie-marlenes/types';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
 type BagCheckoutFooterProps = {
   cart: ShopifyCart | null;
@@ -12,7 +12,7 @@ export default function BagCheckoutFooter({
   cart,
   onCheckout,
   isProcessing,
-  onLayout
+  onLayout,
 }: BagCheckoutFooterProps) {
   return (
     <View
@@ -41,9 +41,12 @@ export default function BagCheckoutFooter({
         }}
       >
         <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-base font-inter text-muted-foreground">Subtotal</Text>
+          <Text className="text-base font-inter text-muted-foreground">
+            Subtotal
+          </Text>
           <Text className="text-2xl font-playfair-bold text-cocoa">
-            £{cart?.cost?.subtotalAmount?.amount
+            £
+            {cart?.cost?.subtotalAmount?.amount
               ? parseFloat(cart.cost.subtotalAmount.amount).toFixed(2)
               : '0.00'}
           </Text>

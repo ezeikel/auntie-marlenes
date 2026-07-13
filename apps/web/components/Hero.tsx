@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
+import { faAward, faHeart, faStar } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar, faAward, faHeart } from '@fortawesome/pro-regular-svg-icons';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 // Six hero scenes cycling as cross-faded background. Videos on desktop,
 // static stills on mobile/tablet. Pattern mirrors parkingticketpal.com.

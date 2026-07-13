@@ -1,8 +1,8 @@
-import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
+import { Suspense } from 'react';
 import Search from '@/components/Search/Search';
 import { generatePageMetadata } from '@/lib/metadata';
-import type { Metadata } from 'next';
 
 export const metadata: Metadata = generatePageMetadata({
   title: 'Search Products',

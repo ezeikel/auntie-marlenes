@@ -4,12 +4,12 @@
  * - Claude for creative writing (headlines, copy)
  */
 
-import { generateText } from 'ai';
-import { google } from '@ai-sdk/google';
 import { anthropic } from '@ai-sdk/anthropic';
+import { google } from '@ai-sdk/google';
 import { fal } from '@fal-ai/client';
+import { generateText } from 'ai';
 import sharp from 'sharp';
-import { buildImagePrompt, buildHeadlinePrompt } from './prompts';
+import { buildHeadlinePrompt, buildImagePrompt } from './prompts';
 import { uploadFile } from './storage';
 
 // Configure fal.ai
@@ -172,7 +172,9 @@ export async function generateSceneImage(
 ): Promise<Buffer> {
   const prompt = buildImagePrompt(product);
 
-  console.log(`[Generate] Creating scene for "${product.name}" using ${model}...`);
+  console.log(
+    `[Generate] Creating scene for "${product.name}" using ${model}...`,
+  );
   if (product.imageUrl) {
     console.log(`[Generate] Reference image: ${product.imageUrl}`);
   }
@@ -181,11 +183,13 @@ export async function generateSceneImage(
 
   switch (model) {
     case 'flux-kontext':
-      if (!product.imageUrl) throw new Error('Flux Kontext requires a reference image');
+      if (!product.imageUrl)
+        throw new Error('Flux Kontext requires a reference image');
       buffer = await generateWithFluxKontext(prompt, product.imageUrl);
       break;
     case 'flux-2-pro':
-      if (!product.imageUrl) throw new Error('Flux 2 Pro edit requires a reference image');
+      if (!product.imageUrl)
+        throw new Error('Flux 2 Pro edit requires a reference image');
       buffer = await generateWithFlux2Pro(prompt, product.imageUrl);
       break;
     case 'gemini':
@@ -214,7 +218,10 @@ export async function generateHeadline(product: {
   });
 
   try {
-    const text = result.text.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+    const text = result.text
+      .replace(/```json?\n?/g, '')
+      .replace(/```/g, '')
+      .trim();
     const parsed = JSON.parse(text);
     return {
       headline: parsed.headline || 'Your beauty essentials',

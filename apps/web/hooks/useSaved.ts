@@ -1,33 +1,33 @@
 'use client';
 
 import {
-  useState,
+  useCallback,
   useEffect,
   useMemo,
-  useCallback,
+  useState,
   useTransition,
 } from 'react';
-import { useSession } from './useSession';
 import {
   addProductToSaved,
-  removeProductFromSaved,
   getSaved,
+  removeProductFromSaved,
 } from '@/app/actions';
+import { TRACKING_EVENTS } from '@/constants/events';
 import {
-  getLocalSaves,
   addLocalSave,
+  getLocalSaves,
   removeLocalSave,
 } from '@/lib/localStorage-saves';
-import { useAnalytics } from '@/utils/analytics-client';
-import { TRACKING_EVENTS } from '@/constants/events';
 import { logger } from '@/lib/logger';
+import { useAnalytics } from '@/utils/analytics-client';
+import { useSession } from './useSession';
 
 export function useSaved() {
   const { isAuthenticated } = useSession();
   const [isPending, startTransition] = useTransition();
   const [localSaves, setLocalSaves] = useState<string[]>([]);
   const [dbSaves, setDbSaves] = useState<string[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
+  const [_isMounted, setIsMounted] = useState(false);
 
   const { track } = useAnalytics();
 

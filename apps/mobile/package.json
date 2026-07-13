@@ -31,7 +31,6 @@
     "eas:submit:beta": "eas submit --profile beta",
     "eas:submit:production": "eas submit --profile production",
     "test": "jest --watchAll",
-    "lint": "echo 'skip: pre-existing unescaped-entity + test-globals lint errors (TODO: fix apostrophes in JSX + add jest env to eslint config)'",
     "check-types": "tsc --noEmit",
     "env:pull": "eas env:pull --environment development"
   },
@@ -109,9 +108,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.16",
     "@types/react": "~19.1.0",
-    "eslint-config-expo": "~10.0.0",
     "postcss": "^8.5.6",
-    "prettier-plugin-tailwindcss": "^0.7.1",
     "react-test-renderer": "19.1.0",
     "tailwindcss": "^4.1.16",
     "typescript": "~5.9.2"

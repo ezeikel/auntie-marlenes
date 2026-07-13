@@ -1,22 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { filterSections, getFilterSections } from '@/lib/filters';
-import { formatCurrency } from '@/lib/currency';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 import { useLocation } from '@/contexts/LocationContext';
 import type { Product } from '@/lib/constants';
+import { formatCurrency } from '@/lib/currency';
+import { filterSections, getFilterSections } from '@/lib/filters';
 
 type Filters = {
   inStockOnly: boolean;

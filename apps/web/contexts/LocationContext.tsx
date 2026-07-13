@@ -1,25 +1,25 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
-  useEffect,
 } from 'react';
-import { useRouter } from 'next/navigation';
-import type { CountryInfo } from '@/lib/location';
+import { setCountryCookie, updateCartCountryCode } from '@/app/actions';
+import { TRACKING_EVENTS } from '@/constants/events';
 import type { Currency } from '@/lib/currency';
+import type { CountryInfo } from '@/lib/location';
 import {
-  getDefaultCountry,
   getCountryByCode,
   getCurrencyForCountry,
+  getDefaultCountry,
 } from '@/lib/location';
-import { updateCartCountryCode, setCountryCookie } from '@/app/actions';
-import { useAnalytics } from '@/utils/analytics-client';
-import { TRACKING_EVENTS } from '@/constants/events';
 import { logger } from '@/lib/logger';
+import { useAnalytics } from '@/utils/analytics-client';
 
 type LocationContextType = {
   country: CountryInfo;

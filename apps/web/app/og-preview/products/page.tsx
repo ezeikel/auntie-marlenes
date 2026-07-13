@@ -1,5 +1,5 @@
-import { getProducts } from '@/app/actions';
 import Link from 'next/link';
+import { getProducts } from '@/app/actions';
 
 export default async function ProductOGPreviewPage() {
   const products = await getProducts();

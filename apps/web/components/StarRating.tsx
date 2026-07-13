@@ -1,9 +1,9 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faStar as faStarSolid,
-  faStarHalfStroke,
-} from '@fortawesome/pro-solid-svg-icons';
 import { faStar as faStarRegular } from '@fortawesome/pro-regular-svg-icons';
+import {
+  faStarHalfStroke,
+  faStar as faStarSolid,
+} from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface StarRatingProps {
   rating: number;

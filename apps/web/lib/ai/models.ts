@@ -1,5 +1,5 @@
-import { openai } from '@ai-sdk/openai';
 import { google } from '@ai-sdk/google';
+import { openai } from '@ai-sdk/openai';
 
 // Model IDs
 export const MODEL_IDS = {

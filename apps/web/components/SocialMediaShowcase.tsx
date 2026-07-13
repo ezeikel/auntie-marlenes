@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faVolumeUp,
-  faVolumeMute,
-  faPlus,
   faChevronLeft,
   faChevronRight,
+  faPlus,
+  faVolumeMute,
+  faVolumeUp,
 } from '@fortawesome/pro-solid-svg-icons';
-import { socialMediaVideos } from '@/lib/social-media-data';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/currency';
+import { socialMediaVideos } from '@/lib/social-media-data';
 
 const SocialMediaShowcase = () => {
   const [activeIndex, setActiveIndex] = useState(2); // Start with middle video active

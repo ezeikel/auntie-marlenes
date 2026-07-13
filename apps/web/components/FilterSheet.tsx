@@ -1,7 +1,18 @@
 'use client';
 
+import { faSliders } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Sheet,
   SheetContent,
@@ -9,23 +20,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSliders } from '@fortawesome/pro-regular-svg-icons';
-import { filterSections, getFilterSections } from '@/lib/filters';
-import { formatCurrency } from '@/lib/currency';
 import { useLocation } from '@/contexts/LocationContext';
 import type { Product } from '@/lib/constants';
+import { formatCurrency } from '@/lib/currency';
+import { filterSections, getFilterSections } from '@/lib/filters';
 
 type Filters = {
   inStockOnly: boolean;

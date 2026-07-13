@@ -1,25 +1,20 @@
 'use client';
 
-import { useTransition } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faTrash,
-  faHeart,
-  faTruck,
   faClock,
+  faHeart,
+  faTrash,
+  faTruck,
 } from '@fortawesome/pro-regular-svg-icons';
-import { formatCurrency } from '@/lib/currency';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useTransition } from 'react';
+import { removeProductFromCart, updateCartLineQuantity } from '@/app/actions';
 import ProductCard from '@/components/ProductCard';
+import { ShippingInfo } from '@/components/ShippingInfo';
+import { Button } from '@/components/ui/button';
 import {
   Carousel,
   CarouselContent,
@@ -27,17 +22,21 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
-import { removeProductFromCart, updateCartLineQuantity } from '@/app/actions';
-import { useRouter } from 'next/navigation';
-import type { Product } from '@/lib/constants';
-import { useLocation } from '@/contexts/LocationContext';
-import { getShippingZone } from '@/lib/location';
-import { ShippingInfo } from '@/components/ShippingInfo';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ukShipping } from '@/config/shipping';
-import { useAnalytics } from '@/utils/analytics-client';
 import { TRACKING_EVENTS } from '@/constants/events';
+import { useLocation } from '@/contexts/LocationContext';
+import type { Product } from '@/lib/constants';
+import { formatCurrency } from '@/lib/currency';
+import { getShippingZone } from '@/lib/location';
 import { logger } from '@/lib/logger';
-import { useEffect } from 'react';
+import { useAnalytics } from '@/utils/analytics-client';
 
 type BagClientProps = {
   cart: any;

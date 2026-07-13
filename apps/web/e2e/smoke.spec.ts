@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 // Dev server compiles pages on first visit — allow generous timeouts
 test.use({ navigationTimeout: 60_000 });

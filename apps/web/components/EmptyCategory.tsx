@@ -1,7 +1,7 @@
+import { faBoxOpen } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBoxOpen } from '@fortawesome/pro-regular-svg-icons';
 
 type EmptyCategoryProps = {
   categoryName: string;

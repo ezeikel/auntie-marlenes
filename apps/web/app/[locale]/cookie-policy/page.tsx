@@ -1,15 +1,15 @@
-import { setRequestLocale } from 'next-intl/server';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faCookieBite,
-  faGear,
-  faChartLine,
   faBug,
   faBullhorn,
-  faSliders,
+  faChartLine,
   faCircleExclamation,
+  faCookieBite,
+  faGear,
+  faSliders,
 } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Metadata } from 'next';
+import { setRequestLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Cookie Policy',

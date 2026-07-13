@@ -1,25 +1,33 @@
+import {
+  faApple,
+  faFacebook,
+  faGoogle,
+} from '@fortawesome/free-brands-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import {
-  View,
+  Alert,
+  Image,
+  Platform,
+  Pressable,
+  ScrollView,
   Text,
   TextInput,
-  Pressable,
-  Image,
-  ScrollView,
-  Alert,
-  Platform,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faGoogle, faApple, faFacebook } from '@fortawesome/free-brands-svg-icons';
 import { useAuthContext } from '@/contexts/auth';
-import { router } from 'expo-router';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signInWithGoogle, signInWithApple, signInWithFacebook, sendMagicLink } =
-    useAuthContext();
+  const {
+    signInWithGoogle,
+    signInWithApple,
+    signInWithFacebook,
+    sendMagicLink,
+  } = useAuthContext();
 
   const handleGoogleSignIn = async () => {
     try {
@@ -74,10 +82,7 @@ export default function SignIn() {
     try {
       setIsLoading(true);
       await sendMagicLink(email);
-      Alert.alert(
-        'Success',
-        'Check your email for a magic link to sign in!',
-      );
+      Alert.alert('Success', 'Check your email for a magic link to sign in!');
     } catch (error) {
       console.error('Magic Link Error:', error);
       Alert.alert('Error', 'Failed to send magic link');
@@ -109,7 +114,7 @@ export default function SignIn() {
             className="bg-white border border-border rounded-xl py-4 px-6 flex-row items-center justify-center active:opacity-70"
           >
             <FontAwesomeIcon icon={faGoogle} size={20} color="#364153" />
-            <Text className="ml-3 text-base font-inter-semibold text-[#364153]" >
+            <Text className="ml-3 text-base font-inter-semibold text-[#364153]">
               Continue with Google
             </Text>
           </Pressable>

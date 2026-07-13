@@ -1,16 +1,16 @@
 // Product types
 export type {
+  Cart,
+  CartLineItem,
   Product,
-  ShopifyProduct,
   ShopifyCart,
   ShopifyCartLine,
-  CartLineItem,
-  Cart,
+  ShopifyProduct,
 } from './product';
 
 export { ProductSchema } from './product';
 
 // User types
-export type { User, SavedItem, AuthSession } from './user';
+export type { AuthSession, SavedItem, User } from './user';
 
-export { UserSchema, SavedItemSchema, AuthSessionSchema } from './user';
+export { AuthSessionSchema, SavedItemSchema, UserSchema } from './user';

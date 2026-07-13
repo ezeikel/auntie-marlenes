@@ -4,9 +4,9 @@
  */
 
 import {
-  S3Client,
-  PutObjectCommand,
   ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
 } from '@aws-sdk/client-s3';
 
 let r2Client: S3Client | null = null;

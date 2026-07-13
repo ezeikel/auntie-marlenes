@@ -1,5 +1,5 @@
+import { cacheLife, cacheTag } from 'next/cache';
 import { getProducts } from '@/app/actions';
-import ProductCard from './ProductCard';
 import {
   Carousel,
   CarouselContent,
@@ -8,7 +8,7 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { getServerCountry } from '@/lib/server-location';
-import { cacheLife, cacheTag } from 'next/cache';
+import ProductCard from './ProductCard';
 
 // Cached component that fetches featured products
 // Country becomes part of the cache key automatically

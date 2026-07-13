@@ -1,7 +1,7 @@
+import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import Shop from '@/components/Shop/Shop';
 import { generatePageMetadata } from '@/lib/metadata';
-import type { Metadata } from 'next';
 
 export const metadata: Metadata = generatePageMetadata({
   title: 'Shop All Products',

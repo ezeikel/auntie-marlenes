@@ -1,10 +1,19 @@
 'use client';
 
-import type React from 'react';
-import { useState } from 'react';
+import {
+  faBars,
+  faHeart,
+  faSearch,
+  faTimes,
+  faUser,
+} from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { signOut as nextAuthSignOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
+import type React from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -12,23 +21,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { TRACKING_EVENTS } from '@/constants/events';
+import { useSession } from '@/hooks/useSession';
+import { navLinks } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faUser,
-  faHeart,
-  faBars,
-  faTimes,
-  faSearch,
-} from '@fortawesome/pro-regular-svg-icons';
+import { useAnalytics } from '@/utils/analytics-client';
+import AccountPopover from './AccountPopover';
 import LanguageSwitcher from './LanguageSwitcher';
 import LocationCurrencySwitcher from './LocationCurrencySwitcher';
-import AccountPopover from './AccountPopover';
-import { navLinks } from '@/lib/constants';
-import { useSession } from '@/hooks/useSession';
-import { signOut as nextAuthSignOut } from 'next-auth/react';
-import { useAnalytics } from '@/utils/analytics-client';
-import { TRACKING_EVENTS } from '@/constants/events';
 
 type HeaderProps = {
   bagSlot?: React.ReactNode;

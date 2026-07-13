@@ -1,20 +1,38 @@
-import { View, Text, ScrollView, Image, Pressable, ActivityIndicator, Dimensions } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useCart } from '@/contexts/cart';
+import { faMinus, faPlus, faTrash } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faTrash, faMinus, faPlus } from '@fortawesome/pro-regular-svg-icons';
-import { router } from 'expo-router';
-import * as Haptics from 'expo-haptics';
-import { useState, useEffect } from 'react';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useShopifyCheckoutSheet } from '@shopify/checkout-sheet-kit';
+import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
+import BagCheckoutFooter from '@/components/BagCheckoutFooter';
 import BagHeader from '@/components/BagHeader';
 import EmptyBagState from '@/components/EmptyBagState';
-import BagCheckoutFooter from '@/components/BagCheckoutFooter';
+import { useCart } from '@/contexts/cart';
 
 export default function BagScreen() {
-  const { cart, isLoading, totalQuantity, removeFromCart, updateQuantity, clearCart } = useCart();
+  const {
+    cart,
+    isLoading,
+    totalQuantity,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+  } = useCart();
   const [headerHeight, setHeaderHeight] = useState(0);
   const [footerHeight, setFooterHeight] = useState(0);
   const [isCheckoutProcessing, setIsCheckoutProcessing] = useState(false);
@@ -29,7 +47,11 @@ export default function BagScreen() {
     await removeFromCart(lineId);
   };
 
-  const handleUpdateQuantity = async (lineId: string, currentQuantity: number, delta: number) => {
+  const handleUpdateQuantity = async (
+    lineId: string,
+    currentQuantity: number,
+    delta: number,
+  ) => {
     const newQuantity = currentQuantity + delta;
     if (newQuantity < 1) {
       await handleRemoveItem(lineId);
@@ -42,23 +64,26 @@ export default function BagScreen() {
   // Setup checkout event listeners
   useEffect(() => {
     // Handle successful checkout completion
-    const completedListener = shopifyCheckout.addEventListener('completed', (event) => {
-      const orderId = event.orderDetails.id;
-      // TODO: send this to analytics
-      console.log('Checkout completed! Order ID:', orderId);
+    const completedListener = shopifyCheckout.addEventListener(
+      'completed',
+      (event) => {
+        const orderId = event.orderDetails.id;
+        // TODO: send this to analytics
+        console.log('Checkout completed! Order ID:', orderId);
 
-      // Clear the cart after successful checkout
-      clearCart();
+        // Clear the cart after successful checkout
+        clearCart();
 
-      // Show success message
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.success('Order placed successfully!');
+        // Show success message
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        toast.success('Order placed successfully!');
 
-      setIsCheckoutProcessing(false);
+        setIsCheckoutProcessing(false);
 
-      // Navigate to home
-      router.push('/');
-    });
+        // Navigate to home
+        router.push('/');
+      },
+    );
 
     // Handle checkout cancellation
     const closeListener = shopifyCheckout.addEventListener('close', () => {
@@ -130,9 +155,17 @@ export default function BagScreen() {
           >
             <BagHeader isEmpty totalQuantity={0} />
           </View>
-          <View style={{
-            height: headerHeight > 0 ? Dimensions.get('window').height - insets.top - headerHeight - tabBarHeight : undefined,
-          }}>
+          <View
+            style={{
+              height:
+                headerHeight > 0
+                  ? Dimensions.get('window').height -
+                    insets.top -
+                    headerHeight -
+                    tabBarHeight
+                  : undefined,
+            }}
+          >
             <EmptyBagState />
           </View>
         </SafeAreaView>
@@ -179,7 +212,9 @@ export default function BagScreen() {
                 ? parseFloat(line.merchandise.compareAtPriceV2.amount)
                 : null;
               const hasDiscount = compareAtPrice && compareAtPrice > price;
-              const imageUrl = line.merchandise.image?.url || product?.images?.edges?.[0]?.node.url;
+              const imageUrl =
+                line.merchandise.image?.url ||
+                product?.images?.edges?.[0]?.node.url;
 
               // Skip rendering if product data is missing
               if (!product) {
@@ -194,7 +229,10 @@ export default function BagScreen() {
                 >
                   {/* Product Image */}
                   <Pressable
-                    onPress={() => product?.handle && router.push(`/product/${product.handle}`)}
+                    onPress={() =>
+                      product?.handle &&
+                      router.push(`/product/${product.handle}`)
+                    }
                     className="active:opacity-70"
                   >
                     <Image
@@ -213,7 +251,10 @@ export default function BagScreen() {
                       <Text className="text-xs font-inter text-muted-foreground mb-1">
                         {product?.vendor || 'Unknown'}
                       </Text>
-                      <Text className="text-sm font-inter-semibold text-foreground mb-2" numberOfLines={2}>
+                      <Text
+                        className="text-sm font-inter-semibold text-foreground mb-2"
+                        numberOfLines={2}
+                      >
                         {line.merchandise.title}
                       </Text>
                     </Pressable>
@@ -234,19 +275,31 @@ export default function BagScreen() {
                     <View className="flex-row items-center justify-between">
                       <View className="flex-row items-center bg-warm-beige rounded-lg">
                         <Pressable
-                          onPress={() => handleUpdateQuantity(line.id, line.quantity, -1)}
+                          onPress={() =>
+                            handleUpdateQuantity(line.id, line.quantity, -1)
+                          }
                           className="w-8 h-8 items-center justify-center active:opacity-70"
                         >
-                          <FontAwesomeIcon icon={faMinus} size={12} color="#5D4037" />
+                          <FontAwesomeIcon
+                            icon={faMinus}
+                            size={12}
+                            color="#5D4037"
+                          />
                         </Pressable>
                         <Text className="w-8 text-center font-inter-semibold text-foreground">
                           {line.quantity}
                         </Text>
                         <Pressable
-                          onPress={() => handleUpdateQuantity(line.id, line.quantity, 1)}
+                          onPress={() =>
+                            handleUpdateQuantity(line.id, line.quantity, 1)
+                          }
                           className="w-8 h-8 items-center justify-center active:opacity-70"
                         >
-                          <FontAwesomeIcon icon={faPlus} size={12} color="#5D4037" />
+                          <FontAwesomeIcon
+                            icon={faPlus}
+                            size={12}
+                            color="#5D4037"
+                          />
                         </Pressable>
                       </View>
 
@@ -254,7 +307,11 @@ export default function BagScreen() {
                         onPress={() => handleRemoveItem(line.id)}
                         className="w-8 h-8 items-center justify-center active:opacity-70"
                       >
-                        <FontAwesomeIcon icon={faTrash} size={16} color="#C5705D" />
+                        <FontAwesomeIcon
+                          icon={faTrash}
+                          size={16}
+                          color="#C5705D"
+                        />
                       </Pressable>
                     </View>
                   </View>

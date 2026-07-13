@@ -1,6 +1,6 @@
-import Link from 'next/link';
+import { faArrowRight, faSparkles } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSparkles, faArrowRight } from '@fortawesome/pro-regular-svg-icons';
+import Link from 'next/link';
 
 const quizzes = [
   {

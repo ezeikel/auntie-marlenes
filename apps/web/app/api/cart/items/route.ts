@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server';
-import { z, ZodError } from 'zod';
+import { ZodError, z } from 'zod';
 import {
   addProductsToCart,
   removeProductFromCart,
   updateCartLineQuantity,
 } from '@/app/actions';
-import { rateLimit } from '@/lib/rate-limit';
 import { corsHeaders, corsOptionsResponse } from '@/lib/cors';
+import { rateLimit } from '@/lib/rate-limit';
 
 const addToCartSchema = z.object({
   cartId: z.string().min(1),

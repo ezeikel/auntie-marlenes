@@ -1,8 +1,8 @@
-import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
+import { Suspense } from 'react';
 import Bag from '@/components/Bag/Bag';
 import { generatePageMetadata } from '@/lib/metadata';
-import type { Metadata } from 'next';
 
 export const metadata: Metadata = generatePageMetadata({
   title: 'Shopping Bag',

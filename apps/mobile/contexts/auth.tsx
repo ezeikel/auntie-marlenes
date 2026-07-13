@@ -1,22 +1,31 @@
-import { createContext, useState, useEffect, useContext, type ReactNode } from 'react';
-import * as SecureStore from 'expo-secure-store';
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
-import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
 import appleAuth from '@invertase/react-native-apple-authentication';
-import { usePostHog } from 'posthog-react-native';
-import * as Sentry from '@sentry/react-native';
 import {
-  signInWithGoogle as signInWithGoogleApi,
+  GoogleSignin,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
+import * as Sentry from '@sentry/react-native';
+import * as SecureStore from 'expo-secure-store';
+import { usePostHog } from 'posthog-react-native';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+import { AccessToken, LoginManager } from 'react-native-fbsdk-next';
+import {
+  getCurrentUser,
+  sendMagicLink as sendMagicLinkApi,
   signInWithApple as signInWithAppleApi,
   signInWithFacebook as signInWithFacebookApi,
-  sendMagicLink as sendMagicLinkApi,
-  getCurrentUser,
+  signInWithGoogle as signInWithGoogleApi,
   signOut as signOutApi,
 } from '@/lib/api/auth';
-import * as savedStorage from '@/lib/asyncStorage/saved';
-import * as cartStorage from '@/lib/asyncStorage/cart';
-import { syncSavedItems } from '@/lib/api/saved';
 import { updateCartBuyerIdentity } from '@/lib/api/cart';
+import { syncSavedItems } from '@/lib/api/saved';
+import * as cartStorage from '@/lib/asyncStorage/cart';
+import * as savedStorage from '@/lib/asyncStorage/saved';
 
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -66,7 +75,9 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       // Sync saved items from AsyncStorage to backend
       const localSaves = await savedStorage.getLocalSaves();
       if (localSaves.length > 0) {
-        console.log(`[Auth] Syncing ${localSaves.length} saved items to backend`);
+        console.log(
+          `[Auth] Syncing ${localSaves.length} saved items to backend`,
+        );
         await syncSavedItems(localSaves);
       }
 
@@ -102,9 +113,15 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
                   email: response.user.email,
                   name: response.user.name || null,
                 });
-                console.log('[Auth] User identified with PostHog:', response.user.id);
+                console.log(
+                  '[Auth] User identified with PostHog:',
+                  response.user.id,
+                );
               } catch (error) {
-                console.error('[Auth] Error identifying user with PostHog:', error);
+                console.error(
+                  '[Auth] Error identifying user with PostHog:',
+                  error,
+                );
               }
             }
 
@@ -116,9 +133,15 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
                   email: response.user.email,
                   username: response.user.name || undefined,
                 });
-                console.log('[Auth] User identified with Sentry:', response.user.id);
+                console.log(
+                  '[Auth] User identified with Sentry:',
+                  response.user.id,
+                );
               } catch (error) {
-                console.error('[Auth] Error identifying user with Sentry:', error);
+                console.error(
+                  '[Auth] Error identifying user with Sentry:',
+                  error,
+                );
               }
             }
           } else {
@@ -183,7 +206,12 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
         await syncLocalDataOnLogin(response.user.email);
       }
     } catch (error) {
-      if (error && typeof error === 'object' && 'code' in error && error.code === statusCodes.SIGN_IN_CANCELLED) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === statusCodes.SIGN_IN_CANCELLED
+      ) {
         console.info('[Auth] User cancelled Google sign-in');
       } else {
         console.error('[Auth] Google sign-in error:', error);
@@ -195,7 +223,10 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
 
   const signInWithFacebook = async () => {
     try {
-      const result = await LoginManager.logInWithPermissions(['public_profile', 'email']);
+      const result = await LoginManager.logInWithPermissions([
+        'public_profile',
+        'email',
+      ]);
 
       if (result.isCancelled) {
         console.info('[Auth] User cancelled Facebook sign-in');
@@ -259,7 +290,9 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
         requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
       });
 
-      const credentialState = await appleAuth.getCredentialStateForUser(appleAuthRequestResponse.user);
+      const credentialState = await appleAuth.getCredentialStateForUser(
+        appleAuthRequestResponse.user,
+      );
 
       if (credentialState === appleAuth.State.AUTHORIZED) {
         const { sessionToken } = await signInWithAppleApi();
@@ -276,7 +309,10 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
               email: response.user.email,
               name: response.user.name || null,
             });
-            console.log('[Auth] User identified with PostHog:', response.user.id);
+            console.log(
+              '[Auth] User identified with PostHog:',
+              response.user.id,
+            );
           } catch (error) {
             console.error('[Auth] Error identifying user with PostHog:', error);
           }
@@ -290,7 +326,10 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
               email: response.user.email,
               username: response.user.name || undefined,
             });
-            console.log('[Auth] User identified with Sentry:', response.user.id);
+            console.log(
+              '[Auth] User identified with Sentry:',
+              response.user.id,
+            );
           } catch (error) {
             console.error('[Auth] Error identifying user with Sentry:', error);
           }

@@ -20,13 +20,13 @@
  */
 
 import 'dotenv/config';
-import { fal } from '@fal-ai/client';
 import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
+import { fal } from '@fal-ai/client';
 import { uploadFile } from '../storage';
 
 const execFileAsync = promisify(execFile);

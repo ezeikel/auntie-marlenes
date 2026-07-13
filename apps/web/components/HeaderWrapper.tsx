@@ -1,6 +1,6 @@
-import Header from './Header';
 import { getCart } from '@/app/actions';
 import BagIconClient from './BagIconClient';
+import Header from './Header';
 
 export default async function HeaderWrapper() {
   const cart = await getCart();

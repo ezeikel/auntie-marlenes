@@ -1,10 +1,10 @@
-import { View, Text, Image, Pressable } from 'react-native';
-import { router } from 'expo-router';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import type { Product } from '@auntie-marlenes/types';
 import { faHeart } from '@fortawesome/pro-regular-svg-icons';
 import { faHeart as faHeartSolid } from '@fortawesome/pro-solid-svg-icons';
-import type { Product } from '@auntie-marlenes/types';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
+import { Image, Pressable, Text, View } from 'react-native';
 
 type ProductCardProps = {
   product: Product;
@@ -28,7 +28,10 @@ export default function ProductCard({
   };
 
   const discountPercent = product.compareAtPrice
-    ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
+    ? Math.round(
+        ((product.compareAtPrice - product.price) / product.compareAtPrice) *
+          100,
+      )
     : 0;
 
   return (

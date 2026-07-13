@@ -28,7 +28,9 @@ async function ensureCacheLoaded(): Promise<void> {
   const token = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
 
   if (!catalogId || !token) {
-    console.warn('[Catalog] Missing META_CATALOG_ID or FACEBOOK_PAGE_ACCESS_TOKEN');
+    console.warn(
+      '[Catalog] Missing META_CATALOG_ID or FACEBOOK_PAGE_ACCESS_TOKEN',
+    );
     return;
   }
 

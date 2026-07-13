@@ -1,20 +1,25 @@
-import { Platform } from 'react-native';
-import { GraphQLClient } from 'graphql-request';
 import { SHOPIFY_CONFIG } from '@auntie-marlenes/constants';
 import {
-  GET_PRODUCTS_QUERY,
-  GET_PRODUCT_BY_HANDLE_QUERY,
-  SEARCH_PRODUCTS_QUERY,
-  GET_CART_QUERY,
-  CREATE_CART_MUTATION,
   ADD_PRODUCTS_TO_CART_MUTATION,
+  adaptShopifyCart,
+  adaptShopifyProduct,
+  adaptShopifyProducts,
   CART_LINE_REMOVE_MUTATION,
   CART_LINES_UPDATE_MUTATION,
-  adaptShopifyProducts,
-  adaptShopifyProduct,
-  adaptShopifyCart,
+  CREATE_CART_MUTATION,
+  GET_CART_QUERY,
+  GET_PRODUCT_BY_HANDLE_QUERY,
+  GET_PRODUCTS_QUERY,
+  SEARCH_PRODUCTS_QUERY,
 } from '@auntie-marlenes/shopify';
-import type { Product, Cart, ShopifyProduct, ShopifyCart } from '@auntie-marlenes/types';
+import type {
+  Cart,
+  Product,
+  ShopifyCart,
+  ShopifyProduct,
+} from '@auntie-marlenes/types';
+import { GraphQLClient } from 'graphql-request';
+import { Platform } from 'react-native';
 
 const client = new GraphQLClient(SHOPIFY_CONFIG.storefrontApiEndpoint, {
   headers: {
@@ -44,12 +49,13 @@ export const fetchProducts = async (first: number = 50): Promise<Product[]> => {
 /**
  * Fetch product by handle
  */
-export const fetchProductByHandle = async (handle: string): Promise<Product | null> => {
+export const fetchProductByHandle = async (
+  handle: string,
+): Promise<Product | null> => {
   try {
-    const data = await client.request<{ productByHandle: ShopifyProduct | null }>(
-      GET_PRODUCT_BY_HANDLE_QUERY,
-      { handle },
-    );
+    const data = await client.request<{
+      productByHandle: ShopifyProduct | null;
+    }>(GET_PRODUCT_BY_HANDLE_QUERY, { handle });
 
     if (!data.productByHandle) {
       return null;

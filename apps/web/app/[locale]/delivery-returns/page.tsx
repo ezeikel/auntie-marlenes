@@ -1,24 +1,26 @@
-import { setRequestLocale } from 'next-intl/server';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faTruck,
-  faRotateLeft,
   faBox,
   faGlobe,
+  faRotateLeft,
+  faTruck,
 } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Metadata } from 'next';
+import { setRequestLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Delivery & Returns',
   description:
-    'Learn about our delivery options, international shipping, and hassle-free returns policy at Auntie Marlene\'s.',
+    "Learn about our delivery options, international shipping, and hassle-free returns policy at Auntie Marlene's.",
 };
 
 type DeliveryReturnsPageProps = {
   params: Promise<{ locale: string }>;
 };
 
-export default async function DeliveryReturnsPage({ params }: DeliveryReturnsPageProps) {
+export default async function DeliveryReturnsPage({
+  params,
+}: DeliveryReturnsPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -49,8 +51,8 @@ export default async function DeliveryReturnsPage({ params }: DeliveryReturnsPag
                   Free Standard Delivery
                 </h3>
                 <p className="text-sm">
-                  Enjoy FREE standard delivery on all UK orders over £40.
-                  Orders under £40 will be charged a delivery fee of £3.95.
+                  Enjoy FREE standard delivery on all UK orders over £40. Orders
+                  under £40 will be charged a delivery fee of £3.95.
                 </p>
                 <p className="text-sm mt-2">
                   <strong>Delivery time:</strong> 3-5 business days
@@ -285,9 +287,7 @@ export default async function DeliveryReturnsPage({ params }: DeliveryReturnsPag
 
           {/* Contact */}
           <section className="mt-12 bg-sage-green/10 rounded-lg p-6 text-center">
-            <h3 className="font-semibold text-cocoa mb-2">
-              Need Help?
-            </h3>
+            <h3 className="font-semibold text-cocoa mb-2">Need Help?</h3>
             <p className="text-gray-700 text-sm mb-4">
               Our customer service team is here to help with any questions about
               delivery or returns.

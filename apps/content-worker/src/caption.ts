@@ -9,8 +9,8 @@
  * - Separate strategy for IG vs FB
  */
 
-import { generateObject } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
+import { generateObject } from 'ai';
 import { z } from 'zod';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,17 +19,43 @@ const claude: any = anthropic('claude-sonnet-4-20250514');
 const captionSchema = z.object({
   instagram: z.object({
     post: z.object({
-      text: z.string().describe('Static post caption (150-300 chars). Hook first line → specific product benefit → CTA. Mention an ingredient or result.'),
-      hashtags: z.array(z.string()).max(4).describe('3-4 hashtags. Must include #blackowned. Use searchable terms.'),
+      text: z
+        .string()
+        .describe(
+          'Static post caption (150-300 chars). Hook first line → specific product benefit → CTA. Mention an ingredient or result.',
+        ),
+      hashtags: z
+        .array(z.string())
+        .max(4)
+        .describe(
+          '3-4 hashtags. Must include #blackowned. Use searchable terms.',
+        ),
     }),
     reel: z.object({
-      text: z.string().describe('Reel caption (under 150 chars). Short hook that complements (not repeats) the video. End with CTA.'),
-      hashtags: z.array(z.string()).max(4).describe('3-4 hashtags. Must include #blackowned. Use searchable terms.'),
+      text: z
+        .string()
+        .describe(
+          'Reel caption (under 150 chars). Short hook that complements (not repeats) the video. End with CTA.',
+        ),
+      hashtags: z
+        .array(z.string())
+        .max(4)
+        .describe(
+          '3-4 hashtags. Must include #blackowned. Use searchable terms.',
+        ),
     }),
   }),
   facebook: z.object({
-    post: z.string().describe('FB post caption (200-400 chars). Educational — mention ingredients, what they do, who it\'s for. End with "Shop at auntiemarlenes.com". No hashtags.'),
-    reel: z.string().describe('FB reel caption (100-250 chars). Conversational recommendation. End with "Find it at auntiemarlenes.com". No hashtags.'),
+    post: z
+      .string()
+      .describe(
+        'FB post caption (200-400 chars). Educational — mention ingredients, what they do, who it\'s for. End with "Shop at auntiemarlenes.com". No hashtags.',
+      ),
+    reel: z
+      .string()
+      .describe(
+        'FB reel caption (100-250 chars). Conversational recommendation. End with "Find it at auntiemarlenes.com". No hashtags.',
+      ),
   }),
 });
 
@@ -96,8 +122,12 @@ export async function generateCaptions(product: {
 
   const captions = result.object as CaptionResult;
 
-  console.log(`[Caption] IG post: ${captions.instagram.post.text.length} chars, reel: ${captions.instagram.reel.text.length} chars`);
-  console.log(`[Caption] FB post: ${captions.facebook.post.length} chars, reel: ${captions.facebook.reel.length} chars`);
+  console.log(
+    `[Caption] IG post: ${captions.instagram.post.text.length} chars, reel: ${captions.instagram.reel.text.length} chars`,
+  );
+  console.log(
+    `[Caption] FB post: ${captions.facebook.post.length} chars, reel: ${captions.facebook.reel.length} chars`,
+  );
 
   return captions;
 }
@@ -105,7 +135,12 @@ export async function generateCaptions(product: {
 /**
  * Format an Instagram caption with hashtags on a new line.
  */
-export function formatInstagramCaption(caption: { text: string; hashtags: string[] }): string {
-  const tags = caption.hashtags.map((t) => (t.startsWith('#') ? t : `#${t}`)).join(' ');
+export function formatInstagramCaption(caption: {
+  text: string;
+  hashtags: string[];
+}): string {
+  const tags = caption.hashtags
+    .map((t) => (t.startsWith('#') ? t : `#${t}`))
+    .join(' ');
   return `${caption.text}\n\n${tags}`;
 }

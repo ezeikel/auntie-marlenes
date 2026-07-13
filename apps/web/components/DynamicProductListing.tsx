@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from '@/contexts/LocationContext';
 import ProductListing from '@/components/ProductListing/ProductListing';
+import { TRACKING_EVENTS } from '@/constants/events';
+import { useLocation } from '@/contexts/LocationContext';
 import { Product } from '@/lib/constants';
 import { useAnalytics } from '@/utils/analytics-client';
-import { TRACKING_EVENTS } from '@/constants/events';
 
 type DynamicProductListingProps = {
   initialProducts: Product[];

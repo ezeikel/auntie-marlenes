@@ -3,20 +3,44 @@
  * Uses Claude to write title, description, SEO meta, and tags.
  */
 
-import { generateObject } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
+import { generateObject } from 'ai';
 import { z } from 'zod';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const claude: any = anthropic('claude-sonnet-4-20250514');
 
 const productCopySchema = z.object({
-  title: z.string().describe('Clean Shopify product title. Format: "Brand Name Product Name Size" e.g. "Mielle Rosemary Mint Scalp & Hair Strengthening Oil 59ml"'),
-  descriptionHtml: z.string().describe('HTML product description. Include: what it does, key ingredients, who it\'s for, how to use. 150-300 words. Use <p>, <ul>, <li> tags. British English.'),
-  seoTitle: z.string().describe('SEO meta title, max 60 chars. Include brand + product type + key benefit.'),
-  seoDescription: z.string().describe('SEO meta description, max 155 chars. Compelling, includes key search terms.'),
-  productType: z.string().describe('Shopify product type. One of: Hair Care, Skin Care, Body Care, Wigs & Extensions, Braiding Hair, Styling, Accessories, Kids, Men\'s'),
-  tags: z.array(z.string()).describe('Shopify tags for collections and filtering. Include: brand name, category, hair type, key ingredients. 5-10 tags.'),
+  title: z
+    .string()
+    .describe(
+      'Clean Shopify product title. Format: "Brand Name Product Name Size" e.g. "Mielle Rosemary Mint Scalp & Hair Strengthening Oil 59ml"',
+    ),
+  descriptionHtml: z
+    .string()
+    .describe(
+      "HTML product description. Include: what it does, key ingredients, who it's for, how to use. 150-300 words. Use <p>, <ul>, <li> tags. British English.",
+    ),
+  seoTitle: z
+    .string()
+    .describe(
+      'SEO meta title, max 60 chars. Include brand + product type + key benefit.',
+    ),
+  seoDescription: z
+    .string()
+    .describe(
+      'SEO meta description, max 155 chars. Compelling, includes key search terms.',
+    ),
+  productType: z
+    .string()
+    .describe(
+      "Shopify product type. One of: Hair Care, Skin Care, Body Care, Wigs & Extensions, Braiding Hair, Styling, Accessories, Kids, Men's",
+    ),
+  tags: z
+    .array(z.string())
+    .describe(
+      'Shopify tags for collections and filtering. Include: brand name, category, hair type, key ingredients. 5-10 tags.',
+    ),
 });
 
 export type ProductCopy = z.infer<typeof productCopySchema>;

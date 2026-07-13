@@ -1,10 +1,10 @@
 'use client';
 
+import { faMinus, faPlus, faTrash } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faMinus, faPlus } from '@fortawesome/pro-regular-svg-icons';
 import { formatCurrency } from '@/lib/currency';
 
 type CartLine = {

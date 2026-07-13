@@ -1,14 +1,14 @@
-import Link from 'next/link';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faFacebook,
   faInstagram,
   faTiktok,
-  faFacebook,
-  faYoutube,
   faWhatsapp,
+  faYoutube,
 } from '@fortawesome/free-brands-svg-icons';
-import { socialLinks } from '@/lib/constants';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cacheLife, cacheTag } from 'next/cache';
+import Link from 'next/link';
+import { socialLinks } from '@/lib/constants';
 import NewsletterForm from './NewsletterForm';
 
 const iconMap = {

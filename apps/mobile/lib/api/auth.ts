@@ -1,11 +1,11 @@
-import axios from 'axios';
-import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
-import appleAuth from '@invertase/react-native-apple-authentication';
 import { getApiUrl } from '@auntie-marlenes/constants';
 import type { User } from '@auntie-marlenes/types';
+import appleAuth from '@invertase/react-native-apple-authentication';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+import { AccessToken, LoginManager } from 'react-native-fbsdk-next';
 
 const apiUrl = getApiUrl(Platform.OS as 'ios' | 'android' | 'web');
 
@@ -117,12 +117,12 @@ export const sendMagicLink = async (email: string): Promise<void> => {
  * Called when user clicks magic link and mobile app receives deep link
  */
 export const verifyMagicLink = async (
-  token: string
+  token: string,
 ): Promise<{ sessionToken: string }> => {
   try {
     const response = await axios.post(
       `${apiUrl}/auth/mobile/magic-link/verify`,
-      { token }
+      { token },
     );
     return response.data;
   } catch (error) {

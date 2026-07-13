@@ -18,14 +18,14 @@
  * Run with: pnpm gen:hero (from apps/content-worker)
  */
 
-import { generateText, generateObject } from 'ai';
-import { google } from '@ai-sdk/google';
-import { anthropic } from '@ai-sdk/anthropic';
-import { z } from 'zod';
-import sharp from 'sharp';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { anthropic } from '@ai-sdk/anthropic';
+import { google } from '@ai-sdk/google';
+import { generateObject, generateText } from 'ai';
+import sharp from 'sharp';
+import { z } from 'zod';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const geminiImage: any = google('gemini-3-pro-image-preview');
@@ -297,7 +297,7 @@ ${SHARED_CONSTRAINTS}`,
   {
     id: 'dad-braids',
     filename: 'hero-06-dad-braids.png',
-    title: 'Dad\'s Saturday Hair Day',
+    title: "Dad's Saturday Hair Day",
     prompt: `${STYLE_LOCK}
 
 ### Subject
@@ -521,7 +521,9 @@ async function generateWithJudge(
         judgment.scores,
       );
       if (judgment.feedback) {
-        console.log(`[Hero] ${scene.filename} — feedback: ${judgment.feedback}`);
+        console.log(
+          `[Hero] ${scene.filename} — feedback: ${judgment.feedback}`,
+        );
       }
 
       if (judgment.verdict === 'PASS') {
@@ -546,7 +548,9 @@ async function generateWithJudge(
     return bestAttempt.buffer;
   }
 
-  throw new Error(`[Hero] ${scene.filename} — failed all attempts with no output`);
+  throw new Error(
+    `[Hero] ${scene.filename} — failed all attempts with no output`,
+  );
 }
 
 export interface GenerateHeroOptions {
@@ -632,7 +636,7 @@ export async function generateAllHeroImages(
       const buffer = await generateWithJudge(
         scene,
         scene1Buffer,
-        "IMAGE 1: This is the brand style reference from the same documentary photo-journalism set — match its warm natural lighting tone, shadow depth, unretouched skin texture, film grain, and 16:9 landscape aspect ratio. This is a raw SOOC (straight out of camera) documentary style, NOT a cinematic or editorial fashion look. DO NOT copy its subject or composition — generate the completely different scene described in the prompt below.",
+        'IMAGE 1: This is the brand style reference from the same documentary photo-journalism set — match its warm natural lighting tone, shadow depth, unretouched skin texture, film grain, and 16:9 landscape aspect ratio. This is a raw SOOC (straight out of camera) documentary style, NOT a cinematic or editorial fashion look. DO NOT copy its subject or composition — generate the completely different scene described in the prompt below.',
       );
 
       const outPath = path.join(HERO_OUTPUT_DIR, scene.filename);

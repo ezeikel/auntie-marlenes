@@ -1,6 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CART_ID_KEY = "auntie-marlenes-cart-id";
+const CART_ID_KEY = 'auntie-marlenes-cart-id';
 
 /**
  * Get the stored cart ID from AsyncStorage
@@ -10,7 +10,7 @@ export const getCartId = async (): Promise<string | null> => {
     const cartId = await AsyncStorage.getItem(CART_ID_KEY);
     return cartId;
   } catch (error) {
-    console.error("Error getting cart ID from AsyncStorage:", error);
+    console.error('Error getting cart ID from AsyncStorage:', error);
     return null;
   }
 };
@@ -22,7 +22,7 @@ export const setCartId = async (cartId: string): Promise<void> => {
   try {
     await AsyncStorage.setItem(CART_ID_KEY, cartId);
   } catch (error) {
-    console.error("Error setting cart ID in AsyncStorage:", error);
+    console.error('Error setting cart ID in AsyncStorage:', error);
   }
 };
 
@@ -33,7 +33,7 @@ export const removeCartId = async (): Promise<void> => {
   try {
     await AsyncStorage.removeItem(CART_ID_KEY);
   } catch (error) {
-    console.error("Error removing cart ID from AsyncStorage:", error);
+    console.error('Error removing cart ID from AsyncStorage:', error);
   }
 };
 
@@ -45,7 +45,7 @@ export const hasCartId = async (): Promise<boolean> => {
     const cartId = await AsyncStorage.getItem(CART_ID_KEY);
     return cartId !== null;
   } catch (error) {
-    console.error("Error checking cart ID in AsyncStorage:", error);
+    console.error('Error checking cart ID in AsyncStorage:', error);
     return false;
   }
 };

@@ -1,39 +1,42 @@
-import { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  Pressable,
-  ActivityIndicator,
-  Dimensions,
-  Share,
-} from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import {
   faChevronLeft,
-  faHeart,
-  faShareNodes,
   faChevronRight,
-  faTruck,
+  faHeart,
   faInfo,
+  faShareNodes,
+  faTruck,
 } from '@fortawesome/pro-regular-svg-icons';
 import { faHeart as faHeartSolid } from '@fortawesome/pro-solid-svg-icons';
-import { useProduct } from '@/hooks/useProducts';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import * as Haptics from 'expo-haptics';
+import { router, useLocalSearchParams } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  Pressable,
+  ScrollView,
+  Share,
+  Text,
+  View,
+} from 'react-native';
+import { useSharedValue } from 'react-native-reanimated';
+import Carousel from 'react-native-reanimated-carousel';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+import BrandInfoSheet from '@/components/bottom-sheets/BrandInfoSheet';
+import DeliveryInfoSheet from '@/components/bottom-sheets/DeliveryInfoSheet';
+import ProductDetailsSheet from '@/components/bottom-sheets/ProductDetailsSheet';
+import VariantSelectorSheet from '@/components/bottom-sheets/VariantSelectorSheet';
+import PaginationDot from '@/components/ui/PaginationDot';
 import { useCart } from '@/contexts/cart';
 import { useSaved } from '@/contexts/saved';
-import * as Haptics from 'expo-haptics';
-import Carousel from 'react-native-reanimated-carousel';
-import { useSharedValue } from 'react-native-reanimated';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import VariantSelectorSheet from '@/components/bottom-sheets/VariantSelectorSheet';
-import ProductDetailsSheet from '@/components/bottom-sheets/ProductDetailsSheet';
-import DeliveryInfoSheet from '@/components/bottom-sheets/DeliveryInfoSheet';
-import BrandInfoSheet from '@/components/bottom-sheets/BrandInfoSheet';
-import PaginationDot from '@/components/ui/PaginationDot';
+import { useProduct } from '@/hooks/useProducts';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -146,9 +149,13 @@ export default function ProductDetailScreen() {
   }
 
   const images = product.images || [product.image];
-  const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
+  const hasDiscount =
+    product.compareAtPrice && product.compareAtPrice > product.price;
   const discountPercent = hasDiscount
-    ? Math.round(((product.compareAtPrice! - product.price) / product.compareAtPrice!) * 100)
+    ? Math.round(
+        ((product.compareAtPrice! - product.price) / product.compareAtPrice!) *
+          100,
+      )
     : 0;
 
   return (
@@ -156,281 +163,328 @@ export default function ProductDetailScreen() {
       <View className="flex-1 bg-warm-beige">
         <StatusBar style="dark" />
         <SafeAreaView className="flex-1" edges={[]}>
-        {/* Header - Fixed */}
-        {/* TODO: Simplify header structure - remove extra nested Views.
+          {/* Header - Fixed */}
+          {/* TODO: Simplify header structure - remove extra nested Views.
             Current structure has redundant wrapper Views that could be consolidated.
             The outer View handles absolute positioning, but the inner wrapper for padding
             could be combined with the View containing the header content. */}
-        <View
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1, }}
-          onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
-        >
-                    <View
-            style={{ paddingTop: Math.max(16, insets.top), }}>
           <View
-            // style={{ paddingTop: Math.max(16, insets.top), }}
-            className="flex-row items-center justify-between px-6 py-4 bg-warm-beige"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1,
+            }}
+            onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
           >
-            <Pressable
-              onPress={handleBack}
-              className="w-10 h-10 rounded-full bg-white items-center justify-center active:opacity-70"
-            >
-              <FontAwesomeIcon icon={faChevronLeft} size={18} color="#5D4037" />
-            </Pressable>
-            <View className="flex-row gap-3">
-              <Pressable
-                onPress={handleShare}
-                className="w-10 h-10 rounded-full bg-white items-center justify-center active:opacity-70"
+            <View style={{ paddingTop: Math.max(16, insets.top) }}>
+              <View
+                // style={{ paddingTop: Math.max(16, insets.top), }}
+                className="flex-row items-center justify-between px-6 py-4 bg-warm-beige"
               >
-                <FontAwesomeIcon icon={faShareNodes} size={18} color="#5D4037" />
-              </Pressable>
-              <Pressable
-                onPress={handleSaveToggle}
-                className="w-10 h-10 rounded-full bg-white items-center justify-center active:opacity-70"
-              >
-                <FontAwesomeIcon
-                  icon={product && isSaved(product.id) ? faHeartSolid : faHeart}
-                  size={18}
-                  color={product && isSaved(product.id) ? '#C5705D' : '#5D4037'}
-                />
-              </Pressable>
+                <Pressable
+                  onPress={handleBack}
+                  className="w-10 h-10 rounded-full bg-white items-center justify-center active:opacity-70"
+                >
+                  <FontAwesomeIcon
+                    icon={faChevronLeft}
+                    size={18}
+                    color="#5D4037"
+                  />
+                </Pressable>
+                <View className="flex-row gap-3">
+                  <Pressable
+                    onPress={handleShare}
+                    className="w-10 h-10 rounded-full bg-white items-center justify-center active:opacity-70"
+                  >
+                    <FontAwesomeIcon
+                      icon={faShareNodes}
+                      size={18}
+                      color="#5D4037"
+                    />
+                  </Pressable>
+                  <Pressable
+                    onPress={handleSaveToggle}
+                    className="w-10 h-10 rounded-full bg-white items-center justify-center active:opacity-70"
+                  >
+                    <FontAwesomeIcon
+                      icon={
+                        product && isSaved(product.id) ? faHeartSolid : faHeart
+                      }
+                      size={18}
+                      color={
+                        product && isSaved(product.id) ? '#C5705D' : '#5D4037'
+                      }
+                    />
+                  </Pressable>
+                </View>
+              </View>
             </View>
           </View>
-          </View>
-        </View>
 
-        {/* Scrollable Content */}
-        <ScrollView
-          style={{
-            marginTop: headerHeight,
-            marginBottom: footerHeight,
-          }}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Image Carousel */}
-          <View style={{ height: SCREEN_WIDTH, marginBottom: 24 }}>
-            <Carousel
-              loop={images.length > 1}
-              width={SCREEN_WIDTH}
-              height={SCREEN_WIDTH}
-              autoPlay={false}
-              data={images}
-              onProgressChange={(_, absoluteProgress) => {
-                progressValue.value = absoluteProgress;
-                // Update state for image counter (can lag slightly)
-                const index = Math.round(absoluteProgress);
-                if (index >= 0 && index < images.length && index !== activeImageIndex) {
-                  setActiveImageIndex(index);
-                }
-              }}
-              renderItem={({ item }) => (
-                <View style={{ flex: 1, backgroundColor: '#fff' }}>
-                  <Image
-                    source={{ uri: item }}
-                    style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }}
-                    resizeMode="cover"
-                  />
+          {/* Scrollable Content */}
+          <ScrollView
+            style={{
+              marginTop: headerHeight,
+              marginBottom: footerHeight,
+            }}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Image Carousel */}
+            <View style={{ height: SCREEN_WIDTH, marginBottom: 24 }}>
+              <Carousel
+                loop={images.length > 1}
+                width={SCREEN_WIDTH}
+                height={SCREEN_WIDTH}
+                autoPlay={false}
+                data={images}
+                onProgressChange={(_, absoluteProgress) => {
+                  progressValue.value = absoluteProgress;
+                  // Update state for image counter (can lag slightly)
+                  const index = Math.round(absoluteProgress);
+                  if (
+                    index >= 0 &&
+                    index < images.length &&
+                    index !== activeImageIndex
+                  ) {
+                    setActiveImageIndex(index);
+                  }
+                }}
+                renderItem={({ item }) => (
+                  <View style={{ flex: 1, backgroundColor: '#fff' }}>
+                    <Image
+                      source={{ uri: item }}
+                      style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }}
+                      resizeMode="cover"
+                    />
+                  </View>
+                )}
+              />
+
+              {/* Animated Pagination Dots */}
+              {images.length > 1 && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    bottom: 16,
+                    left: 0,
+                    right: 0,
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                  pointerEvents="none"
+                >
+                  {images.map((_, index) => (
+                    <PaginationDot
+                      key={`dot-${index}`}
+                      index={index}
+                      activeIndex={progressValue}
+                    />
+                  ))}
                 </View>
               )}
-            />
 
-            {/* Animated Pagination Dots */}
-            {images.length > 1 && (
-              <View
-                style={{
-                  position: 'absolute',
-                  bottom: 16,
-                  left: 0,
-                  right: 0,
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-                pointerEvents="none"
-              >
-                {images.map((_, index) => (
-                  <PaginationDot
-                    key={`dot-${index}`}
-                    index={index}
-                    activeIndex={progressValue}
-                  />
-                ))}
-              </View>
-            )}
-
-            {/* Image Counter */}
-            {images.length > 1 && (
-              <View
-                style={{
-                  position: 'absolute',
-                  top: 16,
-                  right: 16,
-                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                  borderRadius: 12,
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                }}
-                pointerEvents="none"
-              >
-                <Text style={{ color: '#fff', fontSize: 12, fontFamily: 'Inter18pt-SemiBold' }}>
-                  {activeImageIndex + 1} / {images.length}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {/* Product Info */}
-          <View className="px-6 pb-6">
-            {/* Brand */}
-            <Pressable onPress={handleOpenBrandSheet} className="mb-2">
-              <Text className="text-sm font-inter text-muted-foreground">
-                {product.brand}
-              </Text>
-            </Pressable>
-
-            {/* Product Name */}
-            <Text className="text-2xl font-playfair-bold text-foreground mb-3">
-              {product.name}
-            </Text>
-
-            {/* Rating */}
-            {product.rating && (
-              <View className="flex-row items-center mb-4">
-                <Text className="text-base font-inter-medium text-foreground">
-                  ⭐ {product.rating.toFixed(1)}
-                </Text>
-                {product.reviewCount && (
-                  <Text className="text-sm font-inter text-muted-foreground ml-2">
-                    ({product.reviewCount} reviews)
+              {/* Image Counter */}
+              {images.length > 1 && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 16,
+                    right: 16,
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    borderRadius: 12,
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                  }}
+                  pointerEvents="none"
+                >
+                  <Text
+                    style={{
+                      color: '#fff',
+                      fontSize: 12,
+                      fontFamily: 'Inter18pt-SemiBold',
+                    }}
+                  >
+                    {activeImageIndex + 1} / {images.length}
                   </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Product Info */}
+            <View className="px-6 pb-6">
+              {/* Brand */}
+              <Pressable onPress={handleOpenBrandSheet} className="mb-2">
+                <Text className="text-sm font-inter text-muted-foreground">
+                  {product.brand}
+                </Text>
+              </Pressable>
+
+              {/* Product Name */}
+              <Text className="text-2xl font-playfair-bold text-foreground mb-3">
+                {product.name}
+              </Text>
+
+              {/* Rating */}
+              {product.rating && (
+                <View className="flex-row items-center mb-4">
+                  <Text className="text-base font-inter-medium text-foreground">
+                    ⭐ {product.rating.toFixed(1)}
+                  </Text>
+                  {product.reviewCount && (
+                    <Text className="text-sm font-inter text-muted-foreground ml-2">
+                      ({product.reviewCount} reviews)
+                    </Text>
+                  )}
+                </View>
+              )}
+
+              {/* Price */}
+              <View className="flex-row items-center mb-6">
+                <Text className="text-3xl font-playfair-bold text-cocoa">
+                  £{product.price.toFixed(2)}
+                </Text>
+                {hasDiscount && (
+                  <>
+                    <Text className="text-xl font-inter text-muted-foreground line-through ml-3">
+                      £{product.compareAtPrice!.toFixed(2)}
+                    </Text>
+                    <View className="ml-3 bg-terracotta rounded-lg px-2 py-1">
+                      <Text className="text-white text-sm font-inter-bold">
+                        {discountPercent}% OFF
+                      </Text>
+                    </View>
+                  </>
                 )}
               </View>
-            )}
 
-            {/* Price */}
-            <View className="flex-row items-center mb-6">
-              <Text className="text-3xl font-playfair-bold text-cocoa">
-                £{product.price.toFixed(2)}
-              </Text>
-              {hasDiscount && (
-                <>
-                  <Text className="text-xl font-inter text-muted-foreground line-through ml-3">
-                    £{product.compareAtPrice!.toFixed(2)}
-                  </Text>
-                  <View className="ml-3 bg-terracotta rounded-lg px-2 py-1">
-                    <Text className="text-white text-sm font-inter-bold">
-                      {discountPercent}% OFF
-                    </Text>
-                  </View>
-                </>
-              )}
-            </View>
-
-            {/* Info Cards */}
-            <View className="mb-6 gap-y-3">
-              {/* Product Details */}
-              <Pressable
-                onPress={handleOpenDetailsSheet}
-                className="flex-row items-center justify-between p-4 bg-white rounded-xl border border-border active:bg-warm-beige"
-              >
-                <View className="flex-row items-center flex-1">
-                  <View className="w-10 h-10 bg-warm-beige rounded-full items-center justify-center mr-3">
-                    <FontAwesomeIcon icon={faInfo} size={18} color="#5D4037" />
-                  </View>
-                  <Text className="text-base font-inter-semibold text-foreground">
-                    Product Details
-                  </Text>
-                </View>
-                <FontAwesomeIcon icon={faChevronRight} size={16} color="#737373" />
-              </Pressable>
-
-              {/* Delivery Info */}
-              <Pressable
-                onPress={handleOpenDeliverySheet}
-                className="flex-row items-center justify-between p-4 bg-white rounded-xl border border-border active:bg-warm-beige"
-              >
-                <View className="flex-row items-center flex-1">
-                  <View className="w-10 h-10 bg-warm-beige rounded-full items-center justify-center mr-3">
-                    <FontAwesomeIcon icon={faTruck} size={18} color="#5D4037" />
-                  </View>
-                  <View className="flex-1">
+              {/* Info Cards */}
+              <View className="mb-6 gap-y-3">
+                {/* Product Details */}
+                <Pressable
+                  onPress={handleOpenDetailsSheet}
+                  className="flex-row items-center justify-between p-4 bg-white rounded-xl border border-border active:bg-warm-beige"
+                >
+                  <View className="flex-row items-center flex-1">
+                    <View className="w-10 h-10 bg-warm-beige rounded-full items-center justify-center mr-3">
+                      <FontAwesomeIcon
+                        icon={faInfo}
+                        size={18}
+                        color="#5D4037"
+                      />
+                    </View>
                     <Text className="text-base font-inter-semibold text-foreground">
-                      Delivery & Returns
-                    </Text>
-                    <Text className="text-xs font-inter text-muted-foreground mt-0.5">
-                      Free delivery on orders over £40
+                      Product Details
                     </Text>
                   </View>
+                  <FontAwesomeIcon
+                    icon={faChevronRight}
+                    size={16}
+                    color="#737373"
+                  />
+                </Pressable>
+
+                {/* Delivery Info */}
+                <Pressable
+                  onPress={handleOpenDeliverySheet}
+                  className="flex-row items-center justify-between p-4 bg-white rounded-xl border border-border active:bg-warm-beige"
+                >
+                  <View className="flex-row items-center flex-1">
+                    <View className="w-10 h-10 bg-warm-beige rounded-full items-center justify-center mr-3">
+                      <FontAwesomeIcon
+                        icon={faTruck}
+                        size={18}
+                        color="#5D4037"
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-base font-inter-semibold text-foreground">
+                        Delivery & Returns
+                      </Text>
+                      <Text className="text-xs font-inter text-muted-foreground mt-0.5">
+                        Free delivery on orders over £40
+                      </Text>
+                    </View>
+                  </View>
+                  <FontAwesomeIcon
+                    icon={faChevronRight}
+                    size={16}
+                    color="#737373"
+                  />
+                </Pressable>
+              </View>
+
+              {/* Stock Status */}
+              {product.inStock ? (
+                <View className="flex-row items-center mb-6">
+                  <View className="w-2 h-2 rounded-full bg-sage-green mr-2" />
+                  <Text className="text-sm font-inter text-muted-foreground">
+                    In Stock - Ready to ship
+                  </Text>
                 </View>
-                <FontAwesomeIcon icon={faChevronRight} size={16} color="#737373" />
-              </Pressable>
-            </View>
+              ) : (
+                <View className="flex-row items-center mb-6">
+                  <View className="w-2 h-2 rounded-full bg-destructive mr-2" />
+                  <Text className="text-sm font-inter text-muted-foreground">
+                    Out of Stock
+                  </Text>
+                </View>
+              )}
 
-            {/* Stock Status */}
-            {product.inStock ? (
-              <View className="flex-row items-center mb-6">
-                <View className="w-2 h-2 rounded-full bg-sage-green mr-2" />
-                <Text className="text-sm font-inter text-muted-foreground">
-                  In Stock - Ready to ship
+              {/* Seller Info */}
+              <View className="mb-6 p-4 bg-white rounded-xl border border-border">
+                <Text className="text-xs font-inter text-muted-foreground mb-1">
+                  Sold by{' '}
+                  <Text className="font-inter-semibold">{product.brand}</Text>
+                </Text>
+                <Text className="text-xs font-inter text-muted-foreground">
+                  Shipped by{' '}
+                  <Text className="font-inter-semibold">Auntie Marlene's</Text>
                 </Text>
               </View>
-            ) : (
-              <View className="flex-row items-center mb-6">
-                <View className="w-2 h-2 rounded-full bg-destructive mr-2" />
-                <Text className="text-sm font-inter text-muted-foreground">
-                  Out of Stock
-                </Text>
-              </View>
-            )}
-
-            {/* Seller Info */}
-            <View className="mb-6 p-4 bg-white rounded-xl border border-border">
-              <Text className="text-xs font-inter text-muted-foreground mb-1">
-                Sold by <Text className="font-inter-semibold">{product.brand}</Text>
-              </Text>
-              <Text className="text-xs font-inter text-muted-foreground">
-                Shipped by <Text className="font-inter-semibold">Auntie Marlene's</Text>
-              </Text>
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
 
-        {/* Add to Bag Button - Fixed at bottom */}
-        {/* TODO: Remove duplicate styling - consolidate inline styles and Tailwind classes.
+          {/* Add to Bag Button - Fixed at bottom */}
+          {/* TODO: Remove duplicate styling - consolidate inline styles and Tailwind classes.
             Currently mixing inline styles (backgroundColor, padding) with Tailwind classes on child View.
             The outer View uses inline styles for positioning and some styling, while the inner View
             uses Tailwind classes that duplicate some of these styles (bg-white, px-6, pt-4).
             Consider moving all styling to Tailwind classes on a single View where possible, or use
             inline styles only for positioning (position, bottom, left, right, zIndex). */}
-        <View
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 1,
-            backgroundColor: '#fff',
-            padding: 16,
-          }}
-          onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
-        >
           <View
-            className="px-6 pt-4 bg-white border-t border-border"
-            style={{ paddingBottom: Math.max(16, insets.bottom) }}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1,
+              backgroundColor: '#fff',
+              padding: 16,
+            }}
+            onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
           >
-          <Pressable
-            onPress={handleOpenVariantSheet}
-            disabled={!product.inStock}
-            className={`rounded-xl py-4 items-center ${
-              product.inStock ? 'bg-sage-green active:bg-sage-green/90' : 'bg-muted'
-            }`}
-          >
-            <Text className="text-white text-base font-inter-bold">
-              {product.inStock ? 'ADD TO BAG' : 'OUT OF STOCK'}
-            </Text>
-          </Pressable>
+            <View
+              className="px-6 pt-4 bg-white border-t border-border"
+              style={{ paddingBottom: Math.max(16, insets.bottom) }}
+            >
+              <Pressable
+                onPress={handleOpenVariantSheet}
+                disabled={!product.inStock}
+                className={`rounded-xl py-4 items-center ${
+                  product.inStock
+                    ? 'bg-sage-green active:bg-sage-green/90'
+                    : 'bg-muted'
+                }`}
+              >
+                <Text className="text-white text-base font-inter-bold">
+                  {product.inStock ? 'ADD TO BAG' : 'OUT OF STOCK'}
+                </Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
         </SafeAreaView>
       </View>
 

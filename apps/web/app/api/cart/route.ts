@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
-import { z, ZodError } from 'zod';
+import { ZodError, z } from 'zod';
 import { createCart, getCart as getCartAction } from '@/app/actions';
-import { rateLimit } from '@/lib/rate-limit';
 import { corsHeaders, corsOptionsResponse } from '@/lib/cors';
+import { rateLimit } from '@/lib/rate-limit';
 
 const createCartSchema = z.object({
   productVariantId: z.string().min(1),

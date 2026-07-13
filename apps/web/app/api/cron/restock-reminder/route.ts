@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/prisma';
 import { sendRestockReminderEmail } from '@/lib/email';
+import { db } from '@/lib/prisma';
 
 /**
  * Cron job for restock reminder emails

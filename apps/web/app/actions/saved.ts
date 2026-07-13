@@ -1,11 +1,11 @@
 'use server';
 
+import { db } from '@auntie-marlenes/db';
 import { revalidateTag } from 'next/cache';
 import { after } from 'next/server';
-import { db } from '@auntie-marlenes/db';
 import { auth } from '@/auth';
-import { track } from '@/utils/analytics-server';
 import { TRACKING_EVENTS } from '@/constants/events';
+import { track } from '@/utils/analytics-server';
 
 export const addProductToSaved = async ({
   productId,

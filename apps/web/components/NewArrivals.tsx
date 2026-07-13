@@ -1,9 +1,9 @@
-import { searchProducts } from '@/app/actions';
-import ProductCard from './ProductCard';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { getServerCountry } from '@/lib/server-location';
 import { cacheLife, cacheTag } from 'next/cache';
+import Link from 'next/link';
+import { searchProducts } from '@/app/actions';
+import { Button } from '@/components/ui/button';
+import { getServerCountry } from '@/lib/server-location';
+import ProductCard from './ProductCard';
 
 async function CachedNewArrivals({ country }: { country: string }) {
   'use cache';

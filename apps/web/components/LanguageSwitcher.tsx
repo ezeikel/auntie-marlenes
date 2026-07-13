@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { faChevronDown, faLanguage } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useLocale } from 'next-intl';
+import { useEffect, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,13 +13,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faLanguage } from '@fortawesome/pro-regular-svg-icons';
-import { useRouter, usePathname } from '@/i18n/navigation';
-import { locales, localeNames, type Locale } from '@/i18n/config';
-import { useAnalytics } from '@/utils/analytics-client';
 import { TRACKING_EVENTS } from '@/constants/events';
+import { type Locale, localeNames, locales } from '@/i18n/config';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { logger } from '@/lib/logger';
+import { useAnalytics } from '@/utils/analytics-client';
 
 const LanguageSwitcher = () => {
   const locale = useLocale() as Locale;

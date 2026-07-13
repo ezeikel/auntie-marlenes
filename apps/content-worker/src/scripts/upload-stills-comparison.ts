@@ -67,7 +67,8 @@ const PAIRS: Pair[] = [
 async function main() {
   console.log('[Upload] Uploading 6 v1 + 6 v2 stills to R2...\n');
 
-  const rows: Array<{ scene: string; title: string; v1: string; v2: string }> = [];
+  const rows: Array<{ scene: string; title: string; v1: string; v2: string }> =
+    [];
 
   for (const p of PAIRS) {
     const v1Buffer = await fs.readFile(path.join(HERO_IMAGES_DIR, p.v1Local));

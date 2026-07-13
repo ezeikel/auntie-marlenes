@@ -1,17 +1,17 @@
+import type { ShopifyCart } from '@auntie-marlenes/types';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, {
   createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
   type ReactNode,
-} from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { ShopifyCart } from "@auntie-marlenes/types";
-import * as cartApi from "../lib/api/cart";
-import * as cartStorage from "../lib/asyncStorage/cart";
-import { useAuthContext } from "./auth";
-import { toast } from "sonner-native";
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+import { toast } from 'sonner-native';
+import * as cartApi from '../lib/api/cart';
+import * as cartStorage from '../lib/asyncStorage/cart';
+import { useAuthContext } from './auth';
 
 type CartContextType = {
   cart: ShopifyCart | null;
@@ -33,7 +33,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartId, setCartId] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated: _isAuthenticated } = useAuthContext();
 
   // Load cartId from AsyncStorage on mount
   useEffect(() => {
@@ -52,14 +52,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     refetch,
   } = useQuery<ShopifyCart | null>({
-    queryKey: ["cart", cartId],
+    queryKey: ['cart', cartId],
     queryFn: async () => {
       if (!cartId) return null;
       try {
         const cartData = await cartApi.getCart(cartId);
         return cartData;
       } catch (error) {
-        console.error("Error fetching cart:", error);
+        console.error('Error fetching cart:', error);
         // If cart doesn't exist, clear the stored cartId
         await cartStorage.removeCartId();
         setCartId(null);
@@ -91,7 +91,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         const newCart = response?.cart;
 
         if (!newCart || !newCart.id) {
-          throw new Error("Failed to create cart - no cart ID returned");
+          throw new Error('Failed to create cart - no cart ID returned');
         }
 
         currentCartId = newCart.id;
@@ -109,17 +109,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     },
     onMutate: async ({ productVariantId, quantity = 1 }) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["cart", cartId] });
+      await queryClient.cancelQueries({ queryKey: ['cart', cartId] });
 
       // Snapshot previous value
       const previousCart = queryClient.getQueryData<ShopifyCart | null>([
-        "cart",
+        'cart',
         cartId,
       ]);
 
       // Optimistically update cart
       if (previousCart && previousCart.lines?.edges) {
-        queryClient.setQueryData<ShopifyCart>(["cart", cartId], {
+        queryClient.setQueryData<ShopifyCart>(['cart', cartId], {
           ...previousCart,
           lines: {
             edges: [
@@ -136,36 +136,36 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     onError: (error, variables, context) => {
       // Rollback on error
       if (context?.previousCart) {
-        queryClient.setQueryData(["cart", cartId], context.previousCart);
+        queryClient.setQueryData(['cart', cartId], context.previousCart);
       }
-      toast.error("Failed to add item to bag");
-      console.error("Add to cart error:", error);
+      toast.error('Failed to add item to bag');
+      console.error('Add to cart error:', error);
     },
     onSuccess: (data) => {
       // Update cart data with server response
-      queryClient.setQueryData(["cart", data?.id], data);
-      toast.success("Added to bag");
+      queryClient.setQueryData(['cart', data?.id], data);
+      toast.success('Added to bag');
     },
   });
 
   // Remove from cart mutation
   const removeFromCartMutation = useMutation({
     mutationFn: async (lineId: string) => {
-      if (!cartId) throw new Error("No cart ID");
+      if (!cartId) throw new Error('No cart ID');
       const response = await cartApi.removeProductFromCart(cartId, lineId);
       return response?.cart;
     },
     onMutate: async (lineId) => {
-      await queryClient.cancelQueries({ queryKey: ["cart", cartId] });
+      await queryClient.cancelQueries({ queryKey: ['cart', cartId] });
 
       const previousCart = queryClient.getQueryData<ShopifyCart | null>([
-        "cart",
+        'cart',
         cartId,
       ]);
 
       // Optimistically remove item
       if (previousCart && previousCart.lines?.edges) {
-        queryClient.setQueryData<ShopifyCart>(["cart", cartId], {
+        queryClient.setQueryData<ShopifyCart>(['cart', cartId], {
           ...previousCart,
           lines: {
             edges: previousCart.lines.edges.filter(
@@ -179,14 +179,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     },
     onError: (error, variables, context) => {
       if (context?.previousCart) {
-        queryClient.setQueryData(["cart", cartId], context.previousCart);
+        queryClient.setQueryData(['cart', cartId], context.previousCart);
       }
-      toast.error("Failed to remove item");
-      console.error("Remove from cart error:", error);
+      toast.error('Failed to remove item');
+      console.error('Remove from cart error:', error);
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(["cart", cartId], data);
-      toast.success("Removed from bag");
+      queryClient.setQueryData(['cart', cartId], data);
+      toast.success('Removed from bag');
     },
   });
 
@@ -199,21 +199,25 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       lineId: string;
       quantity: number;
     }) => {
-      if (!cartId) throw new Error("No cart ID");
-      const response = await cartApi.updateCartLineQuantity(cartId, lineId, quantity);
+      if (!cartId) throw new Error('No cart ID');
+      const response = await cartApi.updateCartLineQuantity(
+        cartId,
+        lineId,
+        quantity,
+      );
       return response?.cart;
     },
     onMutate: async ({ lineId, quantity }) => {
-      await queryClient.cancelQueries({ queryKey: ["cart", cartId] });
+      await queryClient.cancelQueries({ queryKey: ['cart', cartId] });
 
       const previousCart = queryClient.getQueryData<ShopifyCart | null>([
-        "cart",
+        'cart',
         cartId,
       ]);
 
       // Optimistically update quantity
       if (previousCart && previousCart.lines?.edges) {
-        queryClient.setQueryData<ShopifyCart>(["cart", cartId], {
+        queryClient.setQueryData<ShopifyCart>(['cart', cartId], {
           ...previousCart,
           lines: {
             edges: previousCart.lines.edges.map((edge) =>
@@ -229,13 +233,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     },
     onError: (error, variables, context) => {
       if (context?.previousCart) {
-        queryClient.setQueryData(["cart", cartId], context.previousCart);
+        queryClient.setQueryData(['cart', cartId], context.previousCart);
       }
-      toast.error("Failed to update quantity");
-      console.error("Update quantity error:", error);
+      toast.error('Failed to update quantity');
+      console.error('Update quantity error:', error);
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(["cart", cartId], data);
+      queryClient.setQueryData(['cart', cartId], data);
     },
   });
 
@@ -249,7 +253,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         });
         return result;
       } catch (error) {
-        console.error("Error in addToCart:", error);
+        console.error('Error in addToCart:', error);
         return null;
       }
     },
@@ -273,7 +277,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const clearCart = useCallback(async () => {
     await cartStorage.removeCartId();
     setCartId(null);
-    queryClient.setQueryData(["cart", cartId], null);
+    queryClient.setQueryData(['cart', cartId], null);
   }, [cartId, queryClient]);
 
   const refetchCart = useCallback(async () => {
@@ -302,7 +306,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 export const useCart = () => {
   const context = useContext(CartContext);
   if (context === undefined) {
-    throw new Error("useCart must be used within a CartProvider");
+    throw new Error('useCart must be used within a CartProvider');
   }
   return context;
 };

@@ -1,14 +1,14 @@
-import { setRequestLocale } from 'next-intl/server';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleQuestion } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { setRequestLocale } from 'next-intl/server';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import Link from 'next/link';
-import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'FAQ',

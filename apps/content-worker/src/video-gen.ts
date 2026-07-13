@@ -5,11 +5,11 @@
  * Scene analysis via Claude (precise, controlled descriptions).
  */
 
+import { anthropic } from '@ai-sdk/anthropic';
 import { fal } from '@fal-ai/client';
 import RunwayML from '@runwayml/sdk';
-import { uploadFile } from './storage';
 import { generateText } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
+import { uploadFile } from './storage';
 
 // Configure fal.ai
 fal.config({
@@ -24,11 +24,11 @@ const claude: any = anthropic('claude-sonnet-4-20250514');
 const FAL_MODELS = {
   'kling-v3': 'fal-ai/kling-video/v3/pro/image-to-video',
   'kling-o3': 'fal-ai/kling-video/o3/standard/image-to-video',
-  'seedance': 'fal-ai/bytedance/seedance/v1.5/pro/image-to-video',
-  'sora': 'fal-ai/sora-2/image-to-video',
+  seedance: 'fal-ai/bytedance/seedance/v1.5/pro/image-to-video',
+  sora: 'fal-ai/sora-2/image-to-video',
   'sora-pro': 'fal-ai/sora-2/image-to-video/pro',
-  'pixverse': 'fal-ai/pixverse/v6/image-to-video',
-  'hailuo': 'fal-ai/minimax/hailuo-02/standard/image-to-video',
+  pixverse: 'fal-ai/pixverse/v6/image-to-video',
+  hailuo: 'fal-ai/minimax/hailuo-02/standard/image-to-video',
 } as const;
 
 export type FalVideoModel = keyof typeof FAL_MODELS;
@@ -47,7 +47,9 @@ export async function generateSceneAudio(
   console.log('[Audio] Generating lofi background music via ElevenLabs...');
 
   // Map scene lighting/surface to a mood modifier
-  const warmth = scene.lighting.toLowerCase().includes('warm') ? 'warm golden' : 'soft dreamy';
+  const warmth = scene.lighting.toLowerCase().includes('warm')
+    ? 'warm golden'
+    : 'soft dreamy';
   const prompt = `Soft ${warmth} lo-fi instrumental, gentle piano chords over ambient synth pads, vinyl crackle texture, 70 BPM in C major, cozy beauty product showcase background music`;
 
   console.log(`[Audio] Prompt: ${prompt}`);
@@ -68,7 +70,9 @@ export async function generateSceneAudio(
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`ElevenLabs music generation failed (${res.status}): ${err}`);
+    throw new Error(
+      `ElevenLabs music generation failed (${res.status}): ${err}`,
+    );
   }
 
   const audioBuffer = Buffer.from(await res.arrayBuffer());
@@ -113,7 +117,10 @@ Rules:
     ],
   });
 
-  const parts = result.text.trim().split('|').map((s) => s.trim());
+  const parts = result.text
+    .trim()
+    .split('|')
+    .map((s) => s.trim());
 
   const analysis = {
     product: parts[0] || 'beauty product',
@@ -121,7 +128,9 @@ Rules:
     lighting: parts[2] || 'soft natural light',
   };
 
-  console.log(`[Video] Scene: ${analysis.product} | ${analysis.surface} | ${analysis.lighting}`);
+  console.log(
+    `[Video] Scene: ${analysis.product} | ${analysis.surface} | ${analysis.lighting}`,
+  );
   return analysis;
 }
 
@@ -133,7 +142,8 @@ function buildKlingPrompt(scene: SceneAnalysis): {
 } {
   return {
     prompt: `Ultra-stable cinematic product shot. ${scene.product} on ${scene.surface}. Product completely motionless, locked in place. ${scene.lighting} gradually shifts across the surface. Everything perfectly still except subtle light movement. Rock-steady camera, buttery smooth 30fps, zero jitter, hyper-realistic, professional lighting, 5 seconds.`,
-    negative_prompt: 'motion, shake, jitter, blur, wobble, camera pan, zoom, dolly, distortion, flicker, unstable, moving objects, moving towel, moving fabric, wind, breeze, falling particles, powder, rain, snow',
+    negative_prompt:
+      'motion, shake, jitter, blur, wobble, camera pan, zoom, dolly, distortion, flicker, unstable, moving objects, moving towel, moving fabric, wind, breeze, falling particles, powder, rain, snow',
   };
 }
 
@@ -143,7 +153,8 @@ function buildSeedancePrompt(scene: SceneAnalysis): {
 } {
   return {
     prompt: `Static, locked-off product photograph. ${scene.product} on ${scene.surface}. ${scene.lighting}. Absolutely nothing moves. Completely frozen scene like a photograph. No light shifts, no motion of any kind. Still life. Premium beauty product.`,
-    negative_prompt: 'camera movement, pan, zoom, dolly, motion, shake, jitter, wobble, moving objects, wind, breeze, light shift, animation, particles',
+    negative_prompt:
+      'camera movement, pan, zoom, dolly, motion, shake, jitter, wobble, moving objects, wind, breeze, light shift, animation, particles',
   };
 }
 
@@ -153,7 +164,8 @@ function buildPixversePrompt(scene: SceneAnalysis): {
 } {
   return {
     prompt: `Static product shot with subtle ambient light animation. ${scene.product} on ${scene.surface} in ${scene.lighting}. Product and all objects stay perfectly still. Only gentle light shifts across surfaces. Cinematic, smooth, premium quality.`,
-    negative_prompt: 'blur, distort, low quality, shake, jitter, moving objects, wind, particles',
+    negative_prompt:
+      'blur, distort, low quality, shake, jitter, moving objects, wind, particles',
   };
 }
 
@@ -248,7 +260,9 @@ async function animateWithRunway(
   while (taskResult.status !== 'SUCCEEDED' && taskResult.status !== 'FAILED') {
     attempts++;
     if (attempts > maxAttempts) throw new Error('Runway task timed out');
-    console.log(`[Video] Runway: ${taskResult.status} (${attempts}/${maxAttempts})...`);
+    console.log(
+      `[Video] Runway: ${taskResult.status} (${attempts}/${maxAttempts})...`,
+    );
     await new Promise((r) => setTimeout(r, 10_000));
     taskResult = await client.tasks.retrieve(task.id);
   }
@@ -259,7 +273,9 @@ async function animateWithRunway(
 
   const videoUrl = (taskResult as any)?.output?.[0];
   if (!videoUrl) {
-    throw new Error(`Runway did not return a video: ${JSON.stringify(taskResult)}`);
+    throw new Error(
+      `Runway did not return a video: ${JSON.stringify(taskResult)}`,
+    );
   }
 
   console.log(`[Video] Runway video generated, downloading...`);
@@ -389,7 +405,9 @@ export async function animateScene(
   }
 
   const videoBuffer = Buffer.from(await videoRes.arrayBuffer());
-  console.log(`[Video] ${model} video downloaded (${videoBuffer.length} bytes)`);
+  console.log(
+    `[Video] ${model} video downloaded (${videoBuffer.length} bytes)`,
+  );
 
   return { video: videoBuffer, scene };
 }

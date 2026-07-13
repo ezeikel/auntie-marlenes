@@ -1,28 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import {
+  faChevronLeft,
+  faChevronRight,
+  faHeart as faHeartRegular,
+  faRotateLeft,
+  faShareNodes,
+  faTruck,
+} from '@fortawesome/pro-regular-svg-icons';
+import { faHeart as faHeartSolid } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { ShippingInfo } from '@/components/ShippingInfo';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faHeart as faHeartRegular,
-  faTruck,
-  faRotateLeft,
-  faChevronLeft,
-  faChevronRight,
-  faShareNodes,
-} from '@fortawesome/pro-regular-svg-icons';
-import { faHeart as faHeartSolid } from '@fortawesome/pro-solid-svg-icons';
-import type { Product } from '@/lib/constants';
-import { formatCurrency } from '@/lib/currency';
-import ProductCard from './ProductCard';
+import { Button } from '@/components/ui/button';
 import {
   Carousel,
   CarouselContent,
@@ -30,14 +29,15 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
-import AddToBagButton from './buttons/AddToBagButton/AddToBagButton';
-import { useSaved } from '@/contexts/saved';
-import { toast } from 'sonner';
-import { useAnalytics } from '@/utils/analytics-client';
 import { TRACKING_EVENTS } from '@/constants/events';
 import { useLocation } from '@/contexts/LocationContext';
+import { useSaved } from '@/contexts/saved';
+import type { Product } from '@/lib/constants';
+import { formatCurrency } from '@/lib/currency';
 import { getShippingZone } from '@/lib/location';
-import { ShippingInfo } from '@/components/ShippingInfo';
+import { useAnalytics } from '@/utils/analytics-client';
+import AddToBagButton from './buttons/AddToBagButton/AddToBagButton';
+import ProductCard from './ProductCard';
 import StarRating from './StarRating';
 
 type ProductDetailProps = {

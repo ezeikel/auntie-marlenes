@@ -1,9 +1,9 @@
+import { cacheLife, cacheTag } from 'next/cache';
+import { searchProducts } from '@/app/actions';
 import DynamicProductListing from '@/components/DynamicProductListing';
 import EmptyCategory from '@/components/EmptyCategory';
-import { searchProducts } from '@/app/actions';
-import { deslugify } from '@/lib/utils/slugify';
-import { cacheLife, cacheTag } from 'next/cache';
 import { getServerCountry, getServerUserId } from '@/lib/server-location';
+import { deslugify } from '@/lib/utils/slugify';
 
 type ProductsProps = {
   params: Promise<{ locale?: string; category: string }>;

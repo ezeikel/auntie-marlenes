@@ -1,4 +1,4 @@
-import { Section, Img, Heading } from '@react-email/components';
+import { Heading, Img, Section } from '@react-email/components';
 
 type EmailHeaderProps = {
   title?: string;

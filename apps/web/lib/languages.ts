@@ -1,7 +1,12 @@
 // This file is deprecated - use @/i18n/config instead
 // Keeping for backwards compatibility during migration
 
-export { locales, localeNames, defaultLocale, type Locale } from '@/i18n/config';
+export {
+  defaultLocale,
+  type Locale,
+  localeNames,
+  locales,
+} from '@/i18n/config';
 
 // Legacy type for backwards compatibility
 export type Language = {

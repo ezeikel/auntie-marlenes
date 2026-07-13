@@ -16,8 +16,8 @@ import { resolve } from 'path';
 config({ path: resolve(process.cwd(), '.env.local') });
 
 import {
-  regenerateBlogImage,
   regenerateAllBlogImages,
+  regenerateBlogImage,
 } from '../app/actions/blog';
 
 async function main() {

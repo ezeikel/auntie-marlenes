@@ -19,12 +19,12 @@ const SCENE_PROMPTS: Record<string, string[]> = {
     'home hair styling session with warm kitchen background, natural sunlight, and homey decor',
     'bright, welcoming salon space with colourful braiding accessories and warm wood tones',
   ],
-  'Skincare': [
+  Skincare: [
     'luxurious marble bathroom counter with candles, fresh flowers, and soft diffused lighting',
     'minimalist bathroom shelf with plants, warm wood accents, and morning sunlight',
     'self-care setup on a clean white surface with eucalyptus sprigs and warm ambient glow',
   ],
-  'Styling': [
+  Styling: [
     'bedroom dresser with a round mirror, golden hour light, and fresh flowers',
     'getting-ready scene on a vanity with warm lighting, jewellery, and personal touches',
     'clean modern shelf with styling tools, warm wood background, and soft studio lighting',

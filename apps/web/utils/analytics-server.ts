@@ -1,10 +1,10 @@
 import 'server-only';
 
 import { track as vercelTrackServer } from '@vercel/analytics/server';
-import type { EventProperties, TrackingEvent } from '@/types';
 import { createPostHogClient } from '@/lib/posthog-server';
+import type { EventProperties, TrackingEvent } from '@/types';
 import { cleanVercelProperties } from '@/utils/analytics';
-import { getUserId, getCurrentUser } from '@/utils/user';
+import { getCurrentUser, getUserId } from '@/utils/user';
 
 type TrackOptions = {
   /** Explicit distinct ID (e.g. customer email from a webhook). Skips session lookup. */

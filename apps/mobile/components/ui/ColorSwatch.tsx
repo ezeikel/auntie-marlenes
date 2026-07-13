@@ -1,5 +1,5 @@
-import { Pressable, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { Pressable, View } from 'react-native';
 
 type ColorSwatchProps = {
   color: {

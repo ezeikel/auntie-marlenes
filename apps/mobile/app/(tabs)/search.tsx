@@ -1,20 +1,27 @@
+import {
+  faMagnifyingGlass,
+  faMagnifyingGlassSlash,
+  faXmark,
+} from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Pressable,
   Text,
   TextInput,
-  FlatList,
-  ActivityIndicator,
-  Pressable,
-  Dimensions,
+  View,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faMagnifyingGlass, faXmark, faMagnifyingGlassSlash } from '@fortawesome/pro-regular-svg-icons';
-import { useSearchProducts } from '@/hooks/useProducts';
-import ProductCard from '@/components/ProductCard';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useDebouncedCallback } from 'use-debounce';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import ProductCard from '@/components/ProductCard';
+import { useSearchProducts } from '@/hooks/useProducts';
 
 export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,11 +86,7 @@ export default function SearchScreen() {
         }}
       >
         <View className="flex-row items-center bg-white border border-border rounded-xl px-4 py-3">
-          <FontAwesomeIcon
-            icon={faMagnifyingGlass}
-            size={18}
-            color="#A3A3A3"
-          />
+          <FontAwesomeIcon icon={faMagnifyingGlass} size={18} color="#A3A3A3" />
           <TextInput
             value={searchQuery}
             onChangeText={handleSearchChange}
@@ -105,9 +108,14 @@ export default function SearchScreen() {
       {isLoading ? (
         <View
           style={{
-            height: headerHeight > 0 && searchInputHeight > 0
-              ? Dimensions.get('window').height - insets.top - headerHeight - searchInputHeight - tabBarHeight
-              : undefined,
+            height:
+              headerHeight > 0 && searchInputHeight > 0
+                ? Dimensions.get('window').height -
+                  insets.top -
+                  headerHeight -
+                  searchInputHeight -
+                  tabBarHeight
+                : undefined,
           }}
         >
           <View className="flex-1 items-center justify-center">
@@ -117,21 +125,30 @@ export default function SearchScreen() {
       ) : debouncedQuery.length === 0 ? (
         <View
           style={{
-            height: headerHeight > 0 && searchInputHeight > 0
-              ? Dimensions.get('window').height - insets.top - headerHeight - searchInputHeight - tabBarHeight
-              : undefined,
+            height:
+              headerHeight > 0 && searchInputHeight > 0
+                ? Dimensions.get('window').height -
+                  insets.top -
+                  headerHeight -
+                  searchInputHeight -
+                  tabBarHeight
+                : undefined,
           }}
         >
           <View className="flex-1 items-center justify-center px-12">
-          <View className="w-20 h-20 rounded-full bg-warm-beige items-center justify-center mb-6">
-            <FontAwesomeIcon icon={faMagnifyingGlass} size={40} color="#5D4037" />
-          </View>
-          <Text className="text-lg font-inter-semibold text-center text-foreground mb-2">
-            Search for Products
-          </Text>
-          <Text className="text-sm font-inter text-center text-muted-foreground">
-            Start typing to find your favorite beauty products
-          </Text>
+            <View className="w-20 h-20 rounded-full bg-warm-beige items-center justify-center mb-6">
+              <FontAwesomeIcon
+                icon={faMagnifyingGlass}
+                size={40}
+                color="#5D4037"
+              />
+            </View>
+            <Text className="text-lg font-inter-semibold text-center text-foreground mb-2">
+              Search for Products
+            </Text>
+            <Text className="text-sm font-inter text-center text-muted-foreground">
+              Start typing to find your favorite beauty products
+            </Text>
           </View>
         </View>
       ) : products && products.length > 0 ? (
@@ -154,14 +171,23 @@ export default function SearchScreen() {
       ) : (
         <View
           style={{
-            height: headerHeight > 0 && searchInputHeight > 0
-              ? Dimensions.get('window').height - insets.top - headerHeight - searchInputHeight - tabBarHeight
-              : undefined,
+            height:
+              headerHeight > 0 && searchInputHeight > 0
+                ? Dimensions.get('window').height -
+                  insets.top -
+                  headerHeight -
+                  searchInputHeight -
+                  tabBarHeight
+                : undefined,
           }}
         >
           <View className="flex-1 items-center justify-center px-12">
             <View className="w-20 h-20 rounded-full bg-warm-beige items-center justify-center mb-6">
-              <FontAwesomeIcon icon={faMagnifyingGlassSlash} size={40} color="#5D4037" />
+              <FontAwesomeIcon
+                icon={faMagnifyingGlassSlash}
+                size={40}
+                color="#5D4037"
+              />
             </View>
             <Text className="text-lg font-inter-semibold text-center text-foreground mb-2">
               No Results Found

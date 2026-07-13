@@ -14,17 +14,17 @@
  * Run with: pnpm gen:hero-videos-ab
  */
 
-import { fal } from '@fal-ai/client';
-import RunwayML from '@runwayml/sdk';
-import { generateObject } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
-import { z } from 'zod';
 import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
+import { anthropic } from '@ai-sdk/anthropic';
+import { fal } from '@fal-ai/client';
+import RunwayML from '@runwayml/sdk';
+import { generateObject } from 'ai';
+import { z } from 'zod';
 import { uploadFile } from './storage';
 
 const execFileAsync = promisify(execFile);
@@ -186,16 +186,40 @@ async function extractKeyFrames(
     const lastTs = Math.max(0, duration - 0.1).toFixed(2);
 
     await execFileAsync('ffmpeg', [
-      '-y', '-loglevel', 'error', '-ss', '0', '-i', videoPath,
-      '-vframes', '1', firstPath,
+      '-y',
+      '-loglevel',
+      'error',
+      '-ss',
+      '0',
+      '-i',
+      videoPath,
+      '-vframes',
+      '1',
+      firstPath,
     ]);
     await execFileAsync('ffmpeg', [
-      '-y', '-loglevel', 'error', '-ss', middleTs, '-i', videoPath,
-      '-vframes', '1', middlePath,
+      '-y',
+      '-loglevel',
+      'error',
+      '-ss',
+      middleTs,
+      '-i',
+      videoPath,
+      '-vframes',
+      '1',
+      middlePath,
     ]);
     await execFileAsync('ffmpeg', [
-      '-y', '-loglevel', 'error', '-ss', lastTs, '-i', videoPath,
-      '-vframes', '1', lastPath,
+      '-y',
+      '-loglevel',
+      'error',
+      '-ss',
+      lastTs,
+      '-i',
+      videoPath,
+      '-vframes',
+      '1',
+      lastPath,
     ]);
 
     const [first, middle, last] = await Promise.all([
@@ -309,13 +333,22 @@ export async function runHeroVideoAB(): Promise<void> {
   // 3. Runway Gen-4.5
   console.log('═══ Runway Gen-4.5 ═══');
   try {
-    const runwayBuffer = await generateRunwayVideo(imageUrl, SCENE_1.motionPrompt);
+    const runwayBuffer = await generateRunwayVideo(
+      imageUrl,
+      SCENE_1.motionPrompt,
+    );
     const runwayPath = path.join(HERO_VIDEOS_DIR, 'hero-01-bonnet-runway.mp4');
     await fs.writeFile(runwayPath, runwayBuffer);
-    console.log(`[AB/Runway] ✓ Saved ${runwayPath} (${runwayBuffer.length} bytes)`);
+    console.log(
+      `[AB/Runway] ✓ Saved ${runwayPath} (${runwayBuffer.length} bytes)`,
+    );
 
     const runwayFrames = await extractKeyFrames(runwayBuffer);
-    const runwayOutcome = await judgeVideo('Runway Gen-4.5', stillBuffer, runwayFrames);
+    const runwayOutcome = await judgeVideo(
+      'Runway Gen-4.5',
+      stillBuffer,
+      runwayFrames,
+    );
     console.log('[AB/Runway] Scores:', runwayOutcome.scores);
     console.log(`[AB/Runway] Feedback: ${runwayOutcome.feedback}\n`);
     outcomes.push(runwayOutcome);

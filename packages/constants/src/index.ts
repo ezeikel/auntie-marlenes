@@ -1,8 +1,8 @@
 // Colors
-export { COLORS, TAB_COLORS } from './colors';
 
 // API Configuration
-export { SHOPIFY_CONFIG, getApiUrl, API_HEADERS } from './api';
+export { API_HEADERS, getApiUrl, SHOPIFY_CONFIG } from './api';
+export { COLORS, TAB_COLORS } from './colors';
 
 // Navigation
-export { NAV_LINKS, CATEGORIES } from './navigation';
+export { CATEGORIES, NAV_LINKS } from './navigation';

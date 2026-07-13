@@ -1,5 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchProducts, fetchProductByHandle, searchProducts } from '@/lib/api/shopify';
+import {
+  fetchProductByHandle,
+  fetchProducts,
+  searchProducts,
+} from '@/lib/api/shopify';
 
 /**
  * Fetch all products

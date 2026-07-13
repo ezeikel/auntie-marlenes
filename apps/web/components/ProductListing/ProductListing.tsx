@@ -1,11 +1,13 @@
 'use client';
 
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { faChevronDown } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';
-import ProductCard from '@/components/ProductCard';
-import FilterSidebar from '@/components/FilterSidebar';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import FilterSheet from '@/components/FilterSheet';
+import FilterSidebar from '@/components/FilterSidebar';
+import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,8 +15,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown } from '@fortawesome/pro-regular-svg-icons';
 import type { Product } from '@/lib/constants';
 
 type Filters = {
@@ -120,13 +120,11 @@ export default function ProductListing({
   console.log('[ProductListing] Before filters:', {
     total: products.length,
     priceRange: filters.priceRange,
-    samplePrices: products
-      .slice(0, 3)
-      .map((p) => ({
-        name: p.name,
-        price: p.price,
-        currencyCode: p.currencyCode,
-      })),
+    samplePrices: products.slice(0, 3).map((p) => ({
+      name: p.name,
+      price: p.price,
+      currencyCode: p.currencyCode,
+    })),
   });
 
   if (filters.inStockOnly) {

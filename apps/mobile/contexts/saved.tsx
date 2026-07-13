@@ -1,16 +1,16 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, {
   createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
   type ReactNode,
-} from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import * as savedApi from "../lib/api/saved";
-import * as savedStorage from "../lib/asyncStorage/saved";
-import { useAuthContext } from "./auth";
-import { toast } from "sonner-native";
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+import { toast } from 'sonner-native';
+import * as savedApi from '../lib/api/saved';
+import * as savedStorage from '../lib/asyncStorage/saved';
+import { useAuthContext } from './auth';
 
 type SavedContextType = {
   savedItems: string[];
@@ -39,14 +39,14 @@ export const SavedProvider = ({ children }: { children: ReactNode }) => {
 
   // Fetch saved items from API if authenticated
   const { data: apiSaves = [], isLoading: isLoadingApi } = useQuery<string[]>({
-    queryKey: ["saved"],
+    queryKey: ['saved'],
     queryFn: async () => {
       if (!isAuthenticated) return [];
       try {
         const response = await savedApi.getSavedItems();
         return response.productIds;
       } catch (error) {
-        console.error("Error fetching saved items:", error);
+        console.error('Error fetching saved items:', error);
         return [];
       }
     },
@@ -92,25 +92,25 @@ export const SavedProvider = ({ children }: { children: ReactNode }) => {
     },
     onMutate: async (productId) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["saved"] });
+      await queryClient.cancelQueries({ queryKey: ['saved'] });
 
       // Snapshot previous value
       const previousLocalSaves = localSaves;
-      const previousApiSaves = queryClient.getQueryData<string[]>(["saved"]);
+      const previousApiSaves = queryClient.getQueryData<string[]>(['saved']);
 
       // Optimistically update local state
       const isCurrentlySaved = isSaved(productId);
       if (isCurrentlySaved) {
         setLocalSaves((prev) => prev.filter((id) => id !== productId));
         if (isAuthenticated) {
-          queryClient.setQueryData<string[]>(["saved"], (old = []) =>
+          queryClient.setQueryData<string[]>(['saved'], (old = []) =>
             old.filter((id) => id !== productId),
           );
         }
       } else {
         setLocalSaves((prev) => [...prev, productId]);
         if (isAuthenticated) {
-          queryClient.setQueryData<string[]>(["saved"], (old = []) => [
+          queryClient.setQueryData<string[]>(['saved'], (old = []) => [
             ...old,
             productId,
           ]);
@@ -125,16 +125,16 @@ export const SavedProvider = ({ children }: { children: ReactNode }) => {
         setLocalSaves(context.previousLocalSaves);
       }
       if (context?.previousApiSaves && isAuthenticated) {
-        queryClient.setQueryData(["saved"], context.previousApiSaves);
+        queryClient.setQueryData(['saved'], context.previousApiSaves);
       }
-      toast.error("Failed to update saved items");
-      console.error("Toggle save error:", error);
+      toast.error('Failed to update saved items');
+      console.error('Toggle save error:', error);
     },
     onSuccess: (data) => {
       if (data.isCurrentlySaved) {
-        toast.success("Removed from saved");
+        toast.success('Removed from saved');
       } else {
-        toast.success("Added to saved");
+        toast.success('Added to saved');
       }
     },
   });
@@ -143,7 +143,7 @@ export const SavedProvider = ({ children }: { children: ReactNode }) => {
   const syncSavedItemsMutation = useMutation({
     mutationFn: async (productIds: string[]) => {
       if (!isAuthenticated) {
-        throw new Error("Must be authenticated to sync saved items");
+        throw new Error('Must be authenticated to sync saved items');
       }
       return await savedApi.syncSavedItems(productIds);
     },
@@ -151,12 +151,12 @@ export const SavedProvider = ({ children }: { children: ReactNode }) => {
       // TODO: send this to analytics
       console.log(`Synced ${data.synced} saved items to backend`);
       // Refetch saved items from API to get merged list
-      await queryClient.invalidateQueries({ queryKey: ["saved"] });
-      toast.success("Saved items synced");
+      await queryClient.invalidateQueries({ queryKey: ['saved'] });
+      toast.success('Saved items synced');
     },
     onError: (error) => {
-      console.error("Sync saved items error:", error);
-      toast.error("Failed to sync saved items");
+      console.error('Sync saved items error:', error);
+      toast.error('Failed to sync saved items');
     },
   });
 
@@ -176,7 +176,7 @@ export const SavedProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const refetchSaved = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ["saved"] });
+    await queryClient.invalidateQueries({ queryKey: ['saved'] });
   }, [queryClient]);
 
   return (
@@ -198,7 +198,7 @@ export const SavedProvider = ({ children }: { children: ReactNode }) => {
 export const useSaved = () => {
   const context = useContext(SavedContext);
   if (context === undefined) {
-    throw new Error("useSaved must be used within a SavedProvider");
+    throw new Error('useSaved must be used within a SavedProvider');
   }
   return context;
 };

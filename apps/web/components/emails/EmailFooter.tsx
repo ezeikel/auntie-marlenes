@@ -1,4 +1,4 @@
-import { Section, Text, Link, Hr } from '@react-email/components';
+import { Hr, Link, Section, Text } from '@react-email/components';
 
 const footer = {
   marginTop: '48px',

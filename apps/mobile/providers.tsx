@@ -1,15 +1,18 @@
-import { type ReactNode } from 'react';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import {
+  ColorScheme,
+  ShopifyCheckoutSheetProvider,
+} from '@shopify/checkout-sheet-kit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PostHogProvider } from 'posthog-react-native';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { type ReactNode } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Toaster } from 'sonner-native';
 import { AuthContextProvider } from './contexts/auth';
 import { CartProvider } from './contexts/cart';
 import { SavedProvider } from './contexts/saved';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ShopifyCheckoutSheetProvider, ColorScheme } from '@shopify/checkout-sheet-kit';
 
 export const queryClient = new QueryClient({
   defaultOptions: {

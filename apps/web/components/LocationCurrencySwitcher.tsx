@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { faChevronDown, faGlobe } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,11 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faGlobe } from '@fortawesome/pro-regular-svg-icons';
 import { Input } from '@/components/ui/input';
 import { useLocation } from '@/contexts/LocationContext';
-import { priorityCountries, allCountries } from '@/lib/location';
+import { allCountries, priorityCountries } from '@/lib/location';
 
 const LocationCurrencySwitcher = () => {
   const { country, setCountry, isLoading } = useLocation();
@@ -65,9 +65,7 @@ const LocationCurrencySwitcher = () => {
             <span className="truncate hidden lg:inline">
               {country.code} ({country.currency.code})
             </span>
-            <span className="truncate lg:hidden">
-              {country.code}
-            </span>
+            <span className="truncate lg:hidden">{country.code}</span>
           </div>
           <FontAwesomeIcon
             icon={faChevronDown}

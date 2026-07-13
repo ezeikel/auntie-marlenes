@@ -1,5 +1,5 @@
 import { getRequestConfig } from 'next-intl/server';
-import { locales, defaultLocale, type Locale } from './config';
+import { defaultLocale, type Locale, locales } from './config';
 
 const isValidLocale = (locale: string | undefined): locale is Locale => {
   return typeof locale === 'string' && locales.includes(locale as Locale);

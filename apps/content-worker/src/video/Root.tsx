@@ -15,13 +15,15 @@ export const RemotionRoot: React.FC = () => {
         fps={24}
         width={1080}
         height={1920}
-        defaultProps={{
-          sceneImageUrl: SAMPLE_IMAGE,
-          audioUrl: undefined,
-          headline: 'Salon results at home',
-          subheading: 'For curls that last',
-          durationInFrames: 120,
-        } satisfies ProductReelProps}
+        defaultProps={
+          {
+            sceneImageUrl: SAMPLE_IMAGE,
+            audioUrl: undefined,
+            headline: 'Salon results at home',
+            subheading: 'For curls that last',
+            durationInFrames: 120,
+          } satisfies ProductReelProps
+        }
         calculateMetadata={({ props }) => ({
           durationInFrames: props.durationInFrames || 120,
         })}

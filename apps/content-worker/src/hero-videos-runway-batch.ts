@@ -22,11 +22,11 @@
  * Run with: pnpm gen:hero-videos-runway-batch
  */
 
-import RunwayML from '@runwayml/sdk';
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import RunwayML from '@runwayml/sdk';
 import { uploadFile } from './storage';
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
@@ -59,7 +59,7 @@ const SCENES: SceneConfig[] = [
     imageFilename: 'hero-01-bonnet.png',
     title: 'The Bonnet Moment',
     motionPrompt:
-      "A Black woman in her mid-thirties tying an emerald satin bonnet over her hair at her bedroom mirror in warm tungsten lamplight. She finishes tying the knot at the nape of her neck, lowers her arms to her sides, looks at her own reflection, and a small private smile gradually rises on her face. She blinks slowly once. The camera is fixed on a tripod and does not pan or zoom. All background elements stay perfectly still and do not morph or change shape. Photorealistic.",
+      'A Black woman in her mid-thirties tying an emerald satin bonnet over her hair at her bedroom mirror in warm tungsten lamplight. She finishes tying the knot at the nape of her neck, lowers her arms to her sides, looks at her own reflection, and a small private smile gradually rises on her face. She blinks slowly once. The camera is fixed on a tripod and does not pan or zoom. All background elements stay perfectly still and do not morph or change shape. Photorealistic.',
   },
   {
     id: 'mother-daughter',
@@ -91,7 +91,7 @@ const SCENES: SceneConfig[] = [
     // gestures. Fix: replace all lift/separate verbs with "smooths" and "strokes",
     // add explicit negative framing "hands do not pull or tug any hair".
     motionPrompt:
-      "Motion begins immediately from frame one, no pause at the start. A Black woman with shoulder-length locs wearing a cream cotton camisole stands at her bathroom vanity smoothing golden hair oil along one loc near her temple with gentle fingertip strokes. Her fingertips slide smoothly downward along the length of the loc applying oil, then her fingertips stroke a second loc on the other side in the same gentle downward motion. Her hands do NOT pull, tug, tear, or remove any hair — the motion is purely a soft smoothing stroke along the exterior of the loc. Warm morning sunlight holds steady through the side window. The camera is fixed on a tripod and does not pan or zoom. All background elements stay perfectly still and do not morph or change shape. Photorealistic.",
+      'Motion begins immediately from frame one, no pause at the start. A Black woman with shoulder-length locs wearing a cream cotton camisole stands at her bathroom vanity smoothing golden hair oil along one loc near her temple with gentle fingertip strokes. Her fingertips slide smoothly downward along the length of the loc applying oil, then her fingertips stroke a second loc on the other side in the same gentle downward motion. Her hands do NOT pull, tug, tear, or remove any hair — the motion is purely a soft smoothing stroke along the exterior of the loc. Warm morning sunlight holds steady through the side window. The camera is fixed on a tripod and does not pan or zoom. All background elements stay perfectly still and do not morph or change shape. Photorealistic.',
   },
   {
     id: 'barbershop-fade',
@@ -149,10 +149,7 @@ async function generateRunwayClip(
   let attempts = 0;
   const maxAttempts = 90;
 
-  while (
-    taskResult.status !== 'SUCCEEDED' &&
-    taskResult.status !== 'FAILED'
-  ) {
+  while (taskResult.status !== 'SUCCEEDED' && taskResult.status !== 'FAILED') {
     attempts += 1;
     if (attempts > maxAttempts) {
       throw new Error(
@@ -243,9 +240,7 @@ export async function generateAllHeroVideosRunwayBatch(
     `[Runway] Generating ${totalClips} clip(s): ${targets.length} scene(s) × ${variants.length} variant(s)`,
   );
   console.log(`[Runway] Variants: ${variants.join(', ')}`);
-  console.log(
-    `[Runway] Scenes: ${targets.map((s) => s.id).join(', ')}`,
-  );
+  console.log(`[Runway] Scenes: ${targets.map((s) => s.id).join(', ')}`);
   console.log(`[Runway] Seed: ${seed}`);
   console.log(`[Runway] Estimated cost: ~$${estCost}\n`);
 

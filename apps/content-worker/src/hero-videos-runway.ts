@@ -22,16 +22,16 @@
  * Run with: pnpm gen:hero-videos-runway
  */
 
-import RunwayML from '@runwayml/sdk';
-import { generateObject } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
-import { z } from 'zod';
 import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
+import { anthropic } from '@ai-sdk/anthropic';
+import RunwayML from '@runwayml/sdk';
+import { generateObject } from 'ai';
+import { z } from 'zod';
 import { uploadFile } from './storage';
 
 const execFileAsync = promisify(execFile);
@@ -52,7 +52,7 @@ const HERO_VIDEOS_DIR = path.resolve(
   '../../../apps/web/public/videos/hero',
 );
 
-const MAX_RETRIES = 2;
+const _MAX_RETRIES = 2;
 const RETRY_SEEDS = [42, 84, 1337];
 const SLOWMO_FACTOR = 4.0; // 5s → 20s
 
@@ -147,10 +147,7 @@ async function generateRunwayVideo(
   let attempts = 0;
   const maxAttempts = 90;
 
-  while (
-    taskResult.status !== 'SUCCEEDED' &&
-    taskResult.status !== 'FAILED'
-  ) {
+  while (taskResult.status !== 'SUCCEEDED' && taskResult.status !== 'FAILED') {
     attempts += 1;
     if (attempts > maxAttempts) {
       throw new Error(
@@ -175,9 +172,7 @@ async function generateRunwayVideo(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const videoUrl = (taskResult as any)?.output?.[0];
   if (!videoUrl) {
-    throw new Error(
-      `[Runway] ${scene.videoFilename} — no video URL in result`,
-    );
+    throw new Error(`[Runway] ${scene.videoFilename} — no video URL in result`);
   }
 
   console.log(`[Runway] ${scene.videoFilename} — downloading raw clip`);
@@ -275,16 +270,40 @@ async function extractKeyFrames(
     const lastTs = Math.max(0, duration - 0.1).toFixed(2);
 
     await execFileAsync('ffmpeg', [
-      '-y', '-loglevel', 'error', '-ss', '0', '-i', videoPath,
-      '-vframes', '1', firstPath,
+      '-y',
+      '-loglevel',
+      'error',
+      '-ss',
+      '0',
+      '-i',
+      videoPath,
+      '-vframes',
+      '1',
+      firstPath,
     ]);
     await execFileAsync('ffmpeg', [
-      '-y', '-loglevel', 'error', '-ss', middleTs, '-i', videoPath,
-      '-vframes', '1', middlePath,
+      '-y',
+      '-loglevel',
+      'error',
+      '-ss',
+      middleTs,
+      '-i',
+      videoPath,
+      '-vframes',
+      '1',
+      middlePath,
     ]);
     await execFileAsync('ffmpeg', [
-      '-y', '-loglevel', 'error', '-ss', lastTs, '-i', videoPath,
-      '-vframes', '1', lastPath,
+      '-y',
+      '-loglevel',
+      'error',
+      '-ss',
+      lastTs,
+      '-i',
+      videoPath,
+      '-vframes',
+      '1',
+      lastPath,
     ]);
 
     const [first, middle, last] = await Promise.all([
@@ -476,7 +495,9 @@ export async function generateAllHeroVideosRunway(
 ): Promise<void> {
   await fs.mkdir(HERO_VIDEOS_DIR, { recursive: true });
   console.log(`[Runway] Output directory: ${HERO_VIDEOS_DIR}`);
-  console.log(`[Runway] Slow-mo factor: ${SLOWMO_FACTOR}× (5s → ${5 * SLOWMO_FACTOR}s)`);
+  console.log(
+    `[Runway] Slow-mo factor: ${SLOWMO_FACTOR}× (5s → ${5 * SLOWMO_FACTOR}s)`,
+  );
 
   const targets = resolveScenes(options.only);
   console.log(
@@ -500,7 +521,11 @@ export async function generateAllHeroVideosRunway(
     console.log(`[Runway] ${scene.videoFilename} — uploading still to R2...`);
     const { url: imageUrl } = await uploadFile(r2Key, stillBuffer, 'image/png');
 
-    const videoBuffer = await generateSceneWithJudge(scene, imageUrl, stillBuffer);
+    const videoBuffer = await generateSceneWithJudge(
+      scene,
+      imageUrl,
+      stillBuffer,
+    );
 
     const outPath = path.join(HERO_VIDEOS_DIR, scene.videoFilename);
     await fs.writeFile(outPath, videoBuffer);

@@ -1,8 +1,8 @@
-import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
+import { Suspense } from 'react';
 import Account from '@/components/Account/Account';
 import { generatePageMetadata } from '@/lib/metadata';
-import type { Metadata } from 'next';
 
 export const metadata: Metadata = generatePageMetadata({
   title: 'My Account',

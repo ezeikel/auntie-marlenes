@@ -12,16 +12,24 @@ import 'dotenv/config';
  * Uploads to R2 for review.
  */
 
+import { readFile, writeFile } from 'fs/promises';
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
-import { readFile, writeFile } from 'fs/promises';
-import { getAllProducts, getProductByHandle } from './shopify';
-import { generateProductContent } from './generate';
 import { compositePost } from './compositor';
-import { animateScene as animateWithKling, generateSceneAudio } from './video-gen';
+import { generateProductContent } from './generate';
+import { getAllProducts, getProductByHandle } from './shopify';
+import {
+  listContent,
+  uploadFile,
+  uploadProductPost,
+  uploadProductReel,
+} from './storage';
+import { generateOutputPath, renderProductReel } from './video/render';
+import {
+  animateScene as animateWithKling,
+  generateSceneAudio,
+} from './video-gen';
 import { animateScene as animateWithVeo } from './video-gen-veo';
-import { renderProductReel, generateOutputPath } from './video/render';
-import { uploadProductPost, uploadProductReel, listContent, uploadFile } from './storage';
 
 const app = new Hono();
 
@@ -60,7 +68,8 @@ app.get('/tmp/:filename', async (c) => {
     const stats = await stat(filePath);
     const data = await readFile(filePath);
     const ext = filename.split('.').pop();
-    const contentType = ext === 'mp4' ? 'video/mp4' : ext === 'mp3' ? 'audio/mpeg' : 'image/jpeg';
+    const contentType =
+      ext === 'mp4' ? 'video/mp4' : ext === 'mp3' ? 'audio/mpeg' : 'image/jpeg';
 
     // Handle range requests (required for Remotion video seeking)
     const range = c.req.header('range');
@@ -115,7 +124,12 @@ app.get('/health', (c) => {
  *   video_model: ["veo", "pixverse", "hailuo"]
  */
 app.post('/generate/product', async (c) => {
-  const { handle, types = ['post'], image_model = 'gemini', video_model = 'seedance' } = await c.req.json<{
+  const {
+    handle,
+    types = ['post'],
+    image_model = 'gemini',
+    video_model = 'seedance',
+  } = await c.req.json<{
     handle: string;
     types?: ('post' | 'reel')[];
     image_model?: 'gemini' | 'flux-kontext' | 'flux-2-pro';
@@ -137,7 +151,9 @@ app.post('/generate/product', async (c) => {
   const productImageUrl = product.images.edges[0]?.node.url;
 
   // Step 1: Generate scene image + headline
-  console.log(`[API] Using image model: ${image_model}, video model: ${video_model}`);
+  console.log(
+    `[API] Using image model: ${image_model}, video model: ${video_model}`,
+  );
   const content = await generateProductContent(
     {
       name: product.title,
@@ -177,11 +193,20 @@ app.post('/generate/product', async (c) => {
 
       // Route to correct video generator
       let videoBuffer: Buffer;
-      let scene: { product: string; surface: string; lighting: string } | undefined;
+      let scene:
+        | { product: string; surface: string; lighting: string }
+        | undefined;
       if (model === 'veo') {
-        videoBuffer = await animateWithVeo(content.sceneImage, product.productType);
+        videoBuffer = await animateWithVeo(
+          content.sceneImage,
+          product.productType,
+        );
       } else {
-        const result = await animateWithKling(content.sceneImage, product.productType, model as any);
+        const result = await animateWithKling(
+          content.sceneImage,
+          product.productType,
+          model as any,
+        );
         videoBuffer = result.video;
         scene = result.scene;
       }
@@ -196,7 +221,10 @@ app.post('/generate/product', async (c) => {
           const audioFilename = audioPath.split('/').pop();
           audioUrl = `http://localhost:${port}/tmp/${audioFilename}`;
         } catch (err) {
-          console.warn(`[API] Audio generation failed, continuing without audio:`, err);
+          console.warn(
+            `[API] Audio generation failed, continuing without audio:`,
+            err,
+          );
         }
       }
 
@@ -380,9 +408,13 @@ app.get('/content/list', async (c) => {
 
 // ─── Publishing Endpoints ────────────────────────────────────────────────────
 
-import { generateCaptions, formatInstagramCaption } from './caption';
-import { getCatalogProductId, buildProductTags } from './catalog';
-import { publishToInstagram, publishToFacebook, type PublishResult } from './social';
+import { formatInstagramCaption, generateCaptions } from './caption';
+import { buildProductTags, getCatalogProductId } from './catalog';
+import {
+  type PublishResult,
+  publishToFacebook,
+  publishToInstagram,
+} from './social';
 
 /**
  * Generate content AND publish to IG/FB with product tags.
@@ -414,7 +446,9 @@ app.post('/publish/product', async (c) => {
   if (!handle) return c.json({ error: 'handle is required' }, 400);
 
   console.log(`[Publish] Starting for: ${handle}`);
-  console.log(`[Publish] Platforms: ${platforms.join(', ')}, Types: ${types.join(', ')}`);
+  console.log(
+    `[Publish] Platforms: ${platforms.join(', ')}, Types: ${types.join(', ')}`,
+  );
 
   // 1. Fetch product
   const product = await getProductByHandle(handle);
@@ -447,7 +481,11 @@ app.post('/publish/product', async (c) => {
   }
 
   if (types.includes('reel')) {
-    const result = await animateWithKling(content.sceneImage, product.productType, video_model as any);
+    const result = await animateWithKling(
+      content.sceneImage,
+      product.productType,
+      video_model as any,
+    );
     const videoPath = `/tmp/${video_model}-${Date.now()}.mp4`;
     await writeFile(videoPath, result.video);
     const videoFilename = videoPath.split('/').pop();
@@ -462,7 +500,10 @@ app.post('/publish/product', async (c) => {
       const audioFilename = audioPath.split('/').pop();
       audioUrl = `http://localhost:${port}/tmp/${audioFilename}`;
     } catch (err) {
-      console.warn('[Publish] Audio generation failed, continuing without:', err);
+      console.warn(
+        '[Publish] Audio generation failed, continuing without:',
+        err,
+      );
     }
 
     const reelOutputPath = generateOutputPath('reel');
@@ -564,7 +605,8 @@ app.post('/publish/content', async (c) => {
   }>();
 
   if (!handle) return c.json({ error: 'handle is required' }, 400);
-  if (!post_url && !reel_url) return c.json({ error: 'post_url or reel_url required' }, 400);
+  if (!post_url && !reel_url)
+    return c.json({ error: 'post_url or reel_url required' }, 400);
 
   const product = await getProductByHandle(handle);
   if (!product) return c.json({ error: `Product not found: ${handle}` }, 404);
@@ -616,7 +658,12 @@ app.post('/publish/content', async (c) => {
 
 // ─── Scheduled Publishing ───────────────────────────────────────────────────
 
-import { loadSchedule, saveSchedule, pickNextProduct, recordPost } from './schedule';
+import {
+  loadSchedule,
+  pickNextProduct,
+  recordPost,
+  saveSchedule,
+} from './schedule';
 
 /**
  * Publish the next product in the rotation.
@@ -636,17 +683,19 @@ app.post('/publish/next', async (c) => {
     platforms = ['instagram', 'facebook'],
     image_model = 'gemini',
     video_model = 'seedance',
-  } = await c.req.json<{
-    dry_run?: boolean;
-    platforms?: ('instagram' | 'facebook')[];
-    image_model?: string;
-    video_model?: string;
-  }>().catch(() => ({
-    dry_run: false,
-    platforms: ['instagram', 'facebook'] as const,
-    image_model: 'gemini',
-    video_model: 'seedance',
-  }));
+  } = await c.req
+    .json<{
+      dry_run?: boolean;
+      platforms?: ('instagram' | 'facebook')[];
+      image_model?: string;
+      video_model?: string;
+    }>()
+    .catch(() => ({
+      dry_run: false,
+      platforms: ['instagram', 'facebook'] as const,
+      image_model: 'gemini',
+      video_model: 'seedance',
+    }));
 
   console.log(`[Publish/Next] Starting (dry_run: ${dry_run})`);
 
@@ -673,7 +722,9 @@ app.post('/publish/next', async (c) => {
   const product = allProducts.find((p) => p.handle === handle)!;
   const productImageUrl = product.images.edges[0]?.node.url;
 
-  console.log(`[Publish/Next] Selected: ${product.title} (cycle ${schedule.currentCycle})`);
+  console.log(
+    `[Publish/Next] Selected: ${product.title} (cycle ${schedule.currentCycle})`,
+  );
 
   // 2. Generate content
   const content = await generateProductContent(
@@ -695,7 +746,11 @@ app.post('/publish/next', async (c) => {
   const postUpload = await uploadProductPost(handle, postImage);
 
   // Reel
-  const videoResult = await animateWithKling(content.sceneImage, product.productType, video_model as any);
+  const videoResult = await animateWithKling(
+    content.sceneImage,
+    product.productType,
+    video_model as any,
+  );
   const videoPath = `/tmp/${video_model}-${Date.now()}.mp4`;
   await writeFile(videoPath, videoResult.video);
   const videoFilename = videoPath.split('/').pop();
@@ -710,7 +765,10 @@ app.post('/publish/next', async (c) => {
       const audioFilename = audioPath.split('/').pop();
       audioUrl = `http://localhost:${port}/tmp/${audioFilename}`;
     } catch (err) {
-      console.warn('[Publish/Next] Audio generation failed, continuing without:', err);
+      console.warn(
+        '[Publish/Next] Audio generation failed, continuing without:',
+        err,
+      );
     }
   }
 
@@ -752,7 +810,9 @@ app.post('/publish/next', async (c) => {
 
   // 5. Publish to social
   const catalogProductId = await getCatalogProductId(handle, product.title);
-  const productTags = catalogProductId ? buildProductTags(catalogProductId) : undefined;
+  const productTags = catalogProductId
+    ? buildProductTags(catalogProductId)
+    : undefined;
 
   const publishResults: PublishResult[] = [];
 
@@ -788,7 +848,9 @@ app.post('/publish/next', async (c) => {
     });
     await saveSchedule(updated);
   } else {
-    console.error('[Publish/Next] Some posts failed — not recording in schedule');
+    console.error(
+      '[Publish/Next] Some posts failed — not recording in schedule',
+    );
   }
 
   return c.json({

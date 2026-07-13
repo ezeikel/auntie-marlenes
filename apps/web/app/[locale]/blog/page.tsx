@@ -1,12 +1,12 @@
+import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import BlogList from '@/components/BlogList';
+import { generatePageMetadata } from '@/lib/metadata';
 import {
-  getFeaturedPostsLegacy,
   getAllPostsLegacy,
   getCategoryTitles,
+  getFeaturedPostsLegacy,
 } from '@/lib/sanity-blog';
-import { generatePageMetadata } from '@/lib/metadata';
-import type { Metadata } from 'next';
 
 export const metadata: Metadata = generatePageMetadata({
   title: 'Hair Care Tips & Beauty Advice',

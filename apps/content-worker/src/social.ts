@@ -358,7 +358,10 @@ export async function publishToFacebook(options: {
   if (options.imageUrl) {
     try {
       console.log('[Social] Publishing FB image post...');
-      const postId = await postToFacebookPage(options.postCaption, options.imageUrl);
+      const postId = await postToFacebookPage(
+        options.postCaption,
+        options.imageUrl,
+      );
       results.push({
         platform: 'facebook',
         type: 'post',

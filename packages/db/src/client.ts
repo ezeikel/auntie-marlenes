@@ -1,7 +1,7 @@
-import { Prisma, PrismaClient, User } from './generated/prisma/client';
-import { PrismaNeon } from '@prisma/adapter-neon';
 import { neonConfig } from '@neondatabase/serverless';
+import { PrismaNeon } from '@prisma/adapter-neon';
 import ws from 'ws';
+import { Prisma, PrismaClient, User } from './generated/prisma/client';
 
 // configure WebSocket for Neon
 neonConfig.webSocketConstructor = ws;
@@ -37,8 +37,6 @@ const prismaClientSingleton = () => {
 
 export const db = globalForPrisma.prisma || prismaClientSingleton();
 
-export type { Prisma };
-
-export type { User as DbUserType };
+export type { Prisma, User as DbUserType };
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;

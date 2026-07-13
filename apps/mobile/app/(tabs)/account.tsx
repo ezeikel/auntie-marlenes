@@ -1,21 +1,32 @@
-import { useState, useEffect } from 'react';
-import { View, Text, Pressable, ScrollView, Alert, ActivityIndicator, Dimensions } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import type { User } from '@auntie-marlenes/types';
 import {
-  faUser,
-  faBox,
   faBell,
-  faShieldCheck,
+  faBox,
   faCircleQuestion,
   faRightFromBracket,
+  faShieldCheck,
+  faUser,
 } from '@fortawesome/pro-regular-svg-icons';
 import { faChevronRight } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useAuthContext } from '@/contexts/auth';
 import { getCurrentUser } from '@/lib/api/auth';
-import { router } from 'expo-router';
-import type { User } from '@auntie-marlenes/types';
 
 export default function AccountScreen() {
   const { signOut, isAuthenticated } = useAuthContext();

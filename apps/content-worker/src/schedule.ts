@@ -7,9 +7,9 @@
  */
 
 import {
-  S3Client,
   GetObjectCommand,
   PutObjectCommand,
+  S3Client,
 } from '@aws-sdk/client-s3';
 
 const SCHEDULE_KEY = 'content/social-schedule.json';
@@ -90,7 +90,9 @@ export async function saveSchedule(state: ScheduleState): Promise<void> {
       ContentType: 'application/json',
     }),
   );
-  console.log(`[Schedule] Saved: cycle ${state.currentCycle}, ${state.posts.length} posts`);
+  console.log(
+    `[Schedule] Saved: cycle ${state.currentCycle}, ${state.posts.length} posts`,
+  );
 }
 
 // ─── Selection Logic ────────────────────────────────────────────────────────

@@ -1,20 +1,20 @@
 'use server';
 
-import { after } from 'next/server';
 import { print } from 'graphql';
+import { after } from 'next/server';
+import { TRACKING_EVENTS } from '@/constants/events';
+import type { Product } from '@/lib/constants';
 import {
-  GET_PRODUCT_QUERY,
   GET_PRODUCT_BY_HANDLE_QUERY,
+  GET_PRODUCT_QUERY,
   GET_PRODUCTS_QUERY,
 } from '@/lib/graphql/queries';
-import { ProductEdge } from '@/types';
 import {
   adaptShopifyProduct,
   adaptShopifyProducts,
 } from '@/lib/shopify-adapter';
-import type { Product } from '@/lib/constants';
+import { ProductEdge } from '@/types';
 import { track } from '@/utils/analytics-server';
-import { TRACKING_EVENTS } from '@/constants/events';
 
 export const getProduct = async ({
   productId,

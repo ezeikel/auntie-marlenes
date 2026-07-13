@@ -31,8 +31,8 @@
 
 import 'dotenv/config';
 import {
-  generateAllHeroVideosRunwayBatch,
   type GenerateHeroVideosRunwayBatchOptions,
+  generateAllHeroVideosRunwayBatch,
 } from '../hero-videos-runway-batch';
 
 function parseArgs(argv: string[]): GenerateHeroVideosRunwayBatchOptions {

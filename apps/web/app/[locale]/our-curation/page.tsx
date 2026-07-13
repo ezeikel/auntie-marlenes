@@ -1,16 +1,16 @@
-import { setRequestLocale } from 'next-intl/server';
-import Link from 'next/link';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faFilterList,
   faFlaskVial,
   faHandHoldingHeart,
-  faFilterList,
   faLeaf,
   faMagnifyingGlass,
   faShieldCheck,
 } from '@fortawesome/pro-regular-svg-icons';
-import { generatePageMetadata } from '@/lib/metadata';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { setRequestLocale } from 'next-intl/server';
+import { generatePageMetadata } from '@/lib/metadata';
 
 export const metadata: Metadata = generatePageMetadata({
   title: 'Our Curation Process | How We Choose Our Products',

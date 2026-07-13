@@ -1,6 +1,6 @@
 import Animated, {
-  useAnimatedStyle,
   interpolate,
+  useAnimatedStyle,
 } from 'react-native-reanimated';
 
 interface PaginationDotProps {
@@ -16,14 +16,14 @@ const PaginationDot = ({ index, activeIndex }: PaginationDotProps) => {
       activeIndex.value,
       inputRange,
       [8, 32, 8],
-      'clamp'
+      'clamp',
     );
 
     const opacity = interpolate(
       activeIndex.value,
       inputRange,
       [0.6, 1, 0.6],
-      'clamp'
+      'clamp',
     );
 
     // Interpolate between white/60% and cocoa
@@ -31,7 +31,7 @@ const PaginationDot = ({ index, activeIndex }: PaginationDotProps) => {
       activeIndex.value,
       inputRange,
       [0, 1, 0],
-      'clamp'
+      'clamp',
     );
 
     // Convert interpolated value to color
@@ -49,7 +49,7 @@ const PaginationDot = ({ index, activeIndex }: PaginationDotProps) => {
     const b = Math.round(whiteB + (cocoaB - whiteB) * backgroundColor);
 
     // Calculate alpha (0.6 to 1.0 based on activation)
-    const alpha = 0.6 + (0.4 * backgroundColor);
+    const alpha = 0.6 + 0.4 * backgroundColor;
 
     return {
       width,

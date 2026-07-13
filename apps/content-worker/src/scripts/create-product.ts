@@ -18,18 +18,18 @@
 
 import 'dotenv/config';
 import { readFileSync } from 'fs';
-import {
-  createProduct,
-  uploadImageToProduct,
-  assignToCollections,
-  publishToOnlineStore,
-} from '../shopify-admin';
+import { generateProductCopy } from '../product-copy';
 import {
   findReferenceImages,
-  selectBestReference,
   generateStudioShots,
+  selectBestReference,
 } from '../product-images';
-import { generateProductCopy } from '../product-copy';
+import {
+  assignToCollections,
+  createProduct,
+  publishToOnlineStore,
+  uploadImageToProduct,
+} from '../shopify-admin';
 
 function parseArgs(args: string[]): {
   name: string;
@@ -71,17 +71,22 @@ function parseArgs(args: string[]): {
 }
 
 async function main(): Promise<void> {
-  const { name, brand, category, price, refImage, extraCollections, dryRun } = parseArgs(process.argv.slice(2));
+  const { name, brand, category, price, refImage, extraCollections, dryRun } =
+    parseArgs(process.argv.slice(2));
 
   if (!name || !brand || !category) {
     console.error('Usage:');
-    console.error('  npx tsx --env-file=.env src/scripts/create-product.ts "Product Name" --brand "Brand" --category "Kids" --price "7.49"');
+    console.error(
+      '  npx tsx --env-file=.env src/scripts/create-product.ts "Product Name" --brand "Brand" --category "Kids" --price "7.49"',
+    );
     console.error('');
     console.error('Options:');
     console.error('  --brand        Product brand name (required)');
     console.error('  --category     Product category (required)');
     console.error('  --price        Product price in GBP (optional)');
-    console.error('  --ref-image    Path to local reference image (skips image search)');
+    console.error(
+      '  --ref-image    Path to local reference image (skips image search)',
+    );
     console.error('  --collection   Extra collection to add to (repeatable)');
     console.error('  --dry-run      Preview without creating in Shopify');
     process.exit(1);
@@ -104,7 +109,9 @@ async function main(): Promise<void> {
     const refs = await findReferenceImages(name, brand);
 
     if (refs.length === 0) {
-      console.error('No reference images found. Use --ref-image to provide a local reference.');
+      console.error(
+        'No reference images found. Use --ref-image to provide a local reference.',
+      );
       process.exit(1);
     }
 
@@ -140,8 +147,11 @@ async function main(): Promise<void> {
   console.log(`  Tags: ${copy.tags.join(', ')}`);
   console.log(`  SEO Title: ${copy.seoTitle}`);
   console.log(`  SEO Desc: ${copy.seoDescription}`);
-  console.log(`  Images: ${shots.map((s) => `${s.name} (${s.verdict})`).join(', ')}`);
-  if (extraCollections.length > 0) console.log(`  Extra collections: ${extraCollections.join(', ')}`);
+  console.log(
+    `  Images: ${shots.map((s) => `${s.name} (${s.verdict})`).join(', ')}`,
+  );
+  if (extraCollections.length > 0)
+    console.log(`  Extra collections: ${extraCollections.join(', ')}`);
   console.log(`${'─'.repeat(40)}\n`);
 
   if (dryRun) {
@@ -183,7 +193,9 @@ async function main(): Promise<void> {
   console.log(`  Handle: ${product.handle}`);
   console.log(`  ID: ${product.id}`);
   console.log(`  Images: ${shots.length} studio shots uploaded`);
-  console.log(`  URL: https://afro-hair-and-beauty.myshopify.com/admin/products/${product.id.split('/').pop()}`);
+  console.log(
+    `  URL: https://afro-hair-and-beauty.myshopify.com/admin/products/${product.id.split('/').pop()}`,
+  );
   console.log(`${'='.repeat(60)}`);
 }
 

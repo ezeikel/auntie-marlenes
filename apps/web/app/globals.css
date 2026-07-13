@@ -2,22 +2,22 @@
 
 /* Font Face Declarations */
 @font-face {
-  font-family: 'Playfair Display';
+  font-family: "Playfair Display";
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+  src: url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap");
 }
 
 @theme {
   /* Color Palette - v0 Custom Colors */
-  --color-warm-sand: #E8DCC4;
-  --color-terracotta: #C5705D;
-  --color-warm-clay: #B8957A;
-  --color-sage-green: #9CAF88;
-  --color-warm-beige: #F5F0E8;
-  --color-cocoa: #5D4037;
-  --color-deep-earth: #3E2723;
+  --color-warm-sand: #e8dcc4;
+  --color-terracotta: #c5705d;
+  --color-warm-clay: #b8957a;
+  --color-sage-green: #9caf88;
+  --color-warm-beige: #f5f0e8;
+  --color-cocoa: #5d4037;
+  --color-deep-earth: #3e2723;
 
   /* shadcn/ui Default Colors - Light Mode */
   --color-background: oklch(100% 0 0);
@@ -63,7 +63,7 @@
 
   /* Fonts */
   --font-family-inter: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-family-playfair: 'Playfair Display', ui-serif, Georgia, serif;
+  --font-family-playfair: "Playfair Display", ui-serif, Georgia, serif;
   --font-family-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 

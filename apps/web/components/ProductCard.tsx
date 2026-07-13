@@ -1,14 +1,14 @@
 'use client';
 
+import { faHeart as faHeartRegular } from '@fortawesome/pro-regular-svg-icons';
+import { faHeart as faHeartSolid } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart as faHeartSolid } from '@fortawesome/pro-solid-svg-icons';
-import { faHeart as faHeartRegular } from '@fortawesome/pro-regular-svg-icons';
+import { useSaved } from '@/contexts/saved';
 import type { Product } from '@/lib/constants';
 import { formatCurrency } from '@/lib/currency';
-import { useSaved } from '@/contexts/saved';
 import StarRating from './StarRating';
 
 type ProductCardProps = {

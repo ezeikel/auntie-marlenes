@@ -1,15 +1,15 @@
 'use client';
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faUser,
   faBox,
-  faRotateLeft,
   faCircleInfo,
   faEnvelope,
+  faRotateLeft,
+  faUser,
 } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 type AccountPopoverProps = {
   isAuthenticated: boolean;

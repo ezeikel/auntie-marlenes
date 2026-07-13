@@ -1,18 +1,18 @@
-import { setRequestLocale } from 'next-intl/server';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faFileContract,
   faBasketShopping,
   faCreditCard,
-  faTruck,
-  faRotateLeft,
-  faShieldCheck,
-  faScaleBalanced,
+  faEnvelope,
+  faFileContract,
   faGavel,
   faPenToSquare,
-  faEnvelope,
+  faRotateLeft,
+  faScaleBalanced,
+  faShieldCheck,
+  faTruck,
 } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Metadata } from 'next';
+import { setRequestLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Terms & Conditions',

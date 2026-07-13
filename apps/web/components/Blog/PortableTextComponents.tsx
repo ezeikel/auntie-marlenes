@@ -4,11 +4,11 @@
  * Custom renderers for Portable Text blocks to match the existing blog styling
  */
 
+import type { PortableTextComponents } from '@portabletext/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { PortableTextComponents } from '@portabletext/react';
-import { urlForImage } from '@/sanity/lib/image';
 import type { Image as SanityImage } from 'sanity';
+import { urlForImage } from '@/sanity/lib/image';
 
 // Type for image blocks
 interface ImageBlock {

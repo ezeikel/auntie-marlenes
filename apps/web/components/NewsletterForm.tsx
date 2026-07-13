@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight, faCheck } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useState } from 'react';
 import { subscribeToNewsletter } from '@/app/actions/newsletter';
-import { useAnalytics } from '@/utils/analytics-client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { TRACKING_EVENTS } from '@/constants/events';
+import { useAnalytics } from '@/utils/analytics-client';
 
 const NewsletterForm = () => {
   const { track } = useAnalytics();

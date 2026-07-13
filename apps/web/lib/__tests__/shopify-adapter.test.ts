@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   adaptShopifyProduct,
   adaptShopifyProducts,
-  getVariantId,
   getVariantByOptions,
+  getVariantId,
 } from '../shopify-adapter';
 
 function makeShopifyProduct(overrides: Record<string, any> = {}) {

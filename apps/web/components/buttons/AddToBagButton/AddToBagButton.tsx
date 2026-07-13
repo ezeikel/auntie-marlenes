@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  getCart,
-  createCart,
-  getProductVariantId,
-  addProductsToCart,
-} from '@/app/actions';
 import { useRouter } from 'next/navigation';
-import { useAnalytics } from '@/utils/analytics-client';
+import { useState, useTransition } from 'react';
+import { toast } from 'sonner';
+import {
+  addProductsToCart,
+  createCart,
+  getCart,
+  getProductVariantId,
+} from '@/app/actions';
+import { Button } from '@/components/ui/button';
 import { TRACKING_EVENTS } from '@/constants/events';
 import { logger } from '@/lib/logger';
-import { toast } from 'sonner';
+import { useAnalytics } from '@/utils/analytics-client';
 
 type AddToBagButtonProps = {
   productId: string;

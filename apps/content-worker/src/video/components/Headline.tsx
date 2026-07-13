@@ -1,5 +1,5 @@
-import { AbsoluteFill, useCurrentFrame, interpolate } from 'remotion';
 import { fontFamily } from '@remotion/google-fonts/PlayfairDisplay';
+import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
 
 type HeadlineProps = {
   headline: string;
@@ -68,8 +68,7 @@ export const Headline: React.FC<HeadlineProps> = ({
             opacity: headlineOpacity,
           }}
         >
-          {mainWords}{' '}
-          <span style={{ color: '#f5e6d3' }}>{lastWord}</span>
+          {mainWords} <span style={{ color: '#f5e6d3' }}>{lastWord}</span>
         </span>
 
         {/* Subheading */}

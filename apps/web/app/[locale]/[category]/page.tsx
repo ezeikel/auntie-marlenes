@@ -1,8 +1,8 @@
+import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import Products from '@/components/Products/Products';
 import { generateCategoryMetadata } from '@/lib/metadata';
 import { generateBreadcrumbSchema } from '@/lib/schema';
-import type { Metadata } from 'next';
 
 type CategoryPageProps = {
   params: Promise<{ locale: string; category: string }>;

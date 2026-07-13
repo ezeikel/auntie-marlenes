@@ -1,17 +1,17 @@
-import Link from 'next/link';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTruck } from '@fortawesome/pro-regular-svg-icons';
-import type { ShippingZone } from '@/lib/location';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Link from 'next/link';
 import {
-  ukShipping,
-  usShipping,
-  uaeShipping,
   euShipping,
-  rowShipping,
   getNextDayCutoffTime,
   isNextDayAvailable,
+  rowShipping,
+  uaeShipping,
+  ukShipping,
+  usShipping,
 } from '@/config/shipping';
 import { formatCurrency } from '@/lib/currency';
+import type { ShippingZone } from '@/lib/location';
 
 type ShippingInfoProps = {
   zone: ShippingZone;
@@ -29,7 +29,8 @@ export const ShippingInfo = ({
       <div className={className}>
         {zone === 'UK' ? (
           <p className="text-sm text-gray-700">
-            Free UK delivery over {formatCurrency(ukShipping.freeDeliveryThreshold, 'GBP')}
+            Free UK delivery over{' '}
+            {formatCurrency(ukShipping.freeDeliveryThreshold, 'GBP')}
           </p>
         ) : zone === 'US' ? (
           <p className="text-sm text-gray-700">We ship to the USA</p>
@@ -44,9 +45,15 @@ export const ShippingInfo = ({
 
   // Detailed variant
   return (
-    <div className={`bg-sage-green/5 border border-sage-green/20 rounded-xl p-6 ${className}`}>
+    <div
+      className={`bg-sage-green/5 border border-sage-green/20 rounded-xl p-6 ${className}`}
+    >
       <div className="flex items-start gap-3">
-        <FontAwesomeIcon icon={faTruck} className="text-sage-green mt-1" size="lg" />
+        <FontAwesomeIcon
+          icon={faTruck}
+          className="text-sage-green mt-1"
+          size="lg"
+        />
         <div className="flex-1">
           {zone === 'UK' ? (
             <>
@@ -54,8 +61,10 @@ export const ShippingInfo = ({
                 FREE STANDARD DELIVERY
               </h3>
               <p className="text-sm text-gray-700 mb-2">
-                On all UK orders over {formatCurrency(ukShipping.freeDeliveryThreshold, 'GBP')}.
-                Orders under this amount will be charged {formatCurrency(ukShipping.standardDeliveryFee, 'GBP')}.
+                On all UK orders over{' '}
+                {formatCurrency(ukShipping.freeDeliveryThreshold, 'GBP')}.
+                Orders under this amount will be charged{' '}
+                {formatCurrency(ukShipping.standardDeliveryFee, 'GBP')}.
               </p>
               <div className="bg-white/60 border border-sage-green/10 rounded-lg p-3 mt-2">
                 <h4 className="font-semibold text-sm text-cocoa mb-1">
@@ -64,14 +73,16 @@ export const ShippingInfo = ({
                 <p className="text-sm text-gray-700">
                   {isNextDayAvailable() ? (
                     <>
-                      Order within the next few hours for next-day delivery
-                      ({formatCurrency(ukShipping.nextDayDeliveryFee, 'GBP')}).
-                      Order before {getNextDayCutoffTime()} for next-day delivery.
+                      Order within the next few hours for next-day delivery (
+                      {formatCurrency(ukShipping.nextDayDeliveryFee, 'GBP')}).
+                      Order before {getNextDayCutoffTime()} for next-day
+                      delivery.
                     </>
                   ) : (
                     <>
-                      Next-day delivery available ({formatCurrency(ukShipping.nextDayDeliveryFee, 'GBP')})
-                      on orders placed before {getNextDayCutoffTime()}.
+                      Next-day delivery available (
+                      {formatCurrency(ukShipping.nextDayDeliveryFee, 'GBP')}) on
+                      orders placed before {getNextDayCutoffTime()}.
                     </>
                   )}
                 </p>
@@ -83,12 +94,13 @@ export const ShippingInfo = ({
                 WE SHIP TO THE USA
               </h3>
               <p className="text-sm text-gray-700 mb-2">
-                International shipping available. Minimum order: {formatCurrency(usShipping.minimumOrder, 'GBP')}.
+                International shipping available. Minimum order:{' '}
+                {formatCurrency(usShipping.minimumOrder, 'GBP')}.
               </p>
               <p className="text-sm text-gray-600">
                 Estimated delivery: {usShipping.estimatedDeliveryDays.min}-
-                {usShipping.estimatedDeliveryDays.max} business days.
-                Shipping costs calculated at checkout.
+                {usShipping.estimatedDeliveryDays.max} business days. Shipping
+                costs calculated at checkout.
               </p>
             </>
           ) : zone === 'UAE' ? (
@@ -98,12 +110,13 @@ export const ShippingInfo = ({
               </h3>
               <p className="text-sm text-gray-700 mb-2">
                 Get the products you love from home delivered to Dubai & beyond.
-                Minimum order: {formatCurrency(uaeShipping.minimumOrder, 'GBP')}.
+                Minimum order: {formatCurrency(uaeShipping.minimumOrder, 'GBP')}
+                .
               </p>
               <p className="text-sm text-gray-600">
                 Estimated delivery: {uaeShipping.estimatedDeliveryDays.min}-
-                {uaeShipping.estimatedDeliveryDays.max} business days.
-                Shipping costs calculated at checkout.
+                {uaeShipping.estimatedDeliveryDays.max} business days. Shipping
+                costs calculated at checkout.
               </p>
             </>
           ) : zone === 'EU' ? (
@@ -112,12 +125,13 @@ export const ShippingInfo = ({
                 EUROPEAN SHIPPING AVAILABLE
               </h3>
               <p className="text-sm text-gray-700 mb-2">
-                We ship across Europe. Minimum order: {formatCurrency(euShipping.minimumOrder, 'GBP')}.
+                We ship across Europe. Minimum order:{' '}
+                {formatCurrency(euShipping.minimumOrder, 'GBP')}.
               </p>
               <p className="text-sm text-gray-600">
                 Estimated delivery: {euShipping.estimatedDeliveryDays.min}-
-                {euShipping.estimatedDeliveryDays.max} business days.
-                Shipping costs calculated at checkout.
+                {euShipping.estimatedDeliveryDays.max} business days. Shipping
+                costs calculated at checkout.
               </p>
             </>
           ) : (
@@ -126,12 +140,13 @@ export const ShippingInfo = ({
                 WORLDWIDE SHIPPING
               </h3>
               <p className="text-sm text-gray-700 mb-2">
-                We ship globally. Minimum order: {formatCurrency(rowShipping.minimumOrder, 'GBP')}.
+                We ship globally. Minimum order:{' '}
+                {formatCurrency(rowShipping.minimumOrder, 'GBP')}.
               </p>
               <p className="text-sm text-gray-600">
                 Estimated delivery: {rowShipping.estimatedDeliveryDays.min}-
-                {rowShipping.estimatedDeliveryDays.max} business days.
-                Shipping costs calculated at checkout.
+                {rowShipping.estimatedDeliveryDays.max} business days. Shipping
+                costs calculated at checkout.
               </p>
             </>
           )}

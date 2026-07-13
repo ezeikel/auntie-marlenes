@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useOptimistic, useTransition } from 'react';
+import { faShoppingBag } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';
+import { useOptimistic, useState, useTransition } from 'react';
+import { removeProductFromCart, updateCartLineQuantity } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShoppingBag } from '@fortawesome/pro-regular-svg-icons';
-import { removeProductFromCart, updateCartLineQuantity } from '@/app/actions';
 import BagPopover from './BagPopover';
 
 type CartLine = {

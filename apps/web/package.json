@@ -7,12 +7,7 @@
     "build": "next build",
     "start": "next start",
     "dev:email": "email dev --port 3005",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
     "check-types": "tsc",
-    "prettier": "prettier . --ignore-path .gitignore '**/*.+(js|mjs|jsx|json|ts|tsx|css|html|md)'",
-    "format": "pnpm prettier --write",
-    "check-format": "pnpm prettier --list-different",
     "preinstall": "pnpm dlx only-allow pnpm",
     "env:pull": "vercel env pull",
     "db:studio": "cd ../../packages/db && pnpm db:studio",
@@ -26,13 +21,10 @@
   "lint-staged": {
     "*.{ts,tsx}": [
       "tsc-files --noEmit --project ./tsconfig.json",
-      "eslint --fix --quiet"
+      "biome check --write --no-errors-on-unmatched"
     ],
-    "*.{js,jsx}": [
-      "eslint --fix --quiet"
-    ],
-    "**/*.+(js|jsx|json|ts|tsx|html|md)": [
-      "prettier --ignore-path .gitignore --write"
+    "*.{js,jsx,mjs,json,jsonc,css,md}": [
+      "biome check --write --no-errors-on-unmatched"
     ]
   },
   "dependencies": {
@@ -126,8 +118,6 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.38.0",
     "@playwright/test": "^1.58.2",
     "@react-email/preview-server": "5.2.10",
     "@tailwindcss/postcss": "^4.1.16",
@@ -135,14 +125,9 @@
     "@types/node": "^24.3.1",
     "@types/react": "^18.2.67",
     "@types/react-dom": "^19.1.9",
-    "eslint": "^9.38.0",
-    "eslint-config-next": "^16.0.0",
-    "eslint-import-resolver-typescript": "^4.4.4",
-    "globals": "^16.4.0",
     "husky": "^9.0.11",
     "lint-staged": "^16.1.6",
     "postcss": "^8.5.6",
-    "prettier": "^3.2.5",
     "react-email": "^5.2.10",
     "tailwindcss": "^4.1.16",
     "tailwindcss-animate": "^1.0.7",
@@ -150,7 +135,6 @@
     "tsc-files": "^1.1.4",
     "tsx": "^4.20.4",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.46.2",
     "vitest": "^4.1.2"
   }
 }

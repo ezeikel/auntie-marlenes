@@ -1,4 +1,4 @@
-import { type Currency, getCurrencyByCode, currencies } from './currency';
+import { type Currency, currencies, getCurrencyByCode } from './currency';
 
 export type ShippingZone = 'UK' | 'US' | 'UAE' | 'EU' | 'ROW';
 

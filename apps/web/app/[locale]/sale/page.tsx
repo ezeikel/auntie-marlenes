@@ -1,7 +1,7 @@
-import Sale from '@/components/Sale/Sale';
-import { setRequestLocale } from 'next-intl/server';
-import { generatePageMetadata } from '@/lib/metadata';
 import type { Metadata } from 'next';
+import { setRequestLocale } from 'next-intl/server';
+import Sale from '@/components/Sale/Sale';
+import { generatePageMetadata } from '@/lib/metadata';
 
 export const metadata: Metadata = generatePageMetadata({
   title: 'Sale & Deals | Discount Beauty Supply',

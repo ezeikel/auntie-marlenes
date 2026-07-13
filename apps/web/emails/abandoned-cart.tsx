@@ -1,11 +1,11 @@
 import {
-  Text,
-  Section,
-  Row,
-  Column,
-  Img,
-  Hr,
   Button,
+  Column,
+  Hr,
+  Img,
+  Row,
+  Section,
+  Text,
 } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout, { colors } from './components/layout';

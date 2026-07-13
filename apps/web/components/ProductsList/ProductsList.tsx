@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import { addProductToSaved, removeProductFromSaved } from '@/app/actions';
 import AddToBagButton from '@/components/buttons/AddToBagButton/AddToBagButton';
-import SaveButton from '../buttons/SaveButton/SaveButton';
 import type { Product } from '@/lib/constants';
+import SaveButton from '../buttons/SaveButton/SaveButton';
 
 type ProductsListProps = {
   products: Product[];

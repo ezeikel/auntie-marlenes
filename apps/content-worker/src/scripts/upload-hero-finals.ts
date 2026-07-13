@@ -24,11 +24,23 @@ const HERO_VIDEOS_DIR = path.resolve(
 
 const FINALS = [
   { filename: 'hero-01-bonnet.mp4', title: 'Scene 1 — The Bonnet Moment' },
-  { filename: 'hero-02-mother-daughter.mp4', title: 'Scene 2 — Between Her Knees' },
-  { filename: 'hero-03-kitchen-beautician.mp4', title: 'Scene 3 — Kitchen Beautician' },
+  {
+    filename: 'hero-02-mother-daughter.mp4',
+    title: 'Scene 2 — Between Her Knees',
+  },
+  {
+    filename: 'hero-03-kitchen-beautician.mp4',
+    title: 'Scene 3 — Kitchen Beautician',
+  },
   { filename: 'hero-04-locs-oil.mp4', title: 'Scene 4 — Anointing the Locs' },
-  { filename: 'hero-05-barbershop-fade.mp4', title: 'Scene 5 — The Fade Moment' },
-  { filename: 'hero-06-dad-braids.mp4', title: "Scene 6 — Dad's Saturday Hair Day" },
+  {
+    filename: 'hero-05-barbershop-fade.mp4',
+    title: 'Scene 5 — The Fade Moment',
+  },
+  {
+    filename: 'hero-06-dad-braids.mp4',
+    title: "Scene 6 — Dad's Saturday Hair Day",
+  },
 ];
 
 async function main() {
@@ -58,7 +70,9 @@ async function main() {
     }
   }
 
-  console.log(`\n═══ Final hero videos (${results.length}/${FINALS.length}) ═══\n`);
+  console.log(
+    `\n═══ Final hero videos (${results.length}/${FINALS.length}) ═══\n`,
+  );
   for (const { title, url, size } of results) {
     console.log(`${title}`);
     console.log(`  ${url}  (${size})\n`);

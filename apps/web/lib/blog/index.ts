@@ -1,24 +1,23 @@
 export {
-  BLOG_TOPICS,
-  BLOG_CATEGORIES,
-  getRandomTopic,
-  getTopicsByCategory,
-  getRandomTopicFromCategory,
-  getTotalTopicsCount,
-  getTopicsCountByCategory,
-  seedTopicSlugs,
-  pickUncoveredTopic,
-  type BlogTopic,
-  type BlogCategory,
-} from './topics';
+  GUEST_AUTHORS,
+  type GuestAuthor,
+  getAuthorBySlug,
+  getAuthorBySpecialty,
+  getRandomAuthor,
+  getTotalAuthorsCount,
+} from './authors';
 
 export { generateDynamicTopics } from './dynamic-topics';
-
 export {
-  GUEST_AUTHORS,
-  getRandomAuthor,
-  getAuthorBySpecialty,
-  getAuthorBySlug,
-  getTotalAuthorsCount,
-  type GuestAuthor,
-} from './authors';
+  BLOG_CATEGORIES,
+  BLOG_TOPICS,
+  type BlogCategory,
+  type BlogTopic,
+  getRandomTopic,
+  getRandomTopicFromCategory,
+  getTopicsByCategory,
+  getTopicsCountByCategory,
+  getTotalTopicsCount,
+  pickUncoveredTopic,
+  seedTopicSlugs,
+} from './topics';

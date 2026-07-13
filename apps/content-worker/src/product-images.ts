@@ -7,11 +7,11 @@
  * 4. Claude judges each shot quality (PASS/REDO/FALLBACK)
  */
 
-import { generateText, generateObject } from 'ai';
-import { google } from '@ai-sdk/google';
 import { anthropic } from '@ai-sdk/anthropic';
-import { z } from 'zod';
+import { google } from '@ai-sdk/google';
+import { generateObject, generateText } from 'ai';
 import sharp from 'sharp';
+import { z } from 'zod';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const geminiImage: any = google('gemini-3-pro-image-preview');
@@ -22,10 +22,14 @@ const claude: any = anthropic('claude-sonnet-4-20250514');
 
 const STUDIO_STYLE = {
   size: 2048,
-  background: 'Clean, warm off-white seamless studio background with a soft gradient. NOT harsh pure white — slightly warm cream/ivory tone',
-  lighting: 'Soft diffused studio key light from the upper left, gentle fill light from the right. Creates a natural soft shadow underneath and behind the product that gives depth and grounding. Slight shallow depth of field for premium feel',
-  colourTemp: 'Warm-neutral colour temperature, slightly warm like high-end beauty photography',
-  rules: 'No props, no hands, no text overlays, no lifestyle context. The product must look three-dimensional and physically present, NOT like a flat cutout pasted onto a background',
+  background:
+    'Clean, warm off-white seamless studio background with a soft gradient. NOT harsh pure white — slightly warm cream/ivory tone',
+  lighting:
+    'Soft diffused studio key light from the upper left, gentle fill light from the right. Creates a natural soft shadow underneath and behind the product that gives depth and grounding. Slight shallow depth of field for premium feel',
+  colourTemp:
+    'Warm-neutral colour temperature, slightly warm like high-end beauty photography',
+  rules:
+    'No props, no hands, no text overlays, no lifestyle context. The product must look three-dimensional and physically present, NOT like a flat cutout pasted onto a background',
 };
 
 interface ShotConfig {
@@ -35,9 +39,17 @@ interface ShotConfig {
 }
 
 // Product types that don't have ingredients labels
-const NO_INGREDIENTS_TYPES = ['Accessories', 'Wigs & Extensions', 'Braiding Hair'];
+const NO_INGREDIENTS_TYPES = [
+  'Accessories',
+  'Wigs & Extensions',
+  'Braiding Hair',
+];
 
-function getShotConfigs(productName: string, brand: string, productType?: string): ShotConfig[] {
+function getShotConfigs(
+  productName: string,
+  brand: string,
+  productType?: string,
+): ShotConfig[] {
   const hasIngredients = !NO_INGREDIENTS_TYPES.includes(productType || '');
 
   // Accessories/wigs/hair don't have labels — tell Gemini NOT to add text
@@ -96,7 +108,9 @@ export async function findReferenceImages(
   productName: string,
   brand: string,
 ): Promise<ReferenceImage[]> {
-  console.log(`[Images] Searching for reference images: ${productName} by ${brand}...`);
+  console.log(
+    `[Images] Searching for reference images: ${productName} by ${brand}...`,
+  );
 
   const results: ReferenceImage[] = [];
 
@@ -114,7 +128,12 @@ export async function findReferenceImages(
   const googleCx = process.env.GOOGLE_CUSTOM_SEARCH_CX;
   if (googleKey && googleCx) {
     try {
-      const googleImages = await searchWithGoogle(productName, brand, googleKey, googleCx);
+      const googleImages = await searchWithGoogle(
+        productName,
+        brand,
+        googleKey,
+        googleCx,
+      );
       results.push(...googleImages);
     } catch (err) {
       console.warn('[Images] Google search failed:', err);
@@ -185,7 +204,8 @@ Respond with ONLY the direct image URL(s) — one per line. No other text, no ma
     const content = data.choices?.[0]?.message?.content || '';
 
     // Extract all URLs from the response
-    const urlRegex = /https?:\/\/[^\s"'<>)\]]+\.(jpg|jpeg|png|webp)(\?[^\s"'<>)\]]*)?/gi;
+    const urlRegex =
+      /https?:\/\/[^\s"'<>)\]]+\.(jpg|jpeg|png|webp)(\?[^\s"'<>)\]]*)?/gi;
     const urls = content.match(urlRegex) || [];
 
     const images = urls.map((url: string) => ({
@@ -255,7 +275,9 @@ export async function selectBestReference(
   if (downloaded.length === 0) return null;
   if (downloaded.length === 1) return downloaded[0].buffer;
 
-  console.log(`[Images] Claude evaluating ${downloaded.length} reference images...`);
+  console.log(
+    `[Images] Claude evaluating ${downloaded.length} reference images...`,
+  );
 
   // Have Claude pick the best one
   const imageContents: any[] = [];
@@ -285,7 +307,9 @@ Respond with ONLY the number (e.g. "1" or "3").`,
   const pick = parseInt(result.text.trim().replace(/\D/g, ''), 10);
   const selected = downloaded[(pick || 1) - 1] || downloaded[0];
 
-  console.log(`[Images] Selected reference: Image ${pick} from ${selected.source}`);
+  console.log(
+    `[Images] Selected reference: Image ${pick} from ${selected.source}`,
+  );
   return selected.buffer;
 }
 
@@ -297,7 +321,8 @@ Respond with ONLY the number (e.g. "1" or "3").`,
 // Permanent style reference stored in R2 — a known good studio shot with the
 // warm off-white background, soft shadows, and depth we want across all products.
 // This is a snapshot that won't change even if Shopify product images are updated.
-const STYLE_REFERENCE_URL = 'https://assets.auntiemarlenes.com/content/style-reference/studio-product-style.jpg';
+const STYLE_REFERENCE_URL =
+  'https://assets.auntiemarlenes.com/content/style-reference/studio-product-style.jpg';
 
 let styleReferenceCache: Buffer | null = null;
 
@@ -328,7 +353,10 @@ async function generateSingleShot(
 
   const content: any[] = [
     { type: 'image', image: referenceImage },
-    { type: 'text', text: 'IMAGE 1 (above): This is the product I want you to photograph. Use this for the product\'s exact appearance — shape, colours, label design, packaging text.' },
+    {
+      type: 'text',
+      text: "IMAGE 1 (above): This is the product I want you to photograph. Use this for the product's exact appearance — shape, colours, label design, packaging text.",
+    },
   ];
 
   if (styleRef) {
@@ -386,11 +414,31 @@ interface JudgeResult {
 }
 
 const judgeSchema = z.object({
-  recognition: z.number().min(1).max(5).describe('Would a customer recognize this as the real product?'),
-  labelLegibility: z.number().min(1).max(5).describe('Can you read the brand name and product name?'),
-  aiArtifacts: z.number().min(1).max(5).describe('5 = no AI artifacts, 1 = obviously AI-generated'),
-  styleConsistency: z.number().min(1).max(5).describe('Matches studio style guide? White bg, centered, correct fill'),
-  lightingMatch: z.number().min(1).max(5).describe('Consistent studio lighting'),
+  recognition: z
+    .number()
+    .min(1)
+    .max(5)
+    .describe('Would a customer recognize this as the real product?'),
+  labelLegibility: z
+    .number()
+    .min(1)
+    .max(5)
+    .describe('Can you read the brand name and product name?'),
+  aiArtifacts: z
+    .number()
+    .min(1)
+    .max(5)
+    .describe('5 = no AI artifacts, 1 = obviously AI-generated'),
+  styleConsistency: z
+    .number()
+    .min(1)
+    .max(5)
+    .describe('Matches studio style guide? White bg, centered, correct fill'),
+  lightingMatch: z
+    .number()
+    .min(1)
+    .max(5)
+    .describe('Consistent studio lighting'),
   feedback: z.string().describe('Brief feedback on what to fix if REDO'),
 });
 
@@ -413,7 +461,10 @@ async function judgeShot(
         role: 'user',
         content: [
           { type: 'image', image: referenceImage } as any,
-          { type: 'text', text: 'This is the REFERENCE photo of the real product.' },
+          {
+            type: 'text',
+            text: 'This is the REFERENCE photo of the real product.',
+          },
           { type: 'image', image: generatedImage } as any,
           {
             type: 'text',
@@ -501,7 +552,13 @@ export async function generateStudioShots(
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const shot = await generateSingleShot(referenceImage, config);
-        const judge = await judgeShot(shot, referenceImage, config, productName, productType);
+        const judge = await judgeShot(
+          shot,
+          referenceImage,
+          config,
+          productName,
+          productType,
+        );
 
         if (judge.verdict === 'PASS') {
           bestShot = shot;
@@ -510,7 +567,9 @@ export async function generateStudioShots(
         }
 
         if (judge.verdict === 'REDO' && attempt < maxRetries) {
-          console.log(`[Images] Retrying ${config.name} (attempt ${attempt + 1}/${maxRetries})...`);
+          console.log(
+            `[Images] Retrying ${config.name} (attempt ${attempt + 1}/${maxRetries})...`,
+          );
           // Keep the best REDO in case we don't get a PASS
           if (!bestShot || bestVerdict === 'FALLBACK') {
             bestShot = shot;
@@ -525,10 +584,15 @@ export async function generateStudioShots(
           bestVerdict = judge.verdict;
         }
       } catch (err) {
-        console.error(`[Images] Error generating ${config.name} (attempt ${attempt}):`, err);
+        console.error(
+          `[Images] Error generating ${config.name} (attempt ${attempt}):`,
+          err,
+        );
         if (attempt === maxRetries && !bestShot) {
           // Use reference image as fallback, processed to studio style
-          console.log(`[Images] Using reference image as fallback for ${config.name}`);
+          console.log(
+            `[Images] Using reference image as fallback for ${config.name}`,
+          );
           bestShot = await sharp(referenceImage)
             .resize(STUDIO_STYLE.size, STUDIO_STYLE.size, {
               fit: 'contain',
@@ -554,7 +618,9 @@ export async function generateStudioShots(
   const passed = results.filter((r) => r.verdict === 'PASS').length;
   const redone = results.filter((r) => r.verdict === 'REDO').length;
   const fallen = results.filter((r) => r.verdict === 'FALLBACK').length;
-  console.log(`[Images] Complete: ${passed} PASS, ${redone} REDO, ${fallen} FALLBACK`);
+  console.log(
+    `[Images] Complete: ${passed} PASS, ${redone} REDO, ${fallen} FALLBACK`,
+  );
 
   return results;
 }

@@ -8,8 +8,7 @@
   },
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
-    "check-types": "tsc --noEmit",
-    "lint": "echo 'skip: no local ESLint flat config (TODO: add eslint.config.mjs or extend shared monorepo config)'"
+    "check-types": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^22.13.1",

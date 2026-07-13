@@ -1,21 +1,21 @@
-import { notFound } from 'next/navigation';
+import {
+  faFacebook,
+  faPinterest,
+  faTwitter,
+} from '@fortawesome/free-brands-svg-icons';
+import { faArrowLeft, faClock } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { PortableText } from '@portabletext/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PortableText } from '@portabletext/react';
+import { notFound } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 import {
   getPostBySlug,
   getRelatedPosts,
   getSanityImageUrl,
   type SanityPost,
 } from '@/lib/sanity-blog';
-import { Button } from '@/components/ui/button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock, faArrowLeft } from '@fortawesome/pro-regular-svg-icons';
-import {
-  faFacebook,
-  faTwitter,
-  faPinterest,
-} from '@fortawesome/free-brands-svg-icons';
 import { portableTextComponents } from './PortableTextComponents';
 
 const Blog = async ({

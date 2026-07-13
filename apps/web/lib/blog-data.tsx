@@ -1,24 +1,24 @@
 export type BlogPost = {
-  id: string
-  slug: string
-  title: string
-  excerpt: string
-  content: string
-  image: string
-  category: string
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  image: string;
+  category: string;
   author: {
-    name: string
-    avatar: string
-  }
-  date: string
-  readTime: string
-  featured: boolean
-}
+    name: string;
+    avatar: string;
+  };
+  date: string;
+  readTime: string;
+  featured: boolean;
+};
 
 export const blogPosts: BlogPost[] = [
   {
-    id: "1",
-    slug: "tiktok-hottest-hair-skin-care-products",
+    id: '1',
+    slug: 'tiktok-hottest-hair-skin-care-products',
     title: "TikTok's Hottest Hair & Skin Care Products You Need to Try",
     excerpt:
       "TikTok has become a powerhouse for discovering the latest beauty trends. Whether it's a viral skincare hack or the newest haircare obsession, beauty enthusiasts flock to the platform to find what works.",
@@ -65,20 +65,21 @@ export const blogPosts: BlogPost[] = [
       
       <p>Have you tried any of these viral products? Share your experience with us on social media @auntiemarlenes!</p>
     `,
-    image: "/placeholder.svg?height=600&width=1200&text=TikTok+Trends",
-    category: "Trends",
+    image: '/placeholder.svg?height=600&width=1200&text=TikTok+Trends',
+    category: 'Trends',
     author: {
-      name: "Amara Johnson",
-      avatar: "/placeholder.svg?height=100&width=100&text=AJ",
+      name: 'Amara Johnson',
+      avatar: '/placeholder.svg?height=100&width=100&text=AJ',
     },
-    date: "October 7, 2024",
-    readTime: "5 min read",
+    date: 'October 7, 2024',
+    readTime: '5 min read',
     featured: true,
   },
   {
-    id: "2",
-    slug: "hair-mayonnaise-benefits",
-    title: "The Benefits of Using Hair Mayonnaise for Hair Care: A Nourishing Delight!",
+    id: '2',
+    slug: 'hair-mayonnaise-benefits',
+    title:
+      'The Benefits of Using Hair Mayonnaise for Hair Care: A Nourishing Delight!',
     excerpt:
       "Welcome to a hair care revelation that's as delightful as it sounds! If you're searching for an all-natural, nutrient-packed solution to transform your hair into luscious locks, hair mayonnaise might be your new best friend.",
     content: `
@@ -146,22 +147,22 @@ export const blogPosts: BlogPost[] = [
       
       <p>Try it once a week for a month and watch your hair transform!</p>
     `,
-    image: "/placeholder.svg?height=600&width=1200&text=Hair+Mayonnaise",
-    category: "Hair Care",
+    image: '/placeholder.svg?height=600&width=1200&text=Hair+Mayonnaise',
+    category: 'Hair Care',
     author: {
-      name: "Keisha Williams",
-      avatar: "/placeholder.svg?height=100&width=100&text=KW",
+      name: 'Keisha Williams',
+      avatar: '/placeholder.svg?height=100&width=100&text=KW',
     },
-    date: "August 2, 2024",
-    readTime: "7 min read",
+    date: 'August 2, 2024',
+    readTime: '7 min read',
     featured: true,
   },
   {
-    id: "3",
-    slug: "rosemary-mint-oil-benefits",
-    title: "Rosemary Mint Oil for Hair: Benefits and Usage",
+    id: '3',
+    slug: 'rosemary-mint-oil-benefits',
+    title: 'Rosemary Mint Oil for Hair: Benefits and Usage',
     excerpt:
-      "Rosemary mint oil is a versatile essential oil that offers numerous benefits for hair. Its unique combination of rosemary and peppermint oils creates a refreshing and invigorating aroma while promoting hair health.",
+      'Rosemary mint oil is a versatile essential oil that offers numerous benefits for hair. Its unique combination of rosemary and peppermint oils creates a refreshing and invigorating aroma while promoting hair health.',
     content: `
       <p>Rosemary mint oil is a versatile essential oil that offers numerous benefits for hair. Its unique combination of rosemary and peppermint oils creates a refreshing and invigorating aroma while promoting hair health and growth.</p>
       
@@ -249,20 +250,20 @@ export const blogPosts: BlogPost[] = [
       
       <p>Remember, consistency is key! Use it regularly for at least 3 months to see the best results.</p>
     `,
-    image: "/placeholder.svg?height=600&width=1200&text=Rosemary+Oil",
-    category: "Natural Care",
+    image: '/placeholder.svg?height=600&width=1200&text=Rosemary+Oil',
+    category: 'Natural Care',
     author: {
-      name: "Marcus Thompson",
-      avatar: "/placeholder.svg?height=100&width=100&text=MT",
+      name: 'Marcus Thompson',
+      avatar: '/placeholder.svg?height=100&width=100&text=MT',
     },
-    date: "April 28, 2023",
-    readTime: "6 min read",
+    date: 'April 28, 2023',
+    readTime: '6 min read',
     featured: false,
   },
   {
-    id: "4",
-    slug: "winter-hair-care-routine",
-    title: "The Ultimate Winter Hair Care Routine for Textured Hair",
+    id: '4',
+    slug: 'winter-hair-care-routine',
+    title: 'The Ultimate Winter Hair Care Routine for Textured Hair',
     excerpt:
       "Winter can be brutal on textured hair. Cold weather, indoor heating, and low humidity conspire to leave your hair dry, brittle, and prone to breakage. Here's how to protect your crown during the coldest months.",
     content: `
@@ -389,22 +390,22 @@ export const blogPosts: BlogPost[] = [
       
       <p>Stay warm and keep your hair beautiful! ❄️💕</p>
     `,
-    image: "/placeholder.svg?height=600&width=1200&text=Winter+Hair+Care",
-    category: "Seasonal",
+    image: '/placeholder.svg?height=600&width=1200&text=Winter+Hair+Care',
+    category: 'Seasonal',
     author: {
-      name: "Amara Johnson",
-      avatar: "/placeholder.svg?height=100&width=100&text=AJ",
+      name: 'Amara Johnson',
+      avatar: '/placeholder.svg?height=100&width=100&text=AJ',
     },
-    date: "December 15, 2024",
-    readTime: "8 min read",
+    date: 'December 15, 2024',
+    readTime: '8 min read',
     featured: true,
   },
   {
-    id: "5",
-    slug: "beginner-guide-natural-hair",
+    id: '5',
+    slug: 'beginner-guide-natural-hair',
     title: "The Beginner's Guide to Natural Hair: Everything You Need to Know",
     excerpt:
-      "Thinking about going natural? Or newly natural and feeling overwhelmed? This comprehensive guide will walk you through everything you need to know to start your natural hair journey with confidence.",
+      'Thinking about going natural? Or newly natural and feeling overwhelmed? This comprehensive guide will walk you through everything you need to know to start your natural hair journey with confidence.',
     content: `
       <p>Thinking about going natural? Or newly natural and feeling overwhelmed? This comprehensive guide will walk you through everything you need to know to start your natural hair journey with confidence.</p>
       
@@ -612,37 +613,43 @@ export const blogPosts: BlogPost[] = [
       
       <p>Have questions? Drop them in the comments or reach out to us on social media. We're here to help!</p>
     `,
-    image: "/placeholder.svg?height=600&width=1200&text=Natural+Hair+Guide",
-    category: "Guides",
+    image: '/placeholder.svg?height=600&width=1200&text=Natural+Hair+Guide',
+    category: 'Guides',
     author: {
-      name: "Keisha Williams",
-      avatar: "/placeholder.svg?height=100&width=100&text=KW",
+      name: 'Keisha Williams',
+      avatar: '/placeholder.svg?height=100&width=100&text=KW',
     },
-    date: "November 20, 2024",
-    readTime: "12 min read",
+    date: 'November 20, 2024',
+    readTime: '12 min read',
     featured: false,
   },
-]
+];
 
 export const blogCategories = [
-  "All",
-  "Trends",
-  "Hair Care",
-  "Natural Care",
-  "Seasonal",
-  "Guides",
-  "Product Reviews",
-  "DIY Recipes",
-]
+  'All',
+  'Trends',
+  'Hair Care',
+  'Natural Care',
+  'Seasonal',
+  'Guides',
+  'Product Reviews',
+  'DIY Recipes',
+];
 
-export const getRelatedPosts = (currentSlug: string, category: string, limit = 3): BlogPost[] => {
-  return blogPosts.filter((post) => post.slug !== currentSlug && post.category === category).slice(0, limit)
-}
+export const getRelatedPosts = (
+  currentSlug: string,
+  category: string,
+  limit = 3,
+): BlogPost[] => {
+  return blogPosts
+    .filter((post) => post.slug !== currentSlug && post.category === category)
+    .slice(0, limit);
+};
 
 export const getFeaturedPosts = (): BlogPost[] => {
-  return blogPosts.filter((post) => post.featured)
-}
+  return blogPosts.filter((post) => post.featured);
+};
 
 export const getPostBySlug = (slug: string): BlogPost | undefined => {
-  return blogPosts.find((post) => post.slug === slug)
-}
+  return blogPosts.find((post) => post.slug === slug);
+};

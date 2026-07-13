@@ -9,12 +9,17 @@ function getConfig() {
   const endpoint = process.env.SHOPIFY_ADMIN_API_ENDPOINT;
   const token = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
   if (!endpoint || !token) {
-    throw new Error('Missing SHOPIFY_ADMIN_API_ENDPOINT or SHOPIFY_ADMIN_ACCESS_TOKEN');
+    throw new Error(
+      'Missing SHOPIFY_ADMIN_API_ENDPOINT or SHOPIFY_ADMIN_ACCESS_TOKEN',
+    );
   }
   return { endpoint, token };
 }
 
-async function adminFetch<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
+async function adminFetch<T>(
+  query: string,
+  variables: Record<string, unknown> = {},
+): Promise<T> {
   const { endpoint, token } = getConfig();
 
   const res = await fetch(endpoint, {
@@ -33,7 +38,9 @@ async function adminFetch<T>(query: string, variables: Record<string, unknown> =
 
   const json = await res.json();
   if (json.errors) {
-    throw new Error(`Shopify Admin GraphQL error: ${JSON.stringify(json.errors)}`);
+    throw new Error(
+      `Shopify Admin GraphQL error: ${JSON.stringify(json.errors)}`,
+    );
   }
 
   return json.data;
@@ -88,7 +95,9 @@ const PRODUCT_BY_HANDLE_QUERY = `
   }
 `;
 
-export async function getProductByHandle(handle: string): Promise<AdminProduct | null> {
+export async function getProductByHandle(
+  handle: string,
+): Promise<AdminProduct | null> {
   const data = await adminFetch<{ productByHandle: AdminProduct | null }>(
     PRODUCT_BY_HANDLE_QUERY,
     { handle },
@@ -167,7 +176,9 @@ const CREATE_PRODUCT_MUTATION = `
   }
 `;
 
-export async function createProduct(input: CreateProductInput): Promise<{ id: string; handle: string; title: string }> {
+export async function createProduct(
+  input: CreateProductInput,
+): Promise<{ id: string; handle: string; title: string }> {
   // Note: In Shopify Admin API 2024-01+, variants are set separately via
   // productVariantsBulkCreate. Create the product first, then update the
   // default variant's price.
@@ -190,7 +201,9 @@ export async function createProduct(input: CreateProductInput): Promise<{ id: st
   }>(CREATE_PRODUCT_MUTATION, variables);
 
   if (data.productCreate.userErrors.length > 0) {
-    throw new Error(`Product creation failed: ${JSON.stringify(data.productCreate.userErrors)}`);
+    throw new Error(
+      `Product creation failed: ${JSON.stringify(data.productCreate.userErrors)}`,
+    );
   }
 
   if (!data.productCreate.product) {
@@ -213,11 +226,17 @@ export async function createProduct(input: CreateProductInput): Promise<{ id: st
  * Shopify creates a default variant automatically; we fetch its ID and update the price.
  * Uses productVariantsBulkUpdate (2024-01+ API).
  */
-async function setDefaultVariantPrice(productId: string, price: string): Promise<void> {
+async function setDefaultVariantPrice(
+  productId: string,
+  price: string,
+): Promise<void> {
   // Fetch the default variant ID
   const variantData = await adminFetch<{
     product: { variants: { edges: Array<{ node: { id: string } }> } } | null;
-  }>(`query GetVariant($id: ID!) { product(id: $id) { variants(first: 1) { edges { node { id } } } } }`, { id: productId });
+  }>(
+    `query GetVariant($id: ID!) { product(id: $id) { variants(first: 1) { edges { node { id } } } } }`,
+    { id: productId },
+  );
 
   const variantId = variantData.product?.variants?.edges?.[0]?.node?.id;
   if (!variantId) {
@@ -225,14 +244,17 @@ async function setDefaultVariantPrice(productId: string, price: string): Promise
     return;
   }
 
-  await adminFetch(`
+  await adminFetch(
+    `
     mutation UpdateVariants($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
       productVariantsBulkUpdate(productId: $productId, variants: $variants) {
         productVariants { id }
         userErrors { field message }
       }
     }
-  `, { productId, variants: [{ id: variantId, price }] });
+  `,
+    { productId, variants: [{ id: variantId, price }] },
+  );
 
   console.log(`[Shopify] Set price to £${price}`);
 }
@@ -320,7 +342,9 @@ export async function uploadImageToProduct(
   });
 
   if (staged.stagedUploadsCreate.userErrors.length > 0) {
-    throw new Error(`Staged upload failed: ${JSON.stringify(staged.stagedUploadsCreate.userErrors)}`);
+    throw new Error(
+      `Staged upload failed: ${JSON.stringify(staged.stagedUploadsCreate.userErrors)}`,
+    );
   }
 
   const target = staged.stagedUploadsCreate.stagedTargets[0];
@@ -330,7 +354,11 @@ export async function uploadImageToProduct(
   for (const param of target.parameters) {
     formData.append(param.name, param.value);
   }
-  formData.append('file', new Blob([imageBuffer], { type: 'image/jpeg' }), filename);
+  formData.append(
+    'file',
+    new Blob([imageBuffer], { type: 'image/jpeg' }),
+    filename,
+  );
 
   const uploadRes = await fetch(target.url, {
     method: 'POST',
@@ -359,7 +387,9 @@ export async function uploadImageToProduct(
   });
 
   if (media.productCreateMedia.mediaUserErrors.length > 0) {
-    throw new Error(`Media creation failed: ${JSON.stringify(media.productCreateMedia.mediaUserErrors)}`);
+    throw new Error(
+      `Media creation failed: ${JSON.stringify(media.productCreateMedia.mediaUserErrors)}`,
+    );
   }
 
   const mediaId = media.productCreateMedia.media[0]?.id;
@@ -370,7 +400,10 @@ export async function uploadImageToProduct(
 /**
  * Delete all existing images from a product.
  */
-export async function deleteProductImages(productId: string, mediaIds: string[]): Promise<void> {
+export async function deleteProductImages(
+  productId: string,
+  mediaIds: string[],
+): Promise<void> {
   if (mediaIds.length === 0) return;
 
   const data = await adminFetch<{
@@ -381,10 +414,14 @@ export async function deleteProductImages(productId: string, mediaIds: string[])
   }>(DELETE_MEDIA_MUTATION, { productId, mediaIds });
 
   if (data.productDeleteMedia.mediaUserErrors.length > 0) {
-    console.warn(`[Shopify] Some images failed to delete: ${JSON.stringify(data.productDeleteMedia.mediaUserErrors)}`);
+    console.warn(
+      `[Shopify] Some images failed to delete: ${JSON.stringify(data.productDeleteMedia.mediaUserErrors)}`,
+    );
   }
 
-  console.log(`[Shopify] Deleted ${data.productDeleteMedia.deletedMediaIds.length} images`);
+  console.log(
+    `[Shopify] Deleted ${data.productDeleteMedia.deletedMediaIds.length} images`,
+  );
 }
 
 /**
@@ -441,9 +478,15 @@ const COLLECTION_ADD_PRODUCTS_MUTATION = `
  * Add a product to collections matching its categories.
  * Always adds to "New Arrivals" as well.
  */
-export async function assignToCollections(productId: string, category: string, extraCategories: string[] = []): Promise<void> {
+export async function assignToCollections(
+  productId: string,
+  category: string,
+  extraCategories: string[] = [],
+): Promise<void> {
   const data = await adminFetch<{
-    collections: { edges: Array<{ node: { id: string; title: string; handle: string } }> };
+    collections: {
+      edges: Array<{ node: { id: string; title: string; handle: string } }>;
+    };
   }>(COLLECTIONS_QUERY, { first: 50 });
 
   const collections = data.collections.edges.map((e) => e.node);
@@ -457,7 +500,7 @@ export async function assignToCollections(productId: string, category: string, e
     const match = collections.find(
       (c) =>
         (c.handle.toLowerCase().includes(catLower.replace(/\s+/g, '-')) ||
-        c.title.toLowerCase().includes(catLower)) &&
+          c.title.toLowerCase().includes(catLower)) &&
         !matched.has(c.id),
     );
 

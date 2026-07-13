@@ -1,10 +1,17 @@
-import { View, Text, ScrollView, FlatList, ActivityIndicator, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useProducts } from '@/hooks/useProducts';
-import ProductCard from '@/components/ProductCard';
 import { CATEGORIES } from '@auntie-marlenes/constants';
-import { useSaved } from '@/contexts/saved';
 import * as Haptics from 'expo-haptics';
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import ProductCard from '@/components/ProductCard';
+import { useSaved } from '@/contexts/saved';
+import { useProducts } from '@/hooks/useProducts';
 
 export default function HomeScreen() {
   const { data: products, isLoading, error } = useProducts(20);
@@ -97,7 +104,9 @@ export default function HomeScreen() {
             <Text className="text-xl font-playfair-semibold text-foreground">
               New Arrivals
             </Text>
-            <Text className="text-sm font-inter-medium text-cocoa">See All</Text>
+            <Text className="text-sm font-inter-medium text-cocoa">
+              See All
+            </Text>
           </View>
           <ScrollView
             horizontal

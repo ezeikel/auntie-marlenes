@@ -1,12 +1,12 @@
-import resend from '@/lib/resend';
 import { render } from '@react-email/render';
-import OrderConfirmationEmail from '@/emails/order-confirmation';
 import AbandonedCartEmail from '@/emails/abandoned-cart';
-import ShippingUpdateEmail from '@/emails/shipping-update';
-import RestockReminderEmail from '@/emails/restock-reminder';
-import WelcomeEmail from '@/emails/welcome';
 import OrderCancellationEmail from '@/emails/order-cancellation';
+import OrderConfirmationEmail from '@/emails/order-confirmation';
 import QuizResultsEmail from '@/emails/quiz-results';
+import RestockReminderEmail from '@/emails/restock-reminder';
+import ShippingUpdateEmail from '@/emails/shipping-update';
+import WelcomeEmail from '@/emails/welcome';
+import resend from '@/lib/resend';
 
 const FROM = "Auntie Marlene's <hello@auntiemarlenes.com>";
 

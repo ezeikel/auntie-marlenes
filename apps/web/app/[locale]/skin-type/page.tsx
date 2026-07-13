@@ -1,5 +1,5 @@
-import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
+import { setRequestLocale } from 'next-intl/server';
 import SkinTypeQuiz from '@/components/SkinTypeQuiz';
 
 export const metadata: Metadata = {

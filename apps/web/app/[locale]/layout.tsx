@@ -1,20 +1,20 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { setRequestLocale, getMessages } from 'next-intl/server';
-import { Suspense } from 'react';
-import { Inter, Playfair_Display } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
+import type { Metadata } from 'next';
+import { Inter, Playfair_Display } from 'next/font/google';
+import { notFound } from 'next/navigation';
 import Script from 'next/script';
+import { getMessages, setRequestLocale } from 'next-intl/server';
+import { Suspense } from 'react';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import cn from '@/utils/cn';
 import '../globals.css';
-import Providers from '../providers';
-import SavedItemsSync from '@/components/SavedItemsSync';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
-import Header from '@/components/HeaderWrapper';
 import Footer from '@/components/Footer';
+import Header from '@/components/HeaderWrapper';
+import SavedItemsSync from '@/components/SavedItemsSync';
 import { Toaster } from '@/components/ui/sonner';
-import { locales, type Locale } from '@/i18n/config';
+import { type Locale, locales } from '@/i18n/config';
+import Providers from '../providers';
 // Validate environment variables at startup
 import '@/lib/env';
 

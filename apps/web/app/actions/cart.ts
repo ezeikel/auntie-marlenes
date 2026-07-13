@@ -1,20 +1,20 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
-import { after } from 'next/server';
-import { cookies } from 'next/headers';
 import { print } from 'graphql';
+import { revalidateTag } from 'next/cache';
+import { cookies } from 'next/headers';
+import { after } from 'next/server';
+import { auth } from '@/auth';
+import { TRACKING_EVENTS } from '@/constants/events';
 import {
-  GET_CART_QUERY,
-  CREATE_CART_MUTATION,
   ADD_PRODUCTS_TO_CART_MUTATION,
+  CART_BUYER_IDENTITY_UPDATE_MUTATION,
   CART_LINE_REMOVE_MUTATION,
   CART_LINES_UPDATE_MUTATION,
-  CART_BUYER_IDENTITY_UPDATE_MUTATION,
+  CREATE_CART_MUTATION,
+  GET_CART_QUERY,
 } from '@/lib/graphql/queries';
-import { auth } from '@/auth';
 import { track } from '@/utils/analytics-server';
-import { TRACKING_EVENTS } from '@/constants/events';
 
 export const getCartId = async () => {
   const cookieStore = await cookies();
@@ -23,7 +23,9 @@ export const getCartId = async () => {
 
 export const getCart = async ({
   cartId: providedCartId,
-}: { cartId?: string } = {}) => {
+}: {
+  cartId?: string;
+} = {}) => {
   // Use provided cartId (from API call) or fall back to cookie (web app)
   const cartId = providedCartId || (await getCartId());
 

@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 type BagHeaderProps = {
   isEmpty: boolean;
@@ -12,7 +12,9 @@ export default function BagHeader({ isEmpty, totalQuantity }: BagHeaderProps) {
         Shopping Bag
       </Text>
       <Text className="text-sm font-inter text-cocoa">
-        {isEmpty ? 'Your bag is empty' : `${totalQuantity} ${totalQuantity === 1 ? 'item' : 'items'}`}
+        {isEmpty
+          ? 'Your bag is empty'
+          : `${totalQuantity} ${totalQuantity === 1 ? 'item' : 'items'}`}
       </Text>
     </View>
   );

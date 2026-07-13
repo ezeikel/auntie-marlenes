@@ -1,19 +1,19 @@
 'use client';
 
-import { useCallback } from 'react';
 import { track as vercelTrackClient } from '@vercel/analytics';
 import { useSession } from 'next-auth/react';
 import posthog from 'posthog-js';
+import { useCallback } from 'react';
+import { TRACKING_EVENTS } from '@/constants/events';
 import type { EventProperties, TrackingEvent } from '@/types';
 import { cleanVercelProperties } from '@/utils/analytics';
 import {
   trackAddToCart,
-  trackInitiateCheckout,
-  trackViewContent,
-  trackSearch,
   trackFacebookPixelCustomEvent,
+  trackInitiateCheckout,
+  trackSearch,
+  trackViewContent,
 } from '@/utils/facebook-pixel';
-import { TRACKING_EVENTS } from '@/constants/events';
 
 type SessionUser = {
   dbId?: string;

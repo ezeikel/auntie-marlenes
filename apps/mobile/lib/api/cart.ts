@@ -1,7 +1,7 @@
-import axios from 'axios';
-import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
 import { getApiUrl } from '@auntie-marlenes/constants';
+import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 const apiUrl = getApiUrl(Platform.OS as 'ios' | 'android' | 'web');
 
@@ -22,7 +22,7 @@ export const createCart = async (productVariantId: string) => {
     const response = await axios.post(
       `${apiUrl}/cart`,
       { productVariantId },
-      { headers }
+      { headers },
     );
     return response.data;
   } catch (error) {
@@ -53,14 +53,14 @@ export const getCart = async (cartId: string) => {
  */
 export const addProductToCart = async (
   cartId: string,
-  productVariantId: string
+  productVariantId: string,
 ) => {
   try {
     const headers = await getAuthHeaders();
     const response = await axios.post(
       `${apiUrl}/cart/items`,
       { cartId, productVariantId },
-      { headers }
+      { headers },
     );
     return response.data;
   } catch (error) {
@@ -92,14 +92,14 @@ export const removeProductFromCart = async (cartId: string, lineId: string) => {
 export const updateCartLineQuantity = async (
   cartId: string,
   lineId: string,
-  quantity: number
+  quantity: number,
 ) => {
   try {
     const headers = await getAuthHeaders();
     const response = await axios.patch(
       `${apiUrl}/cart/items`,
       { cartId, lineId, quantity },
-      { headers }
+      { headers },
     );
     return response.data;
   } catch (error) {
@@ -114,14 +114,14 @@ export const updateCartLineQuantity = async (
 export const updateCartBuyerIdentity = async (
   cartId: string,
   email: string,
-  countryCode = 'GB'
+  countryCode = 'GB',
 ) => {
   try {
     const headers = await getAuthHeaders();
     const response = await axios.patch(
       `${apiUrl}/cart/buyer-identity`,
       { cartId, email, countryCode },
-      { headers }
+      { headers },
     );
     return response.data;
   } catch (error) {

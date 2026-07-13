@@ -1,32 +1,32 @@
 'use server';
 
-import { generateText, generateObject } from 'ai';
+import { generateObject, generateText } from 'ai';
+import { findBestImage, type ImageEvaluation } from '@/lib/ai/image-evaluation';
 import { models } from '@/lib/ai/models';
 import {
-  BLOG_META_SYSTEM,
-  BLOG_POST_SYSTEM,
   BLOG_META_PROMPT,
+  BLOG_META_SYSTEM,
   BLOG_POST_PROMPT,
-  IMAGE_SEARCH_PROMPT,
+  BLOG_POST_SYSTEM,
   IMAGE_GENERATION_PROMPT,
+  IMAGE_SEARCH_PROMPT,
 } from '@/lib/ai/prompts';
 import { blogMetaSchema, imageSearchSchema } from '@/lib/ai/schemas';
-import { findBestImage, type ImageEvaluation } from '@/lib/ai/image-evaluation';
-import { writeClient } from '@/sanity/lib/client';
-import { coveredTopicsQuery, topicExistsQuery } from '@/sanity/lib/queries';
+import { GUEST_AUTHORS, getAuthorBySpecialty } from '@/lib/blog/authors';
+import { generateDynamicTopics } from '@/lib/blog/dynamic-topics';
 import {
-  fetchBlogPhotosForEvaluation,
+  type BlogTopic,
+  pickUncoveredTopic,
+  seedTopicSlugs,
+} from '@/lib/blog/topics';
+import {
   downloadPhoto,
+  fetchBlogPhotosForEvaluation,
   formatPhotoCredit,
   type PexelsPhoto,
 } from '@/lib/pexels';
-import {
-  pickUncoveredTopic,
-  seedTopicSlugs,
-  type BlogTopic,
-} from '@/lib/blog/topics';
-import { generateDynamicTopics } from '@/lib/blog/dynamic-topics';
-import { getAuthorBySpecialty, GUEST_AUTHORS } from '@/lib/blog/authors';
+import { writeClient } from '@/sanity/lib/client';
+import { coveredTopicsQuery, topicExistsQuery } from '@/sanity/lib/queries';
 
 // Types
 interface BlogPostMeta {
@@ -1165,7 +1165,7 @@ export async function regenerateAllBlogImages(options?: {
       failed,
       results,
     };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       processed: 0,

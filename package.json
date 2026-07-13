@@ -4,14 +4,17 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
     "check-types": "turbo run check-types",
     "clean": "rm -rf apps/*/node_modules packages/*/node_modules",
     "clean:deep": "rm -rf apps/*/node_modules packages/*/node_modules pnpm-lock.yaml && pnpm install"
   },
   "devDependencies": {
-    "prettier": "^3.6.2",
+    "@biomejs/biome": "2.4.16",
     "turbo": "^2.5.6",
     "typescript": "5.8.3"
   },

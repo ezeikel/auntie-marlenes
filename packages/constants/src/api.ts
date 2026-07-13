@@ -13,7 +13,8 @@ export const SHOPIFY_CONFIG = {
  * Platform-specific API URLs for mobile
  */
 export const getApiUrl = (platform: 'ios' | 'android' | 'web') => {
-  const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
+  const baseUrl =
+    process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
 
   // Android emulator requires 10.0.2.2 to access host machine
   if (platform === 'android') {

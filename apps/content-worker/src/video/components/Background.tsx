@@ -1,4 +1,4 @@
-import { AbsoluteFill, Img, useCurrentFrame, interpolate } from 'remotion';
+import { AbsoluteFill, Img, interpolate, useCurrentFrame } from 'remotion';
 
 type BackgroundProps = {
   imageUrl: string;

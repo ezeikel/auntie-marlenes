@@ -1,12 +1,9 @@
 // Re-export the Prisma client
-export { db } from './client';
-export * from './generated/prisma/client';
-
 // Re-export Prisma types
-export { Prisma } from './client';
-
+export { db, Prisma } from './client';
 // Re-export specific model types with custom names
 export type {
-  User as DbUserType,
   SavedItem as DbSavedItemType,
+  User as DbUserType,
 } from './generated/prisma/client';
+export * from './generated/prisma/client';

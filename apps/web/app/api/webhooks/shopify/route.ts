@@ -1,15 +1,15 @@
+import crypto from 'crypto';
+import { revalidateTag } from 'next/cache';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
-import crypto from 'crypto';
-import { track } from '@/utils/analytics-server';
 import { TRACKING_EVENTS } from '@/constants/events';
-import { db } from '@/lib/prisma';
 import {
+  sendOrderCancellationEmail,
   sendOrderConfirmationEmail,
   sendShippingUpdateEmail,
-  sendOrderCancellationEmail,
 } from '@/lib/email';
+import { db } from '@/lib/prisma';
+import { track } from '@/utils/analytics-server';
 
 /**
  * Verify that the webhook request is from Shopify

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/prisma';
-import { createMagicLinkToken } from '@/lib/auth-mobile';
 import { Resend } from 'resend';
+import { createMagicLinkToken } from '@/lib/auth-mobile';
+import { db } from '@/lib/prisma';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 

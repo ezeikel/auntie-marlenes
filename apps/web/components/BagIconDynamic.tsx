@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { getCart } from '@/app/actions';
 import BagIconClient from './BagIconClient';
 import BagSkeleton from './BagSkeleton';
@@ -57,7 +57,7 @@ export default function BagIconDynamic() {
 
   // Listen for route changes and refetch cart
   useEffect(() => {
-    const handleRouteChange = () => {
+    const _handleRouteChange = () => {
       fetchCart();
     };
 

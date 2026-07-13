@@ -20,7 +20,13 @@ function parseArgs(argv: string[]): { only?: string[] } {
   const only: string[] = [];
   for (const arg of argv) {
     if (arg.startsWith('--only=')) {
-      only.push(...arg.slice('--only='.length).split(',').map((s) => s.trim()).filter(Boolean));
+      only.push(
+        ...arg
+          .slice('--only='.length)
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+      );
     }
   }
   return only.length > 0 ? { only } : {};

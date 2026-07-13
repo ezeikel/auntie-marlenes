@@ -1,5 +1,5 @@
-import { Pressable, Text } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { Pressable, Text } from 'react-native';
 
 type SizeButtonProps = {
   size: string;

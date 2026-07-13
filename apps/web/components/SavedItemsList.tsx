@@ -1,9 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import {
+  faChevronDown,
+  faHeart,
+  faTrash,
+} from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Image from 'next/image';
-import type { Product } from '@/lib/constants';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { getProduct } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,16 +17,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faChevronDown,
-  faTrash,
-  faHeart,
-} from '@fortawesome/pro-regular-svg-icons';
-import { formatCurrency } from '@/lib/currency';
-import { useSaved } from '@/contexts/saved';
 import { useLocation } from '@/contexts/LocationContext';
-import { getProduct } from '@/app/actions';
+import { useSaved } from '@/contexts/saved';
+import type { Product } from '@/lib/constants';
+import { formatCurrency } from '@/lib/currency';
 import AddToBagButton from './buttons/AddToBagButton/AddToBagButton';
 
 type SortOption = {

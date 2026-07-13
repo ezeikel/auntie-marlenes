@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
-import { z, ZodError } from 'zod';
+import { ZodError, z } from 'zod';
 import { updateCartBuyerIdentity } from '@/app/actions';
-import { rateLimit } from '@/lib/rate-limit';
 import { corsHeaders, corsOptionsResponse } from '@/lib/cors';
+import { rateLimit } from '@/lib/rate-limit';
 
 const buyerIdentitySchema = z.object({
   cartId: z.string().min(1),

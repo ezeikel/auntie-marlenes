@@ -1,14 +1,24 @@
-import { View, Text, FlatList, ActivityIndicator, Pressable, Dimensions } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { Product } from '@auntie-marlenes/types';
+import { faHeart } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Pressable,
+  Text,
+  View,
+} from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+import ProductCard from '@/components/ProductCard';
 import { useSaved } from '@/contexts/saved';
 import { useProducts } from '@/hooks/useProducts';
-import { router } from 'expo-router';
-import ProductCard from '@/components/ProductCard';
-import type { Product } from '@auntie-marlenes/types';
-import { useState } from 'react';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faHeart } from '@fortawesome/pro-regular-svg-icons';
 
 export default function SavedScreen() {
   const { savedItems, isLoading: isSavedLoading, toggleSave } = useSaved();
@@ -18,9 +28,10 @@ export default function SavedScreen() {
   const insets = useSafeAreaInsets();
 
   // Filter products to only show saved ones
-  const savedProducts = allProducts?.filter((product: Product) =>
-    savedItems.includes(product.id)
-  ) || [];
+  const savedProducts =
+    allProducts?.filter((product: Product) =>
+      savedItems.includes(product.id),
+    ) || [];
 
   const isLoading = isSavedLoading || isProductsLoading;
 
@@ -30,7 +41,10 @@ export default function SavedScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-warm-beige items-center justify-center" edges={['top']}>
+      <SafeAreaView
+        className="flex-1 bg-warm-beige items-center justify-center"
+        edges={['top']}
+      >
         <ActivityIndicator size="large" color="#5D4037" />
       </SafeAreaView>
     );
@@ -59,25 +73,33 @@ export default function SavedScreen() {
       {savedProducts.length === 0 ? (
         <View
           style={{
-            height: headerHeight > 0 ? Dimensions.get('window').height - insets.top - headerHeight - tabBarHeight : undefined,
+            height:
+              headerHeight > 0
+                ? Dimensions.get('window').height -
+                  insets.top -
+                  headerHeight -
+                  tabBarHeight
+                : undefined,
           }}
         >
           <View className="flex-1 items-center justify-center">
-          <View className="size-20 rounded-full bg-warm-beige items-center justify-center mb-6">
-            <FontAwesomeIcon icon={faHeart} size={40} color="#5D4037" />
-          </View>
-          <Text className="text-lg font-inter-semibold text-center text-foreground mb-2">
-            No Saved Items
-          </Text>
-          <Text className="text-sm font-inter text-center text-muted-foreground mb-6">
-            Tap the heart icon on products you love to save them here
-          </Text>
-          <Pressable
-            onPress={() => router.push('/(tabs)/')}
-            className="bg-sage-green rounded-xl px-6 py-3 active:opacity-80"
-          >
-            <Text className="text-white font-inter-semibold">Browse Products</Text>
-          </Pressable>
+            <View className="size-20 rounded-full bg-warm-beige items-center justify-center mb-6">
+              <FontAwesomeIcon icon={faHeart} size={40} color="#5D4037" />
+            </View>
+            <Text className="text-lg font-inter-semibold text-center text-foreground mb-2">
+              No Saved Items
+            </Text>
+            <Text className="text-sm font-inter text-center text-muted-foreground mb-6">
+              Tap the heart icon on products you love to save them here
+            </Text>
+            <Pressable
+              onPress={() => router.push('/(tabs)/')}
+              className="bg-sage-green rounded-xl px-6 py-3 active:opacity-80"
+            >
+              <Text className="text-white font-inter-semibold">
+                Browse Products
+              </Text>
+            </Pressable>
           </View>
         </View>
       ) : (

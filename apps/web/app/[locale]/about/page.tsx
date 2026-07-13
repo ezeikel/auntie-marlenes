@@ -1,16 +1,16 @@
-import { setRequestLocale } from 'next-intl/server';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faHeart,
-  faHandHoldingSeedling,
-  faPeopleGroup,
-  faStarSharp,
   faBookOpenReader,
   faEnvelope,
   faGlobe,
+  faHandHoldingSeedling,
+  faHeart,
+  faPeopleGroup,
+  faStarSharp,
   faStore,
 } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Metadata } from 'next';
+import { setRequestLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'About Us',

@@ -1,6 +1,6 @@
 import { withSentryConfig } from '@sentry/nextjs';
-import { withPlausibleProxy } from 'next-plausible';
 import createNextIntlPlugin from 'next-intl/plugin';
+import { withPlausibleProxy } from 'next-plausible';
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
@@ -84,5 +84,5 @@ const sentryOptions = {
 };
 
 export default withPlausibleProxy()(
-  withSentryConfig(withNextIntl(nextConfig), sentryOptions)
+  withSentryConfig(withNextIntl(nextConfig), sentryOptions),
 );

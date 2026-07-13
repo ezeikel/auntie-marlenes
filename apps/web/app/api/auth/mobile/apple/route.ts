@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { db } from '@/lib/prisma';
 import { createToken } from '@/lib/auth-mobile';
+import { db } from '@/lib/prisma';
 
 export async function POST(req: Request) {
   try {

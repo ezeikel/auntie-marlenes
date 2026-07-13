@@ -1,12 +1,12 @@
 // Queries
-export * from './queries';
 
 // Adapter functions
 export {
-  adaptShopifyProduct,
-  adaptShopifyProducts,
-  getVariantId,
-  getVariantByOptions,
   adaptCartLine,
   adaptShopifyCart,
+  adaptShopifyProduct,
+  adaptShopifyProducts,
+  getVariantByOptions,
+  getVariantId,
 } from './adapter';
+export * from './queries';

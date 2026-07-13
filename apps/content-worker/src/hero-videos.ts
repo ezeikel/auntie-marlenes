@@ -19,16 +19,16 @@
  * Run with: pnpm gen:hero-videos (from apps/content-worker)
  */
 
-import { fal } from '@fal-ai/client';
-import { generateObject } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
-import { z } from 'zod';
 import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
+import { anthropic } from '@ai-sdk/anthropic';
+import { fal } from '@fal-ai/client';
+import { generateObject } from 'ai';
+import { z } from 'zod';
 import { uploadFile } from './storage';
 
 const execFileAsync = promisify(execFile);
@@ -51,7 +51,7 @@ const HERO_VIDEOS_DIR = path.resolve(
 
 const SEEDANCE_MODEL = 'fal-ai/bytedance/seedance/v1.5/pro/image-to-video';
 
-const MAX_RETRIES = 2;
+const _MAX_RETRIES = 2;
 const RETRY_SEEDS = [42, 84, 1337]; // initial + 2 retries
 
 // ─── Scene Definitions ──────────────────────────────────────────────────────
@@ -127,7 +127,9 @@ async function generateSeedanceVideo(
   imageUrl: string,
   seed: number,
 ): Promise<SeedanceOutput> {
-  console.log(`[Video] ${scene.videoFilename} — calling Seedance (seed=${seed})...`);
+  console.log(
+    `[Video] ${scene.videoFilename} — calling Seedance (seed=${seed})...`,
+  );
 
   const result = await fal.subscribe(SEEDANCE_MODEL, {
     input: {
@@ -378,8 +380,14 @@ async function generateSceneWithJudge(
     );
 
     try {
-      const { videoBuffer } = await generateSeedanceVideo(scene, imageUrl, seed);
-      console.log(`[Video] ${scene.videoFilename} — generated, extracting frames...`);
+      const { videoBuffer } = await generateSeedanceVideo(
+        scene,
+        imageUrl,
+        seed,
+      );
+      console.log(
+        `[Video] ${scene.videoFilename} — generated, extracting frames...`,
+      );
 
       const frames = await extractKeyFrames(videoBuffer);
       console.log(`[Video] ${scene.videoFilename} — judging...`);
@@ -392,7 +400,9 @@ async function generateSceneWithJudge(
         judgment.scores,
       );
       if (judgment.feedback) {
-        console.log(`[Video] ${scene.videoFilename} — feedback: ${judgment.feedback}`);
+        console.log(
+          `[Video] ${scene.videoFilename} — feedback: ${judgment.feedback}`,
+        );
       }
 
       if (judgment.verdict === 'PASS') {
@@ -486,7 +496,11 @@ export async function generateAllHeroVideos(
     const { url: imageUrl } = await uploadFile(r2Key, stillBuffer, 'image/png');
 
     // 3. Generate + judge + retry
-    const videoBuffer = await generateSceneWithJudge(scene, imageUrl, stillBuffer);
+    const videoBuffer = await generateSceneWithJudge(
+      scene,
+      imageUrl,
+      stillBuffer,
+    );
 
     // 4. Save final MP4
     const outPath = path.join(HERO_VIDEOS_DIR, scene.videoFilename);

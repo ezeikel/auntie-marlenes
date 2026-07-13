@@ -53,12 +53,17 @@ const PRODUCT_BY_HANDLE_QUERY = `
   }
 `;
 
-async function shopifyFetch<T>(query: string, variables: Record<string, unknown>): Promise<T> {
+async function shopifyFetch<T>(
+  query: string,
+  variables: Record<string, unknown>,
+): Promise<T> {
   const endpoint = process.env.SHOPIFY_STOREFRONT_API_ENDPOINT;
   const token = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
 
   if (!endpoint || !token) {
-    throw new Error('Missing SHOPIFY_STOREFRONT_API_ENDPOINT or SHOPIFY_STOREFRONT_ACCESS_TOKEN');
+    throw new Error(
+      'Missing SHOPIFY_STOREFRONT_API_ENDPOINT or SHOPIFY_STOREFRONT_ACCESS_TOKEN',
+    );
   }
 
   const res = await fetch(endpoint, {
@@ -97,7 +102,9 @@ export async function getAllProducts(): Promise<ShopifyProduct[]> {
 /**
  * Fetch a single product by handle.
  */
-export async function getProductByHandle(handle: string): Promise<ShopifyProduct | null> {
+export async function getProductByHandle(
+  handle: string,
+): Promise<ShopifyProduct | null> {
   const data = await shopifyFetch<{
     productByHandle: ShopifyProduct | null;
   }>(PRODUCT_BY_HANDLE_QUERY, { handle });

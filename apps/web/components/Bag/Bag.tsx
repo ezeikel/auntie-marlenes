@@ -1,12 +1,12 @@
+import {
+  faGift,
+  faShieldHalved,
+  faShoppingBag,
+  faTruck,
+} from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';
 import { getCart, searchProducts } from '@/app/actions';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faTruck,
-  faShieldHalved,
-  faGift,
-  faShoppingBag,
-} from '@fortawesome/pro-regular-svg-icons';
 import BagClient from '@/components/BagClient';
 import { getServerCountry } from '@/lib/server-location';
 
@@ -79,7 +79,9 @@ const Bag = async () => {
                     size="2x"
                   />
                 </div>
-                <h3 className="font-semibold text-cocoa mb-1">Free UK Delivery</h3>
+                <h3 className="font-semibold text-cocoa mb-1">
+                  Free UK Delivery
+                </h3>
                 <p className="text-sm text-gray-600">On orders over £40</p>
               </div>
 

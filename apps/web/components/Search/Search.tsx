@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation';
-import DynamicProductListing from '@/components/DynamicProductListing';
 import { searchProducts } from '@/app/actions';
+import DynamicProductListing from '@/components/DynamicProductListing';
+import { TRACKING_EVENTS } from '@/constants/events';
 import { getServerCountry } from '@/lib/server-location';
 import { track } from '@/utils/analytics-server';
-import { TRACKING_EVENTS } from '@/constants/events';
 
 type SearchProps = {
   searchParams: Promise<{

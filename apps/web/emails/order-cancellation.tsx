@@ -1,4 +1,4 @@
-import { Text, Section, Button, Link } from '@react-email/components';
+import { Button, Link, Section, Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout, { colors, siteUrl } from './components/layout';
 

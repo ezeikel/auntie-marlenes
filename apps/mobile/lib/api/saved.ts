@@ -1,7 +1,7 @@
-import axios from 'axios';
-import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
 import { getApiUrl } from '@auntie-marlenes/constants';
+import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 const apiUrl = getApiUrl(Platform.OS as 'ios' | 'android' | 'web');
 
@@ -36,14 +36,14 @@ export const getSavedItems = async (): Promise<{ productIds: string[] }> => {
  * Add product to saved items
  */
 export const addProductToSaved = async (
-  productId: string
+  productId: string,
 ): Promise<{ success: boolean }> => {
   try {
     const headers = await getAuthHeaders();
     const response = await axios.post(
       `${apiUrl}/saved`,
       { productId },
-      { headers }
+      { headers },
     );
     return response.data;
   } catch (error) {
@@ -56,13 +56,13 @@ export const addProductToSaved = async (
  * Remove product from saved items
  */
 export const removeProductFromSaved = async (
-  productId: string
+  productId: string,
 ): Promise<{ success: boolean }> => {
   try {
     const headers = await getAuthHeaders();
     const response = await axios.delete(
       `${apiUrl}/saved?productId=${productId}`,
-      { headers }
+      { headers },
     );
     return response.data;
   } catch (error) {
@@ -76,14 +76,14 @@ export const removeProductFromSaved = async (
  * Called when user logs in to merge AsyncStorage saves with backend
  */
 export const syncSavedItems = async (
-  productIds: string[]
+  productIds: string[],
 ): Promise<{ success: boolean; synced: number }> => {
   try {
     const headers = await getAuthHeaders();
     const response = await axios.post(
       `${apiUrl}/saved/sync`,
       { productIds },
-      { headers }
+      { headers },
     );
     return response.data;
   } catch (error) {

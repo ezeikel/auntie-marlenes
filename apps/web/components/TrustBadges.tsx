@@ -1,10 +1,10 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faTruck,
   faBox,
   faHandHoldingHeart,
   faShieldHalved,
+  faTruck,
 } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 type TrustBadge = {
   icon: typeof faTruck;

@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import Image from 'next/image';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/constants';
-import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/currency';
+import { cn } from '@/lib/utils';
 
 type ProductCardProps = {
   product: Product;

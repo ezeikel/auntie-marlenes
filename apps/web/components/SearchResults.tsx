@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { faChevronDown } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';
-import { products } from '@/lib/constants';
-import ProductCard from './ProductCard';
-import FilterSidebar from './FilterSidebar';
-import FilterSheet from './FilterSheet';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,8 +11,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown } from '@fortawesome/pro-regular-svg-icons';
+import { products } from '@/lib/constants';
+import FilterSheet from './FilterSheet';
+import FilterSidebar from './FilterSidebar';
+import ProductCard from './ProductCard';
 
 type SearchResultsProps = {
   query: string;

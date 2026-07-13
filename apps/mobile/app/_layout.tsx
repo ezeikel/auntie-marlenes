@@ -1,5 +1,9 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import Constants, { ExecutionEnvironment } from "expo-constants";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from '@react-navigation/native';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Stack, useNavigationContainerRef } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -20,8 +24,13 @@ Sentry.init({
   enableLogs: true,
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1,
-  integrations: [navigationIntegration, Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
-  enableNativeFramesTracking: Constants.executionEnvironment === ExecutionEnvironment.StoreClient,
+  integrations: [
+    navigationIntegration,
+    Sentry.mobileReplayIntegration(),
+    Sentry.feedbackIntegration(),
+  ],
+  enableNativeFramesTracking:
+    Constants.executionEnvironment === ExecutionEnvironment.StoreClient,
 });
 
 export {
@@ -65,7 +74,10 @@ function RootLayoutNav() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="sign-in" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="product/[handle]" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="product/[handle]"
+            options={{ headerShown: false }}
+          />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         </Stack>
       </ThemeProvider>

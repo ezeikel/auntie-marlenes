@@ -8,7 +8,7 @@
 
 import { generateObject } from 'ai';
 import { models } from './models';
-import { imageEvaluationSchema, type ImageEvaluation } from './schemas';
+import { type ImageEvaluation, imageEvaluationSchema } from './schemas';
 
 export interface EvaluateImageOptions {
   /** Blog post title */

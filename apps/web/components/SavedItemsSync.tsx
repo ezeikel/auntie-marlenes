@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useSession } from '@/hooks/useSession';
 import { syncLocalSavesToDB } from '@/app/actions';
-import { getLocalSaves, clearLocalSaves } from '@/lib/localStorage-saves';
+import { useSession } from '@/hooks/useSession';
+import { clearLocalSaves, getLocalSaves } from '@/lib/localStorage-saves';
 
 /**
  * Component that syncs localStorage saved items to database after sign in/up

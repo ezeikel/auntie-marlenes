@@ -1,19 +1,19 @@
-import { Tabs } from 'expo-router';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import {
-  faHouse,
-  faMagnifyingGlass,
   faBagShopping,
   faHeart,
+  faHouse,
+  faMagnifyingGlass,
   faUser,
 } from '@fortawesome/pro-regular-svg-icons';
 import {
-  faHouse as faHouseSolid,
-  faMagnifyingGlass as faMagnifyingGlassSolid,
   faBagShopping as faBagShoppingSolid,
   faHeart as faHeartSolid,
+  faHouse as faHouseSolid,
+  faMagnifyingGlass as faMagnifyingGlassSolid,
   faUser as faUserSolid,
 } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Tabs } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useCart } from '@/contexts/cart';

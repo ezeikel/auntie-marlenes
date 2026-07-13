@@ -46,7 +46,9 @@ const CANDIDATES = [
 ];
 
 async function main() {
-  console.log(`[Upload] Uploading ${CANDIDATES.length} Scene 1 candidates to R2...\n`);
+  console.log(
+    `[Upload] Uploading ${CANDIDATES.length} Scene 1 candidates to R2...\n`,
+  );
 
   const urls: Array<{ label: string; url: string; size: string }> = [];
 

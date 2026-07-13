@@ -1,8 +1,7 @@
-import { View, Text, Pressable } from 'react-native';
-import { router } from 'expo-router';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faShoppingBag } from '@fortawesome/pro-regular-svg-icons';
-
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { router } from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
 
 export default function EmptyBagState() {
   return (

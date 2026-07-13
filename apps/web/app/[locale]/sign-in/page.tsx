@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, Suspense } from 'react';
-import { signIn } from 'next-auth/react';
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faGoogle,
-  faFacebook,
   faApple,
+  faFacebook,
+  faGoogle,
 } from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { signIn } from 'next-auth/react';
+import { Suspense, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 // Note: Metadata export is at the bottom of the file since this is a client component
 

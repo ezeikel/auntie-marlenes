@@ -44,9 +44,7 @@ export async function renderProductReel(
     timeoutInMilliseconds: 300_000,
     onProgress: ({ progress }) => {
       if (Math.round(progress * 100) % 25 === 0) {
-        console.log(
-          `[Remotion] Reel progress: ${Math.round(progress * 100)}%`,
-        );
+        console.log(`[Remotion] Reel progress: ${Math.round(progress * 100)}%`);
       }
     },
   });

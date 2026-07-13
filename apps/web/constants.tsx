@@ -1,5 +1,5 @@
+import { faHeart, faUser } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faHeart } from '@fortawesome/pro-regular-svg-icons';
 import Bag from '@/components/Bag/Bag';
 
 export const NAVIGATION_ITEMS = [

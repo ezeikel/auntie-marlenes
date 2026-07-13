@@ -1,17 +1,17 @@
-import NextAuth from 'next-auth';
-import type { Profile, Account, User, Session } from '@auth/core/types';
-import type { AdapterUser } from '@auth/core/adapters';
-import GoogleProvider from 'next-auth/providers/google';
-import FacebookProvider from 'next-auth/providers/facebook';
-import AppleProvider from 'next-auth/providers/apple';
-import Resend from 'next-auth/providers/resend';
-import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from '@auntie-marlenes/db';
-import { sendWelcomeEmail } from '@/lib/email';
+import type { AdapterUser } from '@auth/core/adapters';
+import type { Account, Profile, Session, User } from '@auth/core/types';
+import { PrismaAdapter } from '@auth/prisma-adapter';
 import { render } from '@react-email/render';
+import NextAuth from 'next-auth';
+import AppleProvider from 'next-auth/providers/apple';
+import FacebookProvider from 'next-auth/providers/facebook';
+import GoogleProvider from 'next-auth/providers/google';
+import Resend from 'next-auth/providers/resend';
 import MagicLinkEmail from '@/components/emails/MagicLinkEmail';
-import resendClient from '@/lib/resend';
 import { generateAppleClientSecret } from '@/lib/apple';
+import { sendWelcomeEmail } from '@/lib/email';
+import resendClient from '@/lib/resend';
 
 type AppleProfile = Profile & {
   user?: {

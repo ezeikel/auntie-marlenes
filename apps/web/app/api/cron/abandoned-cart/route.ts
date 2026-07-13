@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/prisma';
 import { sendAbandonedCartEmail } from '@/lib/email';
+import { db } from '@/lib/prisma';
 
 /**
  * Cron job for abandoned cart recovery emails

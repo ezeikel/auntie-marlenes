@@ -1,14 +1,14 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
-import { ThemeProvider } from 'next-themes';
-import { NextIntlClientProvider } from 'next-intl';
 import type { AbstractIntlMessages } from 'next-intl';
+import { NextIntlClientProvider } from 'next-intl';
 import PlausibleProvider from 'next-plausible';
-import { UIContextProvider } from '@/contexts/ui';
-import { SavedProvider } from '@/contexts/saved';
-import { LocationProvider } from '@/contexts/LocationContext';
+import { ThemeProvider } from 'next-themes';
 import { PostHogProvider } from '@/components/PostHogProvider';
+import { LocationProvider } from '@/contexts/LocationContext';
+import { SavedProvider } from '@/contexts/saved';
+import { UIContextProvider } from '@/contexts/ui';
 
 type ProvidersProps = {
   children: React.ReactNode;

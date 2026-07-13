@@ -3,9 +3,9 @@
  * Renders branded text overlays onto scene images — no browser needed.
  */
 
+import React from 'react';
 import satori from 'satori';
 import sharp from 'sharp';
-import React from 'react';
 
 // Cache font data
 let playfairBoldData: ArrayBuffer | null = null;

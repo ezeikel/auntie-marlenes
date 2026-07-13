@@ -3,9 +3,9 @@
  * Handles Bearer token validation and user extraction for mobile API endpoints
  */
 
+import { jwtVerify, SignJWT } from 'jose';
 import { headers } from 'next/headers';
 import { db } from '@/lib/prisma';
-import { jwtVerify, SignJWT } from 'jose';
 
 // Ensure NEXT_AUTH_SECRET is set (no insecure fallback)
 if (!process.env.NEXT_AUTH_SECRET) {

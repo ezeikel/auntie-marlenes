@@ -1,8 +1,5 @@
-import { AbsoluteFill, useCurrentFrame, interpolate } from 'remotion';
-import {
-  loadFont,
-  fontFamily,
-} from '@remotion/google-fonts/PlayfairDisplay';
+import { fontFamily, loadFont } from '@remotion/google-fonts/PlayfairDisplay';
+import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
 
 const { waitUntilDone } = loadFont('normal', { weights: ['700'] });
 waitUntilDone();

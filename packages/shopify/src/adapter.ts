@@ -1,10 +1,10 @@
 import type {
-  Product,
-  ShopifyProduct,
-  ShopifyCart,
-  ShopifyCartLine,
   Cart,
   CartLineItem,
+  Product,
+  ShopifyCart,
+  ShopifyCartLine,
+  ShopifyProduct,
 } from '@auntie-marlenes/types';
 
 /**
@@ -151,9 +151,7 @@ export function adaptCartLine(line: ShopifyCartLine): CartLineItem {
   const merchandise = line.merchandise;
   const product = merchandise.product;
   const image =
-    merchandise.image?.url ||
-    product.images.edges[0]?.node.url ||
-    '';
+    merchandise.image?.url || product.images.edges[0]?.node.url || '';
 
   return {
     id: line.id,

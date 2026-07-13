@@ -28,13 +28,13 @@
  * Run with: pnpm gen:hero-videos-sora
  */
 
-import { fal } from '@fal-ai/client';
 import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
+import { fal } from '@fal-ai/client';
 import { uploadFile } from './storage';
 
 const execFileAsync = promisify(execFile);
@@ -107,7 +107,7 @@ const HERO_VIDEO_SCENES: HeroVideoScene[] = [
     // (3) use the v2 still which should not re-trigger Sora's content
     // classifier.
     prompt:
-      "Motion begins immediately from frame one, no pause at the start. A Black woman with shoulder-length locs works a small amount of golden hair oil along one loc near her temple with her fingertips as she stands at her bathroom vanity in morning light, wearing a cream cotton camisole. As the clip continues, her fingertips smooth the oiled loc with a gentle downward stroke, her free hand gently separates another loc to reveal underneath, she lifts one more loc to examine it in the mirror, and warm morning sunlight holds steady through the side window. The camera is fixed and does not pan or zoom. Cinematic slow motion, natural realistic hand movement, warm golden hour bathroom lighting, photorealistic.",
+      'Motion begins immediately from frame one, no pause at the start. A Black woman with shoulder-length locs works a small amount of golden hair oil along one loc near her temple with her fingertips as she stands at her bathroom vanity in morning light, wearing a cream cotton camisole. As the clip continues, her fingertips smooth the oiled loc with a gentle downward stroke, her free hand gently separates another loc to reveal underneath, she lifts one more loc to examine it in the mirror, and warm morning sunlight holds steady through the side window. The camera is fixed and does not pan or zoom. Cinematic slow motion, natural realistic hand movement, warm golden hour bathroom lighting, photorealistic.',
   },
   {
     id: 'barbershop-fade',
@@ -136,7 +136,9 @@ async function generateSoraVideo(
   console.log(
     `[Sora] ${scene.videoFilename} — calling ${SORA_MODEL} (720p, 20s, 16:9)...`,
   );
-  console.log(`[Sora] ${scene.videoFilename} — cost: $2.00, expect ~3-10 min queue`);
+  console.log(
+    `[Sora] ${scene.videoFilename} — cost: $2.00, expect ~3-10 min queue`,
+  );
 
   let result;
   try {
@@ -280,7 +282,11 @@ export async function generateAllHeroVideosSora(
       // 2. Upload to R2 for a public URL
       const r2Key = `content/hero/stills/${scene.imageFilename}`;
       console.log(`[Sora] ${scene.videoFilename} — uploading still to R2...`);
-      const { url: imageUrl } = await uploadFile(r2Key, stillBuffer, 'image/png');
+      const { url: imageUrl } = await uploadFile(
+        r2Key,
+        stillBuffer,
+        'image/png',
+      );
 
       // 3. Generate + strip audio
       const videoBuffer = await generateSoraVideo(scene, imageUrl);

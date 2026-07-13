@@ -5,19 +5,19 @@
  * and transform it to match the existing BlogPost format
  */
 
+import type { PortableTextBlock } from '@portabletext/types';
 import { cacheLife, cacheTag } from 'next/cache';
+import type { Image as SanityImage } from 'sanity';
 import { client } from '@/sanity/lib/client';
 import { urlForImage } from '@/sanity/lib/image';
 import {
-  postsQuery,
+  categoriesQuery,
+  featuredPostsQuery,
   postBySlugQuery,
   postSlugsQuery,
+  postsQuery,
   relatedPostsQuery,
-  featuredPostsQuery,
-  categoriesQuery,
 } from '@/sanity/lib/queries';
-import type { PortableTextBlock } from '@portabletext/types';
-import type { Image as SanityImage } from 'sanity';
 
 // Types for Sanity data
 export interface SanityAuthor {

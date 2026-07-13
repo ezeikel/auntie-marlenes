@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { rateLimit } from '../rate-limit';
 
 function createRequest(path: string, ip: string = '127.0.0.1'): NextRequest {
