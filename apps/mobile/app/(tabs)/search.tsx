@@ -4,7 +4,6 @@ import {
   faXmark,
 } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { useBottomTabBarHeight } from '@/hooks/useBottomTabBarHeight';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -21,6 +20,7 @@ import {
 } from 'react-native-safe-area-context';
 import { useDebouncedCallback } from 'use-debounce';
 import ProductCard from '@/components/ProductCard';
+import { useBottomTabBarHeight } from '@/hooks/useBottomTabBarHeight';
 import { useSearchProducts } from '@/hooks/useProducts';
 
 export default function SearchScreen() {
