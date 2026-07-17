@@ -1,9 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": ["FONTAWESOME_NPM_AUTH_TOKEN"],
   "tasks": {
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
     "build": {
-      "dependsOn": ["^build", "db:generate"],
+      "dependsOn": ["test", "^build", "@auntie-marlenes/db#db:generate"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [
         ".next/**",
@@ -15,12 +19,20 @@
       "env": ["**"]
     },
     "check-types": {
-      "dependsOn": ["^check-types"]
+      // The generated Prisma client and the db package's compiled dist/ are
+      // gitignored, so neither exists on a fresh checkout. web's tsc resolves
+      // @auntie-marlenes/db via its dist exports — build it (which also runs
+      // db:generate) before typechecking.
+      "dependsOn": ["transit", "@auntie-marlenes/db#build"]
     },
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
     },
     "db:generate": {
       "cache": false
