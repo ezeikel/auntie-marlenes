@@ -1,6 +1,6 @@
 import {
   faMagnifyingGlass,
-  faMagnifyingGlassSlash,
+  faMagnifyingGlassMinus,
   faXmark,
 } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -184,7 +184,7 @@ export default function SearchScreen() {
           <View className="flex-1 items-center justify-center px-12">
             <View className="w-20 h-20 rounded-full bg-warm-beige items-center justify-center mb-6">
               <FontAwesomeIcon
-                icon={faMagnifyingGlassSlash}
+                icon={faMagnifyingGlassMinus}
                 size={40}
                 color="#5D4037"
               />

@@ -5,7 +5,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
-import RenderHTML from 'react-native-render-html';
+import RenderHTML, { type MixedStyleRecord } from 'react-native-render-html';
 import BottomSheetHeader from '@/components/ui/BottomSheetHeader';
 
 type ProductDetailsSheetProps = Omit<
@@ -26,7 +26,7 @@ const ProductDetailsSheet = forwardRef<
     html: description || '<p>No description available</p>',
   };
 
-  const tagsStyles = {
+  const tagsStyles: MixedStyleRecord = {
     body: {
       fontFamily: 'Inter18pt-Regular',
       fontSize: 15,

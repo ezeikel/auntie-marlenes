@@ -12,7 +12,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     icon: './assets/images/icon.png',
     scheme: 'auntiemarlenes',
     userInterfaceStyle: 'light',
-    newArchEnabled: true,
     ios: {
       bundleIdentifier: 'com.chewybytes.auntiemarlenes.app',
       supportsTablet: true,
@@ -28,14 +27,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         backgroundColor: '#492C26',
       },
     },
-    splash: {
-      image: './assets/images/splash-icon.png',
-      resizeMode: 'contain',
-      backgroundColor: '#492C26',
-    },
     plugins: [
       'expo-router',
       'expo-dev-client',
+      [
+        'expo-splash-screen',
+        {
+          image: './assets/images/splash-icon.png',
+          resizeMode: 'contain',
+          backgroundColor: '#492C26',
+        },
+      ],
       [
         'expo-font',
         {
@@ -88,7 +90,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         {
           ios: {
             useFrameworks: 'static',
-            deploymentTarget: '15.5.0',
+            deploymentTarget: '16.4',
           },
           android: {
             minSdkVersion: 23,
