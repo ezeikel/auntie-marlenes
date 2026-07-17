@@ -11,6 +11,16 @@
 
 This project uses Neon PostgreSQL with Prisma.
 
+### Cost rule
+
+Compute is 0.25–1 CU (autosuspend 300s = the plan floor). Neon bills a **5-min minimum per wake**, so
+what costs money is how often something touches Postgres, not how much work it does. Two things here were
+waking it around the clock and must not regress: `abandoned-cart` is **hourly, not `*/15`** (its email
+window is "checkout created 1–4h ago", so hourly catches every cart with hours of margin), and the
+product page's save count is cached (`'use cache'` + `cacheLife('save-count')`) so bot crawls don't hit
+`savedItem.count()` per request. Any new sub-hourly cron needs a DB-free early exit before the first
+query. Rationale: `~/Development/CLAUDE.md` → Neon cost playbook.
+
 ### Migrations
 
 **CRITICAL: Never use `prisma db push`** - it causes schema drift between the database and migration history.
@@ -64,11 +74,85 @@ Use semantic commit style (`type(scope): message`). Keep messages as one-liners,
 ## Key Integrations
 
 - **Shopify Storefront API** (GraphQL) - Product catalog, cart, checkout
+- **Shopify Admin API** (GraphQL + REST) - Product management, webhooks, inventory
 - **Sanity CMS** - Blog content, auto-generated posts via cron
 - **Analytics**: Sentry, PostHog, Plausible, Meta Pixel, Vercel Analytics
 - **Auth**: NextAuth v5 beta with Prisma adapter
 - **Email**: React Email + Resend
 - **AI**: Vercel AI SDK (OpenAI + Google) for blog generation
+
+## Shopify Configuration
+
+- **Store domain**: `afro-hair-and-beauty.myshopify.com`
+- **Admin API**: Use env vars `SHOPIFY_ADMIN_API_ACCESS_TOKEN` and `SHOPIFY_ADMIN_API_ENDPOINT` from `.env.local`
+- **API version**: `2026-01`
+
+### Sales Channels (Publications)
+
+Products must be published to **both** channels to appear on the site:
+
+| Channel | Publication ID | Purpose |
+|---|---|---|
+| Online Store | `gid://shopify/Publication/204073959741` | Shopify-hosted checkout |
+| Auntie Marlene's API | `gid://shopify/Publication/204294357309` | **Storefront API** — powers the website |
+
+**CRITICAL**: If a product is only on "Online Store" but not on "Auntie Marlene's API", it will be invisible to the site. Always publish to both.
+
+### Webhooks
+
+Registered webhooks pointing to `https://auntiemarlenes.com/api/webhooks/shopify`:
+- `products/create`, `products/update`, `products/delete` — trigger `revalidateTag()` for all product cache tags
+- `orders/create`, `orders/paid`, `orders/updated`, `orders/cancelled` — analytics + email
+- `checkouts/create`, `checkouts/update` — abandoned cart tracking
+
+### Cache Tags (for webhook revalidation)
+
+All product webhooks revalidate: `shop-products`, `featured-products`, `bundle-deals`, `category-products`, `sale-products`, `new-arrivals`
+
+## Adding New Products
+
+When asked to add a new product, follow this complete workflow:
+
+### 1. Research the Product
+- Use **Perplexity API** (`sonar-deep-research`) to research the product — get accurate description, ingredients/features, retail price, product type, vendor/brand
+- Identify the correct category: Hair Care, Skin Care, Body Care, Wigs & Extensions, Kids, Men's, Accessories, Styling
+
+### 2. Get a Product Image
+- If the user supplies a reference image, use the **AI image pipeline** (Gemini 3 Pro Image) to generate a consistent studio-style product image
+- If no image supplied, use Perplexity/web search to find a suitable product image, then run it through the image pipeline for consistency
+- Claude judges image quality before upload
+
+### 3. Set Pricing
+- **Business model**: Currently retail reselling (no wholesale). Products are bought at retail price from high street shops (Boots, Superdrug, Sainsbury's, independent hair/beauty shops) and shipped to customers
+- **Goal**: Minimize loss, not maximize profit. This is a demand validation phase
+- Research the typical UK retail price, then set the selling price to cover as much of the cost as possible while remaining competitive
+- Factor in: retail purchase price + shipping cost + packaging. Accept small losses but don't lose significantly on any product
+- Typical markup has been ~23-29% but this may result in a loss after fulfilment costs
+
+### 4. Create the Product via Shopify Admin API
+- Use the Admin API (GraphQL mutation `productCreate` or REST endpoint)
+- Set all required fields: title, description (HTML), vendor, product type, tags, price, compare-at price (if on sale), images
+- **Inventory**: Set `tracked: true`, quantity of **10** units (virtual stock — we don't hold physical inventory)
+- Set `status: "active"` so it's immediately available
+
+### 5. Publish to Sales Channels
+**CRITICAL** — this step was previously missed and caused products to not appear on the site:
+```
+mutation {
+  publishablePublish(id: "gid://shopify/Product/{ID}", input: [
+    {publicationId: "gid://shopify/Publication/204073959741"},
+    {publicationId: "gid://shopify/Publication/204294357309"}
+  ]) { userErrors { field message } }
+}
+```
+
+### 6. Add to Collection(s)
+- Add the product to the appropriate Shopify collection(s) matching its category
+- Products can belong to multiple collections (e.g., a kids product might be in "Kids" and "Hair Care")
+
+### 7. Verify
+- Confirm the product appears in the Storefront API: query with the product title/handle
+- The `products/create` webhook will automatically revalidate the site cache
 
 ## Blog Auto-Generation
 
