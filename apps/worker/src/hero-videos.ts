@@ -34,7 +34,7 @@ import { uploadFile } from './storage';
 const execFileAsync = promisify(execFile);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const claude: any = anthropic('claude-sonnet-4-20250514');
+const claude: any = anthropic('claude-sonnet-5');
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 

@@ -220,7 +220,7 @@ export async function generateBlogPostForTopic(
       isGenerated: true,
       topic: blogTopic.topic,
       generatedAt: new Date().toISOString(),
-      model: 'gpt-4o',
+      model: 'claude-sonnet-5',
       imageSource: imageResult.source,
       pexelsPhotoId: imageResult.pexelsPhotoId,
       imagePrompt: imageResult.imagePrompt,

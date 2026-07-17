@@ -16,7 +16,7 @@ import { z } from 'zod';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const geminiImage: any = google('gemini-3-pro-image-preview');
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const claude: any = anthropic('claude-sonnet-4-20250514');
+const claude: any = anthropic('claude-sonnet-5');
 
 // ─── Studio Style Guide ─────────────────────────────────────────────────────
 
