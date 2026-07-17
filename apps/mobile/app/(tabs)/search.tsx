@@ -4,7 +4,7 @@ import {
   faXmark,
 } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useBottomTabBarHeight } from '@/hooks/useBottomTabBarHeight';
 import { useState } from 'react';
 import {
   ActivityIndicator,

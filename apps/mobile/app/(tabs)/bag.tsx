@@ -1,6 +1,6 @@
 import { faMinus, faPlus, faTrash } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useBottomTabBarHeight } from '@/hooks/useBottomTabBarHeight';
 import { useShopifyCheckoutSheet } from '@shopify/checkout-sheet-kit';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';

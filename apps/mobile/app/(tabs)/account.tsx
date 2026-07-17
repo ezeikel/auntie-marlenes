@@ -9,7 +9,7 @@ import {
 } from '@fortawesome/pro-regular-svg-icons';
 import { faChevronRight } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useBottomTabBarHeight } from '@/hooks/useBottomTabBarHeight';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
