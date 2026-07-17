@@ -112,7 +112,6 @@ export async function generateCaptions(product: {
     ? `\nThe product scene shows: ${product.scene}. Use this visual context to make captions feel specific and grounded.`
     : '';
 
-  // @ts-expect-error — model type mismatch from pnpm hoisting
   const result = await generateObject({
     model: claude,
     schema: captionSchema,

@@ -128,8 +128,8 @@ async function generateSoraVideo(
       prompt: promptText,
       image_url: promptImageUrl,
       aspect_ratio: '16:9',
-      resolution: '1080p',
-      duration: 4,
+      resolution: '1080p' as never,
+      duration: 4 as never,
     },
     logs: true,
     onQueueUpdate: (update) => {
@@ -257,7 +257,6 @@ async function judgeVideo(
   originalStill: Buffer,
   frames: { first: Buffer; middle: Buffer; last: Buffer },
 ): Promise<JudgeOutcome> {
-  // @ts-expect-error — model type mismatch from pnpm hoisting
   const result = await generateObject({
     model: claude,
     schema: videoJudgeSchema,

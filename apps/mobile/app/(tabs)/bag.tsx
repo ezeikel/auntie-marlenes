@@ -1,6 +1,5 @@
 import { faMinus, faPlus, faTrash } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useShopifyCheckoutSheet } from '@shopify/checkout-sheet-kit';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
@@ -23,6 +22,7 @@ import BagCheckoutFooter from '@/components/BagCheckoutFooter';
 import BagHeader from '@/components/BagHeader';
 import EmptyBagState from '@/components/EmptyBagState';
 import { useCart } from '@/contexts/cart';
+import { useBottomTabBarHeight } from '@/hooks/useBottomTabBarHeight';
 import * as logger from '@/lib/logger';
 
 export default function BagScreen() {

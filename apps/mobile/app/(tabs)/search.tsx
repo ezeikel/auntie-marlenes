@@ -1,10 +1,9 @@
 import {
   faMagnifyingGlass,
-  faMagnifyingGlassSlash,
+  faMagnifyingGlassMinus,
   faXmark,
 } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -21,6 +20,7 @@ import {
 } from 'react-native-safe-area-context';
 import { useDebouncedCallback } from 'use-debounce';
 import ProductCard from '@/components/ProductCard';
+import { useBottomTabBarHeight } from '@/hooks/useBottomTabBarHeight';
 import { useSearchProducts } from '@/hooks/useProducts';
 
 export default function SearchScreen() {
@@ -184,7 +184,7 @@ export default function SearchScreen() {
           <View className="flex-1 items-center justify-center px-12">
             <View className="w-20 h-20 rounded-full bg-warm-beige items-center justify-center mb-6">
               <FontAwesomeIcon
-                icon={faMagnifyingGlassSlash}
+                icon={faMagnifyingGlassMinus}
                 size={40}
                 color="#5D4037"
               />

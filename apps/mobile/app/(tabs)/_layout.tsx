@@ -54,7 +54,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <FontAwesomeIcon
               icon={focused ? faHouseSolid : faHouse}
-              color={color}
+              color={color as string}
               size={22}
             />
           ),
@@ -67,7 +67,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <FontAwesomeIcon
               icon={focused ? faMagnifyingGlassSolid : faMagnifyingGlass}
-              color={color}
+              color={color as string}
               size={22}
             />
           ),
@@ -81,7 +81,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <FontAwesomeIcon
               icon={focused ? faBagShoppingSolid : faBagShopping}
-              color={color}
+              color={color as string}
               size={22}
             />
           ),
@@ -95,7 +95,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <FontAwesomeIcon
               icon={focused ? faHeartSolid : faHeart}
-              color={color}
+              color={color as string}
               size={22}
             />
           ),
@@ -108,7 +108,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <FontAwesomeIcon
               icon={focused ? faUserSolid : faUser}
-              color={color}
+              color={color as string}
               size={22}
             />
           ),

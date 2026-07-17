@@ -131,7 +131,7 @@ export function pickNextProduct(
 export function recordPost(
   state: ScheduleState,
   handle: string,
-  details: { postUrl?: string; reelUrl?: string; platforms: string[] },
+  details: { postUrl?: string; reelUrl?: string; platforms: readonly string[] },
 ): ScheduleState {
   return {
     ...state,
@@ -143,7 +143,7 @@ export function recordPost(
         cycle: state.currentCycle,
         postUrl: details.postUrl,
         reelUrl: details.reelUrl,
-        platforms: details.platforms,
+        platforms: [...details.platforms],
       },
     ],
   };

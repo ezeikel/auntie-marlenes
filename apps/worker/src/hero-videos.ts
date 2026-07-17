@@ -16,7 +16,7 @@
  *   7. On REDO, retry with a new seed up to 2 times before falling back
  *   8. Save final MP4 to apps/web/public/videos/hero/
  *
- * Run with: pnpm gen:hero-videos (from apps/content-worker)
+ * Run with: pnpm gen:hero-videos (from apps/worker)
  */
 
 import { execFile } from 'node:child_process';
@@ -309,7 +309,6 @@ async function judgeVideo(
   originalStill: Buffer,
   frames: { first: Buffer; middle: Buffer; last: Buffer },
 ): Promise<VideoJudgeResult> {
-  // @ts-expect-error — model type mismatch from pnpm hoisting
   const result = await generateObject({
     model: claude,
     schema: videoJudgeSchema,

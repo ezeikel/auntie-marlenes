@@ -40,10 +40,12 @@ const Providers = ({ children }: ProvidersProps) => {
               options={{
                 host: 'https://eu.i.posthog.com',
                 enableSessionReplay: true,
+                // posthog-react-native v4 moved lifecycle capture from the
+                // autocapture options onto the client options.
+                captureAppLifecycleEvents: true,
               }}
               autocapture={{
                 captureTouches: true,
-                captureLifecycleEvents: true,
                 captureScreens: true,
               }}
             >

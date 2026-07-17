@@ -1,7 +1,6 @@
 import type { Product } from '@auntie-marlenes/types';
 import { faHeart } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -18,6 +17,7 @@ import {
 } from 'react-native-safe-area-context';
 import ProductCard from '@/components/ProductCard';
 import { useSaved } from '@/contexts/saved';
+import { useBottomTabBarHeight } from '@/hooks/useBottomTabBarHeight';
 import { useProducts } from '@/hooks/useProducts';
 
 export default function SavedScreen() {

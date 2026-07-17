@@ -1,0 +1,9 @@
+# Smoke: the dev build installs, the bundle boots, and the app reaches its first
+# real screen past every dev overlay. Fast sanity check.
+appId: com.chewybytes.auntiemarlenes.app
+---
+- runFlow: launch.yaml
+# The home tab shows the storefront: brand name and/or the bottom tab bar.
+# Assert one of the stable anchors is visible.
+- assertVisible:
+    text: ".*(Auntie Marlene|Search|Bag|Saved|Account).*"

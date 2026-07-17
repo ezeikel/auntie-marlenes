@@ -1,11 +1,12 @@
 import Animated, {
   interpolate,
+  type SharedValue,
   useAnimatedStyle,
 } from 'react-native-reanimated';
 
 interface PaginationDotProps {
   index: number;
-  activeIndex: Animated.SharedValue<number>;
+  activeIndex: SharedValue<number>;
 }
 
 const PaginationDot = ({ index, activeIndex }: PaginationDotProps) => {

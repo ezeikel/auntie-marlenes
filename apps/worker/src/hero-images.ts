@@ -15,7 +15,7 @@
  *      are retried up to 2 times before giving up on that scene.
  *   5. Final PNGs land in apps/web/public/images/hero/.
  *
- * Run with: pnpm gen:hero (from apps/content-worker)
+ * Run with: pnpm gen:hero (from apps/worker)
  */
 
 import fs from 'node:fs/promises';
@@ -36,7 +36,7 @@ const claude: any = anthropic('claude-sonnet-4-20250514');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// apps/content-worker/src → repo root → apps/web/public/images/hero
+// apps/worker/src → repo root → apps/web/public/images/hero
 const HERO_OUTPUT_DIR = path.resolve(
   __dirname,
   '../../../apps/web/public/images/hero',
@@ -447,7 +447,6 @@ async function judgeScene(
   generatedImage: Buffer,
   scene: HeroScene,
 ): Promise<JudgeResult> {
-  // @ts-expect-error — model type mismatch from pnpm hoisting
   const result = await generateObject({
     model: claude,
     schema: judgeSchema,

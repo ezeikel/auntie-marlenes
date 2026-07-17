@@ -1,10 +1,11 @@
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import {
   DarkTheme,
   DefaultTheme,
+  Stack,
   ThemeProvider,
-} from '@react-navigation/native';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
-import { Stack, useNavigationContainerRef } from 'expo-router';
+  useNavigationContainerRef,
+} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';

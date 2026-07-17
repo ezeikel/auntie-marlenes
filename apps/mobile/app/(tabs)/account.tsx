@@ -9,7 +9,6 @@ import {
 } from '@fortawesome/pro-regular-svg-icons';
 import { faChevronRight } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -26,6 +25,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { useAuthContext } from '@/contexts/auth';
+import { useBottomTabBarHeight } from '@/hooks/useBottomTabBarHeight';
 import { getCurrentUser } from '@/lib/api/auth';
 
 export default function AccountScreen() {
