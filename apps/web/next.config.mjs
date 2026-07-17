@@ -20,6 +20,12 @@ const nextConfig = {
       revalidate: 60 * 60 * 24 * 7, // 7 days - weekly background revalidation
       expire: 60 * 60 * 24 * 90, // 90 days max
     },
+    // Product save counts - short cache so crawler traffic doesn't wake Neon
+    'save-count': {
+      stale: 60 * 5, // 5 minutes - serve stale while revalidating
+      revalidate: 60 * 5, // 5 minutes - background revalidation
+      expire: 60 * 60, // 1 hour max
+    },
   },
   images: {
     remotePatterns: [

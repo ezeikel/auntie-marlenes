@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cacheLife, cacheTag } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { Suspense } from 'react';
@@ -79,8 +80,14 @@ export async function generateMetadata({
   }
 }
 
-// Async component for dynamic save count (PPR)
+// Cached component for the save count (PPR)
+// Product id becomes part of the cache key automatically; the 5 min cache
+// stops crawler traffic from waking Neon on every request
 async function SaveCountLoader({ productId }: { productId: string }) {
+  'use cache';
+  cacheLife('save-count'); // Cache for 5 minutes
+  cacheTag('saved-counts'); // Tag for invalidation on save/unsave
+
   const saveCount = await getProductSaveCount({ productId });
   return <>{saveCount}</>;
 }

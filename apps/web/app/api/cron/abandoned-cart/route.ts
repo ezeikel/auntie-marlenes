@@ -6,7 +6,9 @@ import { db } from '@/lib/prisma';
 /**
  * Cron job for abandoned cart recovery emails
  *
- * Runs every 15 minutes. Sends recovery emails for checkouts that:
+ * Runs hourly - the 1-4 hour window below still catches every cart with
+ * hours of margin, and less frequent polling keeps the Neon database from
+ * waking every 15 minutes. Sends recovery emails for checkouts that:
  * - Were created 1-4 hours ago
  * - Haven't been completed (no order placed)
  * - Haven't had an email sent yet
