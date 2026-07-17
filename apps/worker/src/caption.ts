@@ -14,7 +14,7 @@ import { generateObject } from 'ai';
 import { z } from 'zod';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const claude: any = anthropic('claude-sonnet-4-20250514');
+const claude: any = anthropic('claude-sonnet-5');
 
 const captionSchema = z.object({
   instagram: z.object({

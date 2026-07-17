@@ -19,6 +19,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.97",
     "@ai-sdk/google": "^3.0.94",
     "@ai-sdk/openai": "^3.0.85",
     "@auntie-marlenes/db": "workspace:*",

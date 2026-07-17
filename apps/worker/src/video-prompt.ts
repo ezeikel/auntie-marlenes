@@ -13,7 +13,7 @@ import { generateText } from 'ai';
 
 // Gemini Flash for fast image analysis (not image generation)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const geminiFlash: any = google('gemini-3-flash-preview');
+const geminiFlash: any = google('gemini-3.1-flash-lite');
 
 const ANALYSIS_PROMPT = `You are analysing a product photography image for an Instagram reel video.
 

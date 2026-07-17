@@ -1,37 +1,36 @@
+import { anthropic } from '@ai-sdk/anthropic';
 import { google } from '@ai-sdk/google';
-import { openai } from '@ai-sdk/openai';
 
 // Model IDs
 export const MODEL_IDS = {
-  // OpenAI models
-  GPT_4O: 'gpt-4o',
-  GPT_4O_MINI: 'gpt-4o-mini',
+  // Anthropic text model — estate default for text generation
+  CLAUDE_SONNET_5: 'claude-sonnet-5',
 
-  // Google Gemini models (Latest Jan 2026)
-  GEMINI_3_FLASH: 'gemini-3-flash-preview', // Fast vision/analytics
-  GEMINI_3_PRO: 'gemini-3-pro-preview', // Most intelligent (AI Judge)
-  GEMINI_3_PRO_IMAGE: 'gemini-3-pro-image-preview', // Image generation
+  // Google Gemini models
+  GEMINI_FLASH_LITE: 'gemini-3.1-flash-lite', // Fast vision/analytics
+  GEMINI_PRO: 'gemini-3.1-pro-preview', // Most intelligent (AI Judge)
+  GEMINI_PRO_IMAGE: 'gemini-3-pro-image-preview', // Image generation (no 3.1 pro-image exists)
 } as const;
 
 // Configured model instances
 export const models = {
   // Primary text model - for complex tasks like blog content generation
-  text: openai(MODEL_IDS.GPT_4O),
+  text: anthropic(MODEL_IDS.CLAUDE_SONNET_5),
 
   // Fast text model - for metadata, search terms, simple tasks
-  textFast: openai(MODEL_IDS.GPT_4O_MINI),
+  textFast: anthropic(MODEL_IDS.CLAUDE_SONNET_5),
 
   // Balanced vision model for analytics
   // Best for: image analysis, categorization, structured extraction
-  analytics: google(MODEL_IDS.GEMINI_3_FLASH),
+  analytics: google(MODEL_IDS.GEMINI_FLASH_LITE),
 
   // Most intelligent vision model for evaluation (AI Judge)
   // Best for: evaluating image relevance, quality assessment
-  vision: google(MODEL_IDS.GEMINI_3_PRO),
+  vision: google(MODEL_IDS.GEMINI_PRO),
 
   // Gemini image generation model
   // Best for: blog featured images when Pexels doesn't have suitable photos
-  geminiImage: google(MODEL_IDS.GEMINI_3_PRO_IMAGE),
+  geminiImage: google(MODEL_IDS.GEMINI_PRO_IMAGE),
 };
 
 export type ModelKey = keyof typeof models;
