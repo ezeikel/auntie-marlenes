@@ -68,7 +68,6 @@ export async function generateProductCopy(product: {
 }): Promise<ProductCopy> {
   console.log(`[Copy] Generating product copy for: ${product.name}...`);
 
-  // @ts-expect-error — model type mismatch from pnpm hoisting
   const result = await generateObject({
     model: claude,
     schema: productCopySchema,

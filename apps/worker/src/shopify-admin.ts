@@ -356,7 +356,7 @@ export async function uploadImageToProduct(
   }
   formData.append(
     'file',
-    new Blob([imageBuffer], { type: 'image/jpeg' }),
+    new Blob([new Uint8Array(imageBuffer)], { type: 'image/jpeg' }),
     filename,
   );
 

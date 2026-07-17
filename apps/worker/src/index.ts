@@ -1,5 +1,9 @@
 import 'dotenv/config';
 
+// Sentry patches the runtime on init — keep this import above every other
+// module import (dotenv excepted, so SENTRY_DSN is loaded).
+import { Sentry } from './instrument';
+
 /**
  * Auntie Marlene's Content Worker
  *
@@ -35,6 +39,12 @@ import { animateScene as animateWithVeo } from './video-gen-veo';
 const app = new Hono();
 
 app.use('*', logger());
+
+app.onError((err, c) => {
+  Sentry.captureException(err);
+  console.error('[worker] Unhandled error:', err);
+  return c.json({ error: 'Internal server error' }, 500);
+});
 
 // Bearer auth for publishing endpoints — only the web app cron should call these.
 // Skipped if WORKER_SECRET is not set (local dev convenience).

@@ -148,8 +148,9 @@ async function generateSoraVideo(
         image_url: imageUrl,
         aspect_ratio: '16:9',
         resolution: '720p',
-        duration: 20,
-        model: 'sora-2',
+        // fal typings cap sora duration at 4/8/12; the API accepts 20s.
+        duration: 20 as never,
+        ...({ model: 'sora-2' } as unknown as Record<string, never>),
       },
       logs: true,
       onQueueUpdate: (update) => {

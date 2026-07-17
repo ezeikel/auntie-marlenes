@@ -447,7 +447,6 @@ async function judgeScene(
   generatedImage: Buffer,
   scene: HeroScene,
 ): Promise<JudgeResult> {
-  // @ts-expect-error — model type mismatch from pnpm hoisting
   const result = await generateObject({
     model: claude,
     schema: judgeSchema,

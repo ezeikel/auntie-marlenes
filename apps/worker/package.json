@@ -16,7 +16,9 @@
     "gen:hero-video-sora": "npx tsx --env-file=.env src/scripts/generate-hero-video-sora.ts",
     "gen:hero-videos-sora": "npx tsx --env-file=.env src/scripts/generate-hero-videos-sora.ts",
     "gen:hero-videos-runway-batch": "npx tsx --env-file=.env src/scripts/generate-hero-videos-runway-batch.ts",
-    "upload:hero-finals": "npx tsx --env-file=.env src/scripts/upload-hero-finals.ts"
+    "upload:hero-finals": "npx tsx --env-file=.env src/scripts/upload-hero-finals.ts",
+    "check-types": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.64",
@@ -40,11 +42,13 @@
     "remotion": "^4.0.0",
     "satori": "^0.26.0",
     "sharp": "^0.33.0",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "@sentry/node": "^10.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "tsx": "^4.0.0",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.2"
   }
 }

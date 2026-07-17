@@ -309,7 +309,6 @@ async function judgeVideo(
   originalStill: Buffer,
   frames: { first: Buffer; middle: Buffer; last: Buffer },
 ): Promise<VideoJudgeResult> {
-  // @ts-expect-error — model type mismatch from pnpm hoisting
   const result = await generateObject({
     model: claude,
     schema: videoJudgeSchema,
