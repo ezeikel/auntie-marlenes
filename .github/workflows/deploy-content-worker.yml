@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'apps/content-worker/**'
+      - 'apps/worker/**'
       - '.github/workflows/deploy-content-worker.yml'
   workflow_dispatch:
     inputs:
@@ -38,16 +38,30 @@ jobs:
             if [[ "$ACTION" == deploy* ]]; then
               echo "Pulling latest code..."
               git checkout -- . || true
-              git clean -fd apps/content-worker/ || true
+              git clean -fd apps/worker/ apps/content-worker/ || true
               git pull origin main
               echo "Code pulled"
 
-              echo "Installing content-worker dependencies..."
-              cd apps/content-worker
+              # Preserve the worker .env across the content-worker -> worker
+              # rename (first deploy after the rename only; no-op afterwards).
+              if [[ -f apps/content-worker/.env && ! -f apps/worker/.env ]]; then
+                mkdir -p apps/worker
+                cp apps/content-worker/.env apps/worker/.env
+                echo "Migrated .env from apps/content-worker"
+              fi
+
+              echo "Installing worker dependencies..."
+              cd apps/worker
               rm -rf node_modules
               ~/.bun/bin/bun install
               echo "Dependencies installed"
               cd /opt/auntie-marlenes
+
+              # Keep the systemd unit in sync with the repo (idempotent). The
+              # service NAME stays content-worker.service; only paths change.
+              cp apps/worker/deploy/content-worker.service /etc/systemd/system/content-worker.service
+              systemctl daemon-reload
+              echo "Systemd unit synced"
             fi
 
             if [[ "$ACTION" != deploy-only ]]; then

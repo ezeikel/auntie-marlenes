@@ -1,5 +1,5 @@
 {
-  "name": "@auntie-marlenes/content-worker",
+  "name": "@auntie-marlenes/worker",
   "version": "0.1.0",
   "private": true,
   "type": "module",

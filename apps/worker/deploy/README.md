@@ -27,7 +27,7 @@ ssh root@157.90.168.197
 ```bash
 cd /opt
 git clone git@github.com:ezeikel/auntie-marlenes.git
-cd auntie-marlenes/apps/content-worker
+cd auntie-marlenes/apps/worker
 ```
 
 If the box doesn't have an SSH deploy key for this repo yet, either:
@@ -44,16 +44,16 @@ Sharp and other native binaries will be rebuilt for Linux.
 
 ### 3. Copy environment file
 
-Copy your local `apps/content-worker/.env` to the box (from your dev machine):
+Copy your local `apps/worker/.env` to the box (from your dev machine):
 
 ```bash
-scp apps/content-worker/.env root@157.90.168.197:/opt/auntie-marlenes/apps/content-worker/.env
+scp apps/worker/.env root@157.90.168.197:/opt/auntie-marlenes/apps/worker/.env
 ```
 
 Then on the box, add the `WORKER_SECRET` for Bearer auth:
 
 ```bash
-echo "WORKER_SECRET=$(openssl rand -hex 32)" >> /opt/auntie-marlenes/apps/content-worker/.env
+echo "WORKER_SECRET=$(openssl rand -hex 32)" >> /opt/auntie-marlenes/apps/worker/.env
 ```
 
 Save the secret — you'll need to add it to Vercel as `CONTENT_WORKER_SECRET`.
@@ -71,7 +71,7 @@ The blog pipeline needs these keys in the box `.env` (see `.env.example`):
 ### 4. Install systemd service
 
 ```bash
-cp /opt/auntie-marlenes/apps/content-worker/deploy/content-worker.service /etc/systemd/system/
+cp /opt/auntie-marlenes/apps/worker/deploy/content-worker.service /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable content-worker
 systemctl start content-worker
@@ -123,7 +123,7 @@ Defined in `apps/web/vercel.json`:
 
 ## Deployment workflow
 
-Once set up, pushing to `main` with changes under `apps/content-worker/**` will
+Once set up, pushing to `main` with changes under `apps/worker/**` will
 automatically deploy via `.github/workflows/deploy-content-worker.yml`.
 
 Required GitHub Actions secrets (in the auntie-marlenes repo):

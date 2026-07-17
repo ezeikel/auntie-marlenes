@@ -16,7 +16,7 @@
  *   7. On REDO, retry with a new seed up to 2 times before falling back
  *   8. Save final MP4 to apps/web/public/videos/hero/
  *
- * Run with: pnpm gen:hero-videos (from apps/content-worker)
+ * Run with: pnpm gen:hero-videos (from apps/worker)
  */
 
 import { execFile } from 'node:child_process';
