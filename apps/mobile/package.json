@@ -30,9 +30,10 @@
     "eas:build:production": "eas build --profile production",
     "eas:submit:beta": "eas submit --profile beta",
     "eas:submit:production": "eas submit --profile production",
-    "test": "jest --watchAll",
+    "test": "vitest run",
     "check-types": "tsc --noEmit",
-    "env:pull": "eas env:pull --environment development"
+    "env:pull": "eas env:pull --environment development",
+    "test:e2e": "maestro test .maestro"
   },
   "dependencies": {
     "@auntie-marlenes/constants": "workspace:*",
@@ -111,7 +112,8 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.16",
     "typescript": "~6.0.3",
-    "@types/node": "^24.13.1"
+    "@types/node": "^24.13.1",
+    "vitest": "^4.1.2"
   },
   "private": true,
   "expo": {
