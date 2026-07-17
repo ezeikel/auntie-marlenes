@@ -381,7 +381,9 @@ export async function animateScene(
   }
 
   const result = await fal.subscribe(modelId, {
-    input,
+    // input is assembled per-model above; fal's generated per-endpoint input
+    // unions can't narrow a dynamic record — runtime shape is correct.
+    input: input as never,
     logs: true,
     onQueueUpdate: (update) => {
       if (update.status === 'IN_PROGRESS') {
