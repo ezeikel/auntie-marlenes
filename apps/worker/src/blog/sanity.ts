@@ -6,7 +6,7 @@ import { createClient } from '@sanity/client';
 
 const projectId = process.env.SANITY_PROJECT_ID;
 const dataset = process.env.SANITY_DATASET || 'production';
-const apiVersion = process.env.SANITY_API_VERSION || '2025-02-19';
+const apiVersion = process.env.SANITY_API_VERSION || '2026-01-01';
 
 if (!projectId) {
   console.warn('[blog] SANITY_PROJECT_ID not set — Sanity writes will fail');
