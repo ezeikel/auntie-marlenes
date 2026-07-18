@@ -66,11 +66,16 @@ jobs:
 
       - name: Build
         env:
-          # Placeholder env vars for build (validated at runtime, not build time)
+          # Placeholder env vars for build (validated at runtime, not build time).
+          # EXCEPTION — Sanity must be the REAL public project: under Next 16 Cache
+          # Components, `generateStaticParams` must return >=1 result, and a placeholder
+          # project returns no blog slugs, so the build hard-fails with
+          # EmptyGenerateStaticParamsError. These three are public values (they ship in
+          # the client bundle) and the dataset is world-readable, so no secret is needed.
           NEXT_PUBLIC_SITE_URL: https://auntiemarlenes.com
-          NEXT_PUBLIC_SANITY_PROJECT_ID: placeholder
+          NEXT_PUBLIC_SANITY_PROJECT_ID: zm0a7rrv
           NEXT_PUBLIC_SANITY_DATASET: production
-          NEXT_PUBLIC_SANITY_API_VERSION: '2025-02-19'
+          NEXT_PUBLIC_SANITY_API_VERSION: '2024-01-01'
           NEXT_PUBLIC_POSTHOG_KEY: placeholder
           NEXT_PUBLIC_POSTHOG_HOST: /relay-hyx5
           SHOPIFY_STOREFRONT_API_ENDPOINT: https://placeholder.myshopify.com/api/2024-01/graphql.json
