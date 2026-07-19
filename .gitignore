@@ -67,3 +67,6 @@ v0/
 .cursor/
 .claude/
 .codex/
+.zed/
+.idea/
+.mcp.json
