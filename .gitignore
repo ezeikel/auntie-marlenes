@@ -62,3 +62,8 @@ v0/
 
 
 .vscode/
+
+# Editor / AI-assistant config — machine-local, never committed
+.cursor/
+.claude/
+.codex/
