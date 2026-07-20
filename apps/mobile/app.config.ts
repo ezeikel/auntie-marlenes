@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { ConfigContext, ExpoConfig } from 'expo/config';
 import { ConfigPlugin, withGradleProperties } from 'expo/config-plugins';
 import pkg from './package.json';
@@ -27,19 +29,47 @@ const withGradleHeap: ConfigPlugin = (config) =>
     return cfg;
   });
 
+// Per-variant app identity (fleet standard — same as GU / PTP / Salt Mammal).
+// EXPO_PUBLIC_ENVIRONMENT is set per EAS build profile so dev / preview / prod
+// produce different names + icons (+ bundle ids) and can install side-by-side.
+const env = process.env.EXPO_PUBLIC_ENVIRONMENT || 'development';
+
+const appName =
+  env === 'production'
+    ? "Auntie Marlene's"
+    : env === 'preview'
+      ? 'AM Internal'
+      : 'AM Dev';
+
+const bundleId =
+  env === 'production'
+    ? 'com.chewybytes.auntiemarlenes.app'
+    : env === 'preview'
+      ? 'com.chewybytes.auntiemarlenes.app.internal'
+      : 'com.chewybytes.auntiemarlenes.app.dev';
+
 export default ({ config }: ConfigContext): ExpoConfig => {
+  const variantSuffix =
+    env === 'production' ? '' : env === 'preview' ? '-preview' : '-dev';
+  const pickIcon = (base: string): string => {
+    const variantPath = `./assets/images/${base}${variantSuffix}.png`;
+    return existsSync(join(__dirname, variantPath))
+      ? variantPath
+      : `./assets/images/${base}.png`;
+  };
+
   const expoConfig: ExpoConfig = {
     ...config,
-    name: "Auntie Marlene's",
+    name: appName,
     slug: 'auntie-marlenes',
     owner: 'chewybytes',
     version: pkg.version,
     orientation: 'portrait',
-    icon: './assets/images/icon.png',
+    icon: pickIcon('icon'),
     scheme: 'auntiemarlenes',
     userInterfaceStyle: 'light',
     ios: {
-      bundleIdentifier: 'com.chewybytes.auntiemarlenes.app',
+      bundleIdentifier: bundleId,
       supportsTablet: true,
       usesAppleSignIn: true,
       infoPlist: {
@@ -47,9 +77,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
     },
     android: {
-      package: 'com.chewybytes.auntiemarlenes.app',
+      package: bundleId,
       adaptiveIcon: {
-        foregroundImage: './assets/images/adaptive-icon.png',
+        foregroundImage: pickIcon('adaptive-icon'),
         backgroundColor: '#492C26',
       },
     },
