@@ -2,6 +2,16 @@ import { MetadataRoute } from 'next';
 import { getCategories, getProducts } from '@/app/actions';
 import { getAllPosts } from '@/lib/sanity-blog';
 
+/**
+ * Regenerate hourly instead of on every request.
+ *
+ * This route queries every page of content it lists, and crawlers poll it around the
+ * clock, so rendering per request meant one full query per hit - a serverless
+ * invocation and a database wake each time, with no human involved. Hourly is far
+ * fresher than any search engine will recrawl.
+ */
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com';
