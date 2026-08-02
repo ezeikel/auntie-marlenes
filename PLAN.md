@@ -1,12 +1,34 @@
 # Auto-Generating Blog Implementation Plan for Auntie Marlene's
 
+> ## ✅ SHIPPED — this plan is COMPLETE. Kept for design rationale only.
+>
+> All seven phases below are built and live: the blog runs on **Sanity**
+> (`608c8bf`), serving at <https://www.auntiemarlenes.com/blog>. There is **no
+> `@vercel/blob` anywhere in this repo** and no migration outstanding.
+>
+> | Phase | Where it lives now |
+> |---|---|
+> | 1. Sanity CMS | `apps/web/lib/sanity-blog.ts`, Studio at `app/studio/[[...tool]]` |
+> | 2. AI integration | `apps/worker/src/blog/{pipeline,prompts,models}.ts` |
+> | 3. Image pipeline + judge | `apps/worker/src/blog/{image,image-evaluation,pexels}.ts` — images upload straight into Sanity as assets |
+> | 4. Topic system | `apps/worker/src/blog/{topics,dynamic-topics}.ts` |
+> | 5. Generation | `apps/worker/src/blog/{sanity,markdown-to-portable-text}.ts` |
+> | 6. Frontend | `apps/web/app/[locale]/blog/**`, `app/api/sanity/revalidate` |
+> | 7. Scheduling | worker cron (see `CLAUDE.md`) |
+>
+> **The "Current State" section below is the state in ~2026-06, before any of
+> this existed.** It was never updated after the work landed and on 2026-08-02 it
+> caused a real misread — the blog was believed to still be Vercel-Blob-based and
+> in need of migration. Read `CLAUDE.md` for the current architecture; treat
+> everything below as a historical record of intent, not of reality.
+
 ## Overview
 
 Implement an AI-powered auto-generating blog system for Auntie Marlene's (a Black-owned premium hair & beauty supply store) to drive SEO traffic and customer engagement. The system will generate high-quality, SEO-optimized blog content targeting people with textured/afro hair (3c-4c types) and melanin-rich skin.
 
 ---
 
-## Current State
+## Current State (HISTORICAL — pre-implementation, ~2026-06. Not true today.)
 
 - **Existing Blog**: 5 hardcoded blog posts in `/lib/blog-data.tsx`
 - **No Sanity CMS**: Currently no Sanity integration
