@@ -55,7 +55,7 @@
   ],
   "packageRules": [
     {
-      "description": "Patch updates for web app — automerge",
+      "description": "Patch updates for web app \u2014 automerge",
       "matchFileNames": ["apps/web/package.json"],
       "matchUpdateTypes": ["patch"],
       "groupName": "patch-web",
@@ -63,7 +63,7 @@
       "schedule": ["before 7am on Monday"]
     },
     {
-      "description": "Patch updates for mobile app — manual merge (native risk)",
+      "description": "Patch updates for mobile app \u2014 manual merge (native risk)",
       "matchFileNames": ["apps/mobile/package.json"],
       "matchUpdateTypes": ["patch"],
       "groupName": "patch-mobile",
@@ -72,7 +72,7 @@
       "labels": ["dependencies", "mobile", "needs-native-test"]
     },
     {
-      "description": "Patch updates for worker app — automerge",
+      "description": "Patch updates for worker app \u2014 automerge",
       "matchFileNames": ["apps/worker/package.json"],
       "matchUpdateTypes": ["patch"],
       "groupName": "patch-worker",
@@ -80,7 +80,7 @@
       "schedule": ["before 7am on Monday"]
     },
     {
-      "description": "Patch updates for shared packages — automerge",
+      "description": "Patch updates for shared packages \u2014 automerge",
       "matchFileNames": ["packages/*/package.json"],
       "matchUpdateTypes": ["patch"],
       "groupName": "patch-shared",
@@ -121,14 +121,14 @@
       "schedule": ["before 7am on the 1st and 15th day of the month"]
     },
     {
-      "description": "Major updates — individual PRs, monthly",
+      "description": "Major updates \u2014 individual PRs, monthly",
       "matchUpdateTypes": ["major"],
       "automerge": false,
       "schedule": ["before 7am on the first day of the month"],
       "labels": ["dependencies", "major-upgrade"]
     },
     {
-      "description": "Dev tools — automerge",
+      "description": "Dev tools \u2014 automerge",
       "matchDepTypes": ["devDependencies"],
       "matchPackageNames": [
         "@biomejs/biome",
@@ -143,14 +143,14 @@
       "automerge": true
     },
     {
-      "description": "Prisma — group client + CLI",
+      "description": "Prisma \u2014 group client + CLI",
       "matchPackageNames": ["prisma", "@prisma/client", "@prisma/adapter-neon"],
       "groupName": "prisma",
       "automerge": false,
       "labels": ["dependencies", "database"]
     },
     {
-      "description": "FontAwesome free packages — look up from public npmjs.org",
+      "description": "FontAwesome free packages \u2014 look up from public npmjs.org",
       "matchPackageNames": [
         "@fortawesome/fontawesome-svg-core",
         "@fortawesome/free-solid-svg-icons",
@@ -162,7 +162,7 @@
       "groupName": "fontawesome-free"
     },
     {
-      "description": "FontAwesome Pro packages — disabled, npm.fontawesome.com doesn't support Renovate's lookup API",
+      "description": "FontAwesome Pro packages \u2014 disabled, npm.fontawesome.com doesn't support Renovate's lookup API",
       "matchPackageNames": [
         "@fortawesome/fontawesome-pro",
         "@fortawesome/pro-duotone-svg-icons",
@@ -176,53 +176,60 @@
       "enabled": false
     },
     {
-      "description": "Radix UI — group together, automerge",
+      "description": "Radix UI \u2014 group together, automerge",
       "matchPackageNames": ["@radix-ui/**"],
       "groupName": "radix-ui",
       "automerge": true
     },
     {
-      "description": "AI SDK — group together",
+      "description": "AI SDK \u2014 group together",
       "matchPackageNames": ["@ai-sdk/**", "ai", "openai"],
       "groupName": "ai-sdk",
       "automerge": false
     },
     {
-      "description": "Sentry — group together",
+      "description": "Sentry \u2014 group together",
       "matchPackageNames": ["@sentry/**"],
       "groupName": "sentry",
       "automerge": false
     },
     {
-      "description": "PostHog — group together, automerge",
+      "description": "PostHog \u2014 group together, automerge",
       "matchPackageNames": ["posthog-*", "@posthog/*"],
       "groupName": "posthog",
       "automerge": true
     },
     {
-      "description": "Sanity — group together",
+      "description": "Sanity \u2014 group together",
       "matchPackageNames": ["sanity", "next-sanity", "@sanity/**"],
       "groupName": "sanity",
       "automerge": false
     },
     {
-      "description": "Shopify — group together (storefront + checkout kit)",
+      "description": "Shopify \u2014 group together (storefront + checkout kit)",
       "matchPackageNames": ["@shopify/**"],
       "groupName": "shopify",
       "automerge": false
     },
     {
-      "description": "React Navigation — group together",
+      "description": "React Navigation \u2014 group together",
       "matchPackageNames": ["@react-navigation/**"],
       "groupName": "react-navigation",
       "automerge": false,
       "labels": ["dependencies", "mobile"]
     },
     {
-      "description": "Remotion — group together (compositor binaries need exact parity)",
+      "description": "Remotion \u2014 group together (compositor binaries need exact parity)",
       "matchPackageNames": ["remotion", "@remotion/**"],
       "groupName": "remotion",
       "automerge": false
+    }
+  ],
+  "hostRules": [
+    {
+      "matchHost": "npm.fontawesome.com",
+      "hostType": "npm",
+      "token": "{{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}"
     }
   ]
 }
