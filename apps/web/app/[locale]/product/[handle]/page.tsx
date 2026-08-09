@@ -86,7 +86,11 @@ export async function generateMetadata({
 // stops crawler traffic from waking Neon on every request
 async function SaveCountLoader({ productId }: { productId: string }) {
   'use cache';
-  cacheLife('save-count'); // Cache for 5 minutes
+  cacheLife({
+    stale: 60 * 5,
+    revalidate: 60 * 5,
+    expire: 60 * 60,
+  });
   cacheTag('saved-counts'); // Tag for invalidation on save/unsave
 
   const saveCount = await getProductSaveCount({ productId });
