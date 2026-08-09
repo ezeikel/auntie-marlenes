@@ -11,7 +11,7 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 
-const siteUrl = 'https://auntiemarlenes.com';
+const siteUrl = 'https://www.auntiemarlenes.com';
 
 const colors = {
   terracotta: '#C1666B',

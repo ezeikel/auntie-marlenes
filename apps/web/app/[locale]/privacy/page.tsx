@@ -49,7 +49,7 @@ export default async function PrivacyPolicyPage({
               We are the data controller for the personal data we collect
               through our website at{' '}
               <a
-                href="https://auntiemarlenes.com"
+                href="https://www.auntiemarlenes.com"
                 className="text-sage-green font-semibold hover:underline"
               >
                 auntiemarlenes.com
@@ -644,7 +644,7 @@ export default async function PrivacyPolicyPage({
                   <li>
                     <strong>Website:</strong>{' '}
                     <a
-                      href="https://auntiemarlenes.com"
+                      href="https://www.auntiemarlenes.com"
                       className="text-sage-green font-semibold hover:underline"
                     >
                       auntiemarlenes.com

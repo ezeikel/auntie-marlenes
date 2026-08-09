@@ -3,6 +3,7 @@ import { setRequestLocale } from 'next-intl/server';
 import Products from '@/components/Products/Products';
 import { generateCategoryMetadata } from '@/lib/metadata';
 import { generateBreadcrumbSchema } from '@/lib/schema';
+import { SITE_URL } from '@/lib/site';
 
 type CategoryPageProps = {
   params: Promise<{ locale: string; category: string }>;
@@ -68,11 +69,11 @@ function CategoryBreadcrumbSchema({ category }: { category: string }) {
   const breadcrumbSchema = generateBreadcrumbSchema([
     {
       name: 'Home',
-      url: process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com',
+      url: SITE_URL,
     },
     {
       name: categoryName,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com'}/${category}`,
+      url: `${SITE_URL}/${category}`,
     },
   ]);
 
