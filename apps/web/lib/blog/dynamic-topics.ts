@@ -48,6 +48,11 @@ Rules for every topic you produce:
 - Do not fabricate statistics, studies, percentages, or research findings in topic titles.
 - Do not use em dashes anywhere.
 - Topics must be educational and practical, not medical advice.
+- Prefer reader questions evidenced by current catalogue and Search Console
+  demand, including Nala's kids detangling and curl products, KTC coconut oil,
+  Cantu leave-in products and Mielle wash-day products. Do not invent stock.
+- Sound like a warm, knowledgeable South London shop-floor auntie. Never force
+  slang, imitate a dialect or claim personal experience.
 - Each topic must be genuinely distinct from the others in the batch and from any topics already listed as covered.`;
 
 /**

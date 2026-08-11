@@ -20,6 +20,7 @@ import { readFile, writeFile } from 'fs/promises';
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { runBlogCron } from './blog/pipeline';
+import { BlogRunState } from './blog/run-state';
 import { compositePost } from './compositor';
 import { generateProductContent } from './generate';
 import { getAllProducts, getProductByHandle } from './shopify';
@@ -37,6 +38,7 @@ import {
 import { animateScene as animateWithVeo } from './video-gen-veo';
 
 const app = new Hono();
+const blogRunState = new BlogRunState();
 
 app.use('*', logger());
 
@@ -131,7 +133,11 @@ app.get('/tmp/:filename', async (c) => {
 
 // Health check
 app.get('/health', (c) => {
-  return c.json({ status: 'ok', service: 'content-worker' });
+  return c.json({
+    status: 'ok',
+    service: 'content-worker',
+    blog: blogRunState.read(),
+  });
 });
 
 /**
@@ -144,10 +150,25 @@ app.get('/health', (c) => {
  * auto-published (status:'published'); compliance is enforced in the prompts.
  */
 app.post('/generate/blog', (c) => {
+  if (!blogRunState.begin()) {
+    return c.json(
+      { ok: false, accepted: false, reason: 'already-running' },
+      409,
+    );
+  }
   console.log('[/generate/blog] kickoff');
-  runBlogCron().catch((err) =>
-    console.error('[/generate/blog] uncaught:', err),
-  );
+  runBlogCron()
+    .then((result) => {
+      if (!result.success) {
+        throw new Error(result.error ?? 'Blog generation failed');
+      }
+      blogRunState.succeed(result.slug);
+    })
+    .catch((err) => {
+      blogRunState.fail(err);
+      Sentry.captureException(err);
+      console.error('[/generate/blog] uncaught:', err);
+    });
   return c.json({ ok: true, accepted: true }, 202);
 });
 

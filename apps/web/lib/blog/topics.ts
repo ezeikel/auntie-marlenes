@@ -9,6 +9,8 @@ export interface BlogTopic {
   topic: string;
   category: string;
   keywords: string[];
+  priority?: 'search-console';
+  productTerms?: string[];
 }
 
 export const BLOG_CATEGORIES = [
@@ -27,6 +29,57 @@ export const BLOG_CATEGORIES = [
 export type BlogCategory = (typeof BLOG_CATEGORIES)[number];
 
 export const BLOG_TOPICS: BlogTopic[] = [
+  // Search Console demand, final data through 6 August 2026. Each topic maps
+  // to products confirmed in the live Shopify catalogue.
+  {
+    topic:
+      "How to use Nala's detangling spray in a gentle children's hair routine",
+    category: 'Natural Hair Care',
+    keywords: [
+      "Nala's detangling spray",
+      "children's textured hair",
+      'detangling routine',
+    ],
+    priority: 'search-console',
+    productTerms: ["Nala's", 'detangle spray'],
+  },
+  {
+    topic: "How to use Nala's curl defining jelly without a crunchy finish",
+    category: 'Hair Products',
+    keywords: ["Nala's curl defining jelly", 'curl jelly', "children's curls"],
+    priority: 'search-console',
+    productTerms: ["Nala's", 'curl defining jelly'],
+  },
+  {
+    topic:
+      'KTC pure coconut oil for textured hair: uses, limits and patch testing',
+    category: 'Hair Products',
+    keywords: ['KTC pure coconut oil', 'coconut oil textured hair', 'hair oil'],
+    priority: 'search-console',
+    productTerms: ['KTC', 'coconut oil'],
+  },
+  {
+    topic: 'How to use Cantu leave-in conditioner by texture and routine',
+    category: 'Hair Products',
+    keywords: [
+      'Cantu leave-in conditioner',
+      'Cantu repair cream',
+      'textured hair leave-in',
+    ],
+    priority: 'search-console',
+    productTerms: ['Cantu', 'leave-in'],
+  },
+  {
+    topic: 'Choosing a Mielle treatment for your next wash day',
+    category: 'Hair Products',
+    keywords: [
+      'Mielle hair treatment',
+      'Mielle wash day',
+      'textured hair masque',
+    ],
+    priority: 'search-console',
+    productTerms: ['Mielle'],
+  },
   // ========================================
   // NATURAL HAIR CARE (25 topics)
   // ========================================
@@ -1254,6 +1307,10 @@ export function pickUncoveredTopic(covered: Set<string>): BlogTopic | null {
     return null;
   }
 
+  const demanded = available.find(
+    (topic) => topic.priority === 'search-console',
+  );
+  if (demanded) return demanded;
   const randomIndex = Math.floor(Math.random() * available.length);
   return available[randomIndex];
 }

@@ -1,4 +1,5 @@
 import { generateObject, generateText } from 'ai';
+import { getAllProducts } from '../shopify';
 import { getAuthorBySpecialty } from './authors';
 import { generateDynamicTopics } from './dynamic-topics';
 import { getFeaturedImage } from './image';
@@ -13,6 +14,11 @@ import {
   BLOG_POST_PROMPT,
   BLOG_POST_SYSTEM,
 } from './prompts';
+import {
+  researchBlogTopic,
+  researchPrompt,
+  validateResearchCitations,
+} from './research';
 import { coveredTopicsQuery, topicExistsQuery, writeClient } from './sanity';
 import { type BlogMeta, blogMetaSchema } from './schemas';
 import { type BlogTopic, pickUncoveredTopic, seedTopicSlugs } from './topics';
@@ -41,6 +47,8 @@ type GenerationMeta = {
     reasoning: string;
     searchTerm: string;
   };
+  sourcesCheckedAt: string;
+  researchSources: string[];
 };
 
 /** Build a clean URL slug from a title. */
@@ -89,6 +97,8 @@ const generateBlogContent = async (
   keywords: string[],
   category: string,
   recentTopics: string[],
+  research: string,
+  productContext: string,
 ): Promise<string> => {
   const prompt = BLOG_POST_PROMPT.replace('{{TOPIC}}', topic)
     .replace('{{TITLE}}', title)
@@ -99,14 +109,54 @@ const generateBlogContent = async (
       recentTopics.length > 0 ? recentTopics.join('\n- ') : 'None',
     );
 
+  const groundedPrompt = `${prompt}\n\nFACT-CHECKED RESEARCH DOSSIER:\n${research}\n\nLIVE CATALOGUE CONTEXT:\n${productContext || '(No close product match.)'}\n\nUse only the dossier for factual claims. Cite at least two dossier sources as inline Markdown links. Link named products only when they appear in the live catalogue context.`;
+
   const { text } = await generateText({
     model: models.text,
     system: BLOG_POST_SYSTEM,
-    prompt,
+    prompt: groundedPrompt,
     temperature: 0.7,
   });
 
   return stripMarkdownCodeFences(text);
+};
+
+const matchingProductContext = async (topic: BlogTopic): Promise<string> => {
+  const products = await getAllProducts();
+  const terms = [...(topic.productTerms ?? []), ...topic.keywords].map((term) =>
+    term.toLowerCase(),
+  );
+  const matches = products.filter((product) => {
+    const haystack =
+      `${product.title} ${product.vendor} ${product.productType}`.toLowerCase();
+    return terms.some((term) => haystack.includes(term));
+  });
+
+  return matches
+    .slice(0, 12)
+    .map(
+      (product) =>
+        `- ${product.title} by ${product.vendor}: https://www.auntiemarlenes.com/product/${product.handle}`,
+    )
+    .join('\n');
+};
+
+const validateArticleQuality = (markdown: string): void => {
+  const wordCount = markdown.trim().split(/\s+/).filter(Boolean).length;
+  const headings = markdown.match(/^##\s+/gm)?.length ?? 0;
+  if (wordCount < 900 || wordCount > 2_200) {
+    throw new Error(
+      `Generated article failed length gate (${wordCount} words)`,
+    );
+  }
+  if (headings < 4) {
+    throw new Error(
+      `Generated article failed structure gate (${headings} H2s)`,
+    );
+  }
+  if (markdown.includes('—')) {
+    throw new Error('Generated article contains a prohibited em dash');
+  }
 };
 
 /** Upsert the specialty-matched author, return a Sanity reference. */
@@ -152,9 +202,9 @@ const getOrCreateCategory = async (
 
 /**
  * Generate one full blog post for a specific topic and PUBLISH it to Sanity.
- * Auto-published (status:'published') — compliance (British English, no
- * fabricated stats, anti-colorist house style, no em dashes) is enforced
- * entirely in the prompts since there is no human-review gate.
+ * Auto-published (status:'published'). Source retrieval, citation, length and
+ * structure gates fail closed before the Sanity write; the house voice and
+ * anti-colourist policy are also reinforced in the prompts.
  */
 export async function generateBlogPostForTopic(
   blogTopic: BlogTopic,
@@ -195,7 +245,15 @@ export async function generateBlogPostForTopic(
       .map((row) => row?.topic)
       .filter((t): t is string => Boolean(t));
 
-    // 5. Content, image, author, category — in parallel.
+    // 5. Retrieve live catalogue context and a current, verified source dossier
+    // before drafting. Factual content fails closed if either step is missing.
+    const productContext = await matchingProductContext(blogTopic);
+    const research = await researchBlogTopic({
+      topic: blogTopic,
+      productContext,
+    });
+
+    // 6. Content, image, author, category, in parallel.
     console.log('Generating content for:', meta.title);
     const [content, imageResult, authorRef, categoryRef] = await Promise.all([
       generateBlogContent(
@@ -204,6 +262,8 @@ export async function generateBlogPostForTopic(
         meta.keywords,
         blogTopic.category,
         recentTopics,
+        researchPrompt(research),
+        productContext,
       ),
       getFeaturedImage(meta.title, meta.excerpt, blogTopic.category, meta.slug),
       getOrCreateAuthor(blogTopic.category),
@@ -211,11 +271,13 @@ export async function generateBlogPostForTopic(
     ]);
 
     if (!content) throw new Error('Failed to generate content');
+    validateArticleQuality(content);
+    validateResearchCitations(content, research);
 
-    // 6. Markdown → Portable Text.
+    // 7. Markdown to Portable Text.
     const body: PortableTextNode[] = markdownToPortableText(content);
 
-    // 7. Generation metadata (idempotency anchor lives here: generationMeta.topic).
+    // 8. Generation metadata (idempotency anchor lives here: generationMeta.topic).
     const generationMeta: GenerationMeta = {
       isGenerated: true,
       topic: blogTopic.topic,
@@ -231,9 +293,11 @@ export async function generateBlogPostForTopic(
             searchTerm: imageResult.searchTerm || '',
           }
         : undefined,
+      sourcesCheckedAt: research.checkedAt,
+      researchSources: research.sources.map((source) => source.url),
     };
 
-    // 8. Write the post (auto-published).
+    // 9. Write the post (auto-published).
     console.log('Creating post in Sanity:', meta.title);
     await writeClient.create({
       _type: 'post',
