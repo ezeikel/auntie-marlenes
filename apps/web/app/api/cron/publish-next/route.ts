@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 
-export const maxDuration = 300;
+export const maxDuration = 15;
 
 /**
  * Daily cron — picks the next product in the rotation and publishes an
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
   try {
     logger.info('[cron/publish-next] Triggering content worker');
 
-    const res = await fetch(`${workerUrl}/publish/next`, {
+    const res = await fetch(`${workerUrl}/jobs/publish/next`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
 
     const data = await res.json();
 
-    if (!res.ok || !data.success) {
+    if (!res.ok || !data.accepted) {
       console.error('[cron/publish-next] Worker returned error:', data);
       return NextResponse.json(
         {
@@ -72,18 +72,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    logger.info('[cron/publish-next] Published successfully', {
-      product: data.product?.handle,
-      cycle: data.cycle,
-    });
+    logger.info('[cron/publish-next] Worker accepted scheduled publish');
 
-    return NextResponse.json({
-      success: true,
-      product: data.product,
-      cycle: data.cycle,
-      headline: data.headline,
-      publishing: data.publishing,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        accepted: true,
+      },
+      { status: 202 },
+    );
   } catch (error) {
     console.error('[cron/publish-next] Failed to reach worker:', error);
     return NextResponse.json(
