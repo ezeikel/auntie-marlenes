@@ -61,6 +61,21 @@ app.use('/publish/*', async (c, next) => {
   return next();
 });
 
+// Job entrypoints are the short, fire-and-forget boundary used by Vercel.
+// Keep the existing /publish routes synchronous for local operations, but
+// never make a serverless caller wait for image/video generation or social
+// publishing to finish.
+app.use('/jobs/*', async (c, next) => {
+  const secret = process.env.WORKER_SECRET;
+  if (!secret) return next();
+
+  const auth = c.req.header('authorization');
+  if (auth !== `Bearer ${secret}`) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+  return next();
+});
+
 app.use('/schedule', async (c, next) => {
   const secret = process.env.WORKER_SECRET;
   if (!secret) return next();
@@ -727,6 +742,41 @@ import {
   recordPost,
   saveSchedule,
 } from './schedule';
+
+/**
+ * Vercel-facing scheduled publishing boundary.
+ *
+ * The request is acknowledged before any generation, rendering, upload, or
+ * provider call begins. The long-running synchronous endpoint remains local
+ * to this worker process so operational tooling can still await a result.
+ */
+app.post('/jobs/publish/next', async (c) => {
+  const requestBody = await c.req.text();
+  const headers = new Headers({ 'Content-Type': 'application/json' });
+  const secret = process.env.WORKER_SECRET;
+  if (secret) headers.set('Authorization', `Bearer ${secret}`);
+
+  void fetch(`http://127.0.0.1:${port}/publish/next`, {
+    method: 'POST',
+    headers,
+    body: requestBody || '{}',
+  })
+    .then(async (response) => {
+      const result = await response.json().catch(() => null);
+      if (!response.ok || result?.success === false) {
+        throw new Error(
+          `Scheduled publishing failed with HTTP ${response.status}: ${JSON.stringify(result)}`,
+        );
+      }
+      console.log('[/jobs/publish/next] finished:', result);
+    })
+    .catch((error) => {
+      Sentry.captureException(error);
+      console.error('[/jobs/publish/next] failed:', error);
+    });
+
+  return c.json({ ok: true, accepted: true }, 202);
+});
 
 /**
  * Publish the next product in the rotation.
