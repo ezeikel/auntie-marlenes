@@ -21,6 +21,11 @@ const navigationIntegration = Sentry.reactNavigationIntegration();
 Sentry.init({
   dsn: SENTRY_DSN,
   sendDefaultPii: true,
+  // OFF in the simulator / local dev (`__DEV__`): a debug build with Metro HMR
+  // throws constant errors mid-edit that flood the dashboard and are not real
+  // bugs, and the Metro console is right there anyway. ON for preview and
+  // production builds, where `__DEV__` is false and a crash is real.
+  enabled: !__DEV__,
   tracesSampleRate: 1.0,
   enableLogs: true,
   replaysSessionSampleRate: 0.1,
