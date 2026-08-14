@@ -1,7 +1,7 @@
 /**
  * AI-powered image evaluation for blog posts (worker copy).
  *
- * Uses the Claude Opus 4.8 vision judge to decide whether a stock photo is a
+ * Uses the Claude Sonnet 5 vision judge to decide whether a stock photo is a
  * relevant, on-brand featured image for Auntie Marlene's hair + beauty content.
  * Ported from apps/web/lib/ai/image-evaluation.ts.
  */

@@ -1,13 +1,12 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
 
-// Model IDs — mirror apps/web/lib/ai/models.ts. The worker's blog pipeline uses
-// Claude Sonnet 5 for text + gpt-image-2 for the featured-image fallback, and
-// Claude Opus 4.8 as the vision judge for Pexels candidates.
+// Model IDs, mirroring apps/web/lib/ai/models.ts. The worker's blog pipeline
+// uses Claude Sonnet 5 for text and as the vision judge for Pexels candidates,
+// plus gpt-image-2 for the featured-image fallback.
 export const MODEL_IDS = {
-  CLAUDE_SONNET_5: 'claude-sonnet-5', // Text generation
+  CLAUDE_SONNET_5: 'claude-sonnet-5', // Text generation + vision judge
   GPT_IMAGE_2: 'gpt-image-2', // Blog featured-image generation (fallback)
-  CLAUDE_OPUS_4_8: 'claude-opus-4-8', // Opus 4.8 vision judge
 } as const;
 
 export const models = {
@@ -17,8 +16,8 @@ export const models = {
   // Fast text model — metadata, image search terms, dynamic topics.
   textFast: anthropic(MODEL_IDS.CLAUDE_SONNET_5),
 
-  // Opus 4.8 vision judge — evaluates blog featured-image relevance.
-  judge: anthropic(MODEL_IDS.CLAUDE_OPUS_4_8),
+  // Sonnet 5 vision judge: evaluates blog featured-image relevance.
+  judge: anthropic(MODEL_IDS.CLAUDE_SONNET_5),
 
   // gpt-image-2 generation — featured images when Pexels has no suitable photo.
   image: openai.image(MODEL_IDS.GPT_IMAGE_2),
