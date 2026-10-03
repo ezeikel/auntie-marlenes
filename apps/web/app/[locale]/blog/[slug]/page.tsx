@@ -9,6 +9,7 @@ import {
   getSanityImageUrl,
 } from '@/lib/sanity-blog';
 import { generateArticleSchema, generateBreadcrumbSchema } from '@/lib/schema';
+import { SITE_URL } from '@/lib/site';
 
 type BlogPostPageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -57,8 +58,7 @@ async function BlogSchemas({
     return null;
   }
 
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com';
+  const siteUrl = SITE_URL;
   const imageUrl = getSanityImageUrl(
     post.featuredImage as any,
     '/placeholder.svg',

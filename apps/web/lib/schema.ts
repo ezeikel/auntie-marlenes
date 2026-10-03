@@ -1,5 +1,6 @@
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com';
+import { SITE_URL } from '@/lib/site';
+
+const siteUrl = SITE_URL;
 
 /**
  * Generate Product schema (JSON-LD) for rich snippets

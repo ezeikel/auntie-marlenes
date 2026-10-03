@@ -15,6 +15,7 @@ import { locales } from '@/i18n/config';
 import { formatCurrency } from '@/lib/currency';
 import { generateProductMetadata } from '@/lib/metadata';
 import { generateBreadcrumbSchema, generateProductSchema } from '@/lib/schema';
+import { SITE_URL } from '@/lib/site';
 
 // Default country for static pre-rendering
 const DEFAULT_COUNTRY = 'GB';
@@ -139,7 +140,7 @@ const ProductPage = async ({ params }: ProductPageProps) => {
     price: product.price,
     currency: 'GBP',
     availability: product.inStock ? 'InStock' : 'OutOfStock',
-    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com'}/product/${product.handle}`,
+    url: `${SITE_URL}/product/${product.handle}`,
     ratingValue: product.rating,
     reviewCount: product.reviewCount,
   });
@@ -148,15 +149,15 @@ const ProductPage = async ({ params }: ProductPageProps) => {
   const breadcrumbSchema = generateBreadcrumbSchema([
     {
       name: 'Home',
-      url: process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com',
+      url: SITE_URL,
     },
     {
       name: product.category || 'Products',
-      url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com'}/${product.category?.toLowerCase().replace(/\s+/g, '-') || 'shop'}`,
+      url: `${SITE_URL}/${product.category?.toLowerCase().replace(/\s+/g, '-') || 'shop'}`,
     },
     {
       name: product.name,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com'}/product/${product.handle}`,
+      url: `${SITE_URL}/product/${product.handle}`,
     },
   ]);
 

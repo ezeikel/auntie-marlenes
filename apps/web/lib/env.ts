@@ -48,7 +48,10 @@ const serverSchema = z.object({
  * These are inlined at build time by Next.js.
  */
 const clientSchema = z.object({
-  NEXT_PUBLIC_SITE_URL: z.string().url().default('https://auntiemarlenes.com'),
+  NEXT_PUBLIC_SITE_URL: z
+    .string()
+    .url()
+    .default('https://www.auntiemarlenes.com'),
   NEXT_PUBLIC_SANITY_PROJECT_ID: z.string().min(1),
   NEXT_PUBLIC_SANITY_DATASET: z.string().default('production'),
   NEXT_PUBLIC_SANITY_API_VERSION: z.string().default('2026-01-01'),

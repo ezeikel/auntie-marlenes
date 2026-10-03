@@ -14,14 +14,13 @@ import Header from '@/components/HeaderWrapper';
 import SavedItemsSync from '@/components/SavedItemsSync';
 import { Toaster } from '@/components/ui/sonner';
 import { type Locale, locales } from '@/i18n/config';
+import { SITE_URL } from '@/lib/site';
 import Providers from '../providers';
 // Validate environment variables at startup
 import '@/lib/env';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com',
-  ),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Auntie Marlene's | Black Beauty Supply Store Online",
     template: "%s | Auntie Marlene's",
@@ -104,8 +103,8 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
     name: "Auntie Marlene's",
     description:
       'Modern Black beauty supply store offering premium braiding hair, wigs, hair extensions, treatments and styling essentials.',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com',
-    logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com'}/logo.png`,
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.png`,
     email: 'hello@auntiemarlenes.com',
     foundingDate: '2024',
     slogan: 'Where Beautiful Skin Meets Gorgeous Hair',

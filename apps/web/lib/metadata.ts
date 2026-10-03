@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
+import { SITE_URL } from '@/lib/site';
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com';
+const siteUrl = SITE_URL;
 const siteName = "Auntie Marlene's";
 
 export interface MetadataProps {

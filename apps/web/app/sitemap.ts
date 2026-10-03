@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getCategories, getProducts } from '@/app/actions';
 import { getAllPosts } from '@/lib/sanity-blog';
+import { SITE_URL } from '@/lib/site';
 
 /**
  * Regenerate hourly instead of on every request.
@@ -13,8 +14,7 @@ import { getAllPosts } from '@/lib/sanity-blog';
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://auntiemarlenes.com';
+  const baseUrl = SITE_URL;
 
   // Get all products and categories in parallel
   const [products, categories, blogPosts] = await Promise.all([
