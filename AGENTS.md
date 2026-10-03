@@ -25,7 +25,7 @@ waking it around the clock and must not regress: `abandoned-cart` is **hourly, n
 window is "checkout created 1–4h ago", so hourly catches every cart with hours of margin), and the
 product page's save count is cached (`'use cache'` + `cacheLife('save-count')`) so bot crawls don't hit
 `savedItem.count()` per request. Any new sub-hourly cron needs a DB-free early exit before the first
-query. Rationale: `~/Development/CLAUDE.md` → Neon cost playbook.
+query. Rationale: the `fleet-neon-cost` skill.
 
 ### Migrations
 
