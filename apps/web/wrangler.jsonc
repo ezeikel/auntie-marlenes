@@ -77,7 +77,9 @@
     "cpu_ms": 300000
   },
   "vars": {
-    "APP_ENV": "production"
+    "APP_ENV": "production",
+    "APPLE_MOBILE_CLIENT_ID": "com.chewybytes.auntiemarlenes.app,com.chewybytes.auntiemarlenes.app.internal,com.chewybytes.auntiemarlenes.app.dev",
+    "CONTENT_WORKER_URL": "http://content-worker.auntiemarlenes.com:3020"
   },
   "triggers": {
     "crons": ["0 9 * * *", "0 * * * *", "0 10 * * *", "0 12 * * *"]
@@ -145,7 +147,9 @@
         "cpu_ms": 300000
       },
       "vars": {
-        "APP_ENV": "staging"
+        "APP_ENV": "staging",
+        "APPLE_MOBILE_CLIENT_ID": "com.chewybytes.auntiemarlenes.app,com.chewybytes.auntiemarlenes.app.internal,com.chewybytes.auntiemarlenes.app.dev",
+        "CONTENT_WORKER_URL": "http://content-worker.auntiemarlenes.com:3020"
       },
       "name": "auntie-marlenes-web-staging",
       "triggers": {

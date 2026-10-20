@@ -20,8 +20,12 @@ import { POST as google } from '../../app/api/auth/mobile/google/route';
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.stubEnv('APPLE_MOBILE_CLIENT_ID', 'com.chewybytes.auntiemarlenes.app');
+  vi.stubEnv(
+    'APPLE_MOBILE_CLIENT_ID',
+    'com.chewybytes.auntiemarlenes.app, com.chewybytes.auntiemarlenes.app.dev',
+  );
   vi.stubEnv('GOOGLE_WEB_CLIENT_ID', 'google-client');
+  vi.stubEnv('GOOGLE_CLIENT_ID', 'nextauth-client');
 });
 describe.each([
   [
@@ -30,7 +34,10 @@ describe.each([
     'identityToken',
     'https://appleid.apple.com/auth/keys',
     'https://appleid.apple.com',
-    'com.chewybytes.auntiemarlenes.app',
+    [
+      'com.chewybytes.auntiemarlenes.app',
+      'com.chewybytes.auntiemarlenes.app.dev',
+    ],
   ],
   [
     'google',
@@ -38,7 +45,7 @@ describe.each([
     'idToken',
     'https://www.googleapis.com/oauth2/v3/certs',
     ['accounts.google.com', 'https://accounts.google.com'],
-    'google-client',
+    ['google-client', 'nextauth-client'],
   ],
 ] as const)(
   '%s identity verification',

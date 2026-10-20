@@ -89,4 +89,7 @@ jobs:
           GOOGLE_CLIENT_SECRET: placeholder
           RESEND_API_KEY: re_placeholder
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        run: pnpm build
+        run: pnpm --filter @auntie-marlenes/web exec opennextjs-cloudflare build
+
+      - name: Check Worker bundle and bindings
+        run: pnpm --filter @auntie-marlenes/web exec wrangler deploy --dry-run --outdir .wrangler/dry-run

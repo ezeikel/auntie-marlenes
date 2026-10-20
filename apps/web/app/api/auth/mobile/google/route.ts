@@ -14,8 +14,14 @@ export async function POST(req: Request) {
       return Response.json({ error: 'idToken is required' }, { status: 400 });
     }
 
-    const audience = process.env.GOOGLE_WEB_CLIENT_ID;
-    if (!audience) throw new Error('GOOGLE_WEB_CLIENT_ID not set');
+    // The mobile app signs in with a web client id as `webClientId`, so its
+    // tokens carry that id as `aud`. Vercel prod never set GOOGLE_WEB_CLIENT_ID
+    // (the old library skipped the check), so also accept the NextAuth client.
+    const audience = [
+      process.env.GOOGLE_WEB_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_ID,
+    ].filter((id): id is string => Boolean(id));
+    if (audience.length === 0) throw new Error('GOOGLE_WEB_CLIENT_ID not set');
     const { payload } = await jwtVerify(idToken, GOOGLE_JWKS, {
       issuer: ['accounts.google.com', 'https://accounts.google.com'],
       audience,

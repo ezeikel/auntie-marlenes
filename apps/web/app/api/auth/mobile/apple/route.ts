@@ -17,8 +17,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const audience = process.env.APPLE_MOBILE_CLIENT_ID;
-    if (!audience) throw new Error('APPLE_MOBILE_CLIENT_ID not set');
+    // Comma-separated bundle ids: production, preview and dev builds each sign
+    // in with their own, and Apple puts the bundle id in the token's `aud`.
+    const audience = (process.env.APPLE_MOBILE_CLIENT_ID ?? '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (audience.length === 0)
+      throw new Error('APPLE_MOBILE_CLIENT_ID not set');
     const { payload: decoded } = await jwtVerify(identityToken, APPLE_JWKS, {
       issuer: 'https://appleid.apple.com',
       audience,
