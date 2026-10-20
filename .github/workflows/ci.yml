@@ -64,6 +64,9 @@ jobs:
           FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
         run: pnpm install --frozen-lockfile
 
+      - name: Build db package
+        run: pnpm --filter @auntie-marlenes/db db:generate && pnpm --filter @auntie-marlenes/db build
+
       - name: Build
         env:
           # Placeholder env vars for build (validated at runtime, not build time).
