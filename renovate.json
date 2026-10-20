@@ -144,7 +144,7 @@
     },
     {
       "description": "Prisma \u2014 group client + CLI",
-      "matchPackageNames": ["prisma", "@prisma/client", "@prisma/adapter-neon"],
+      "matchPackageNames": ["prisma", "@prisma/client", "@prisma/adapter-d1"],
       "groupName": "prisma",
       "automerge": false,
       "labels": ["dependencies", "database"]

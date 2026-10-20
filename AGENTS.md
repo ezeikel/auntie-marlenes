@@ -13,43 +13,32 @@ search = sonar. Regenerate: `tsx ~/Development/Personal/scripts/model-registry/f
 - `apps/studio` - Sanity Studio (embedded at /studio route)
 - `packages/db` - Prisma database client
 
-## Database (Neon)
+## Database migrations (D1 preparation; NON-NEGOTIABLE)
 
-This project uses Neon PostgreSQL with Prisma.
+The DB package targets Cloudflare D1 through Prisma 7.8. A1 is local-only;
+production remains on Neon until the later cutover gate. Do not deploy this
+intermediate state. Only `apps/web` imports the DB package.
 
-### Cost rule
-
-Compute is 0.25–1 CU (autosuspend 300s = the plan floor). Neon bills a **5-min minimum per wake**, so
-what costs money is how often something touches Postgres, not how much work it does. Two things here were
-waking it around the clock and must not regress: `abandoned-cart` is **hourly, not `*/15`** (its email
-window is "checkout created 1–4h ago", so hourly catches every cart with hours of margin), and the
-product page's save count is cached (`'use cache'` + `cacheLife('save-count')`) so bot crawls don't hit
-`savedItem.count()` per request. Any new sub-hourly cron needs a DB-free early exit before the first
-query. Rationale: the `fleet-neon-cost` skill.
-
-### Migrations
-
-**CRITICAL: Never use `prisma db push`** - it causes schema drift between the database and migration history.
-
-#### Workflow
-
-1. **Make schema changes** in `packages/db/prisma/schema.prisma`
-2. **Create migration locally**: `cd packages/db && pnpm db:migrate`
-3. **Build the db package**: `pnpm build` (compiles TypeScript after Prisma generates client)
-4. **Commit & push** migration files to `main` branch
-
-#### Commands (run from `packages/db`)
-
-| Command            | Purpose                   | When to Use                     |
-| ------------------ | ------------------------- | ------------------------------- |
-| `pnpm db:migrate`  | Create + apply migration  | After schema changes            |
-| `pnpm build`       | Compile TypeScript        | After db:migrate or db:generate |
-| `pnpm db:deploy`   | Apply existing migrations | CI/CD only                      |
-| `pnpm db:generate` | Regenerate Prisma client  | After pulling changes           |
-| `pnpm db:push`     | **NEVER USE**             | Causes drift                    |
-| `pnpm db:studio`   | Database GUI              | Debugging                       |
-
-**Important**: Always run `pnpm build` after `db:migrate` or `db:generate` to compile the updated Prisma client.
+- **NEVER `prisma db push`. NEVER hand-write migration SQL.** Edit
+  `packages/db/prisma/schema.prisma`, then generate numbered SQL with
+  `prisma migrate diff --from-schema <last-applied-schema> --to-schema
+  prisma/schema.prisma --script --output migrations/<next-number>_<name>.sql`
+  from `packages/db`. Save the last applied schema from its Git revision before
+  editing. For the empty baseline only, use `--from-empty`.
+- Run `pnpm --filter @auntie-marlenes/db db:generate`, review the generated SQL,
+  then `pnpm --filter @auntie-marlenes/db build` to compile the generated client.
+  Apply with `db:migrate:local` and verify local D1. `db:check-drift` replays the
+  migrations into fresh local D1 and compares it with the schema.
+- `prisma/migrations-postgres-archive/` is historical only. No `db:push`,
+  `db:deploy`, or Prisma migrate-dev script remains. The current CI migration
+  workflow validates locally; A6 must add production D1 migrations before deploy,
+  behind the cutover gate. A1 never invokes `db:migrate:remote`.
+- Read `packages/db/README.md` before data copy/parity. Production source access
+  is read-only. Never print URLs or raw rows. Stop on a failed parity check.
+- D1 statements stay below 100 parameters: use `chunkForD1`, counting generated
+  id/timestamp columns too. SavedItem inserts budget four columns per row.
+- Preserve the hourly abandoned-cart cron and cached product save count. Neon
+  cost constraints still apply to live production until cutover.
 
 ## Vercel Deployment
 

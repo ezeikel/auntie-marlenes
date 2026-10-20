@@ -1,3 +1,4 @@
+import { chunkForD1 } from '@auntie-marlenes/db';
 import { revalidateTag } from 'next/cache';
 import { NextRequest } from 'next/server';
 import { ZodError, z } from 'zod';
@@ -18,7 +19,7 @@ const syncSavedSchema = z.object({
  * Used when user logs in to merge their local saved items with backend
  */
 export async function POST(request: NextRequest) {
-  const limited = rateLimit(request, { limit: 10, windowMs: 60_000 });
+  const limited = await rateLimit(request, { limit: 10, windowMs: 60_000 });
   if (limited) return limited;
 
   try {
@@ -41,13 +42,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const existing = await db.savedItem.findMany({
-      where: {
-        userId,
-        productId: { in: productIds },
-      },
-      select: { productId: true },
-    });
+    const existing: { productId: string }[] = [];
+    for (const ids of chunkForD1(productIds, 1, 1)) {
+      existing.push(
+        ...(await db.savedItem.findMany({
+          where: { userId, productId: { in: ids } },
+          select: { productId: true },
+        })),
+      );
+    }
 
     const existingIds = new Set(
       existing.map((item: { productId: string }) => item.productId),
@@ -56,12 +59,12 @@ export async function POST(request: NextRequest) {
 
     let synced = 0;
     if (newIds.length > 0) {
-      await db.savedItem.createMany({
-        data: newIds.map((productId: string) => ({
-          userId,
-          productId,
-        })),
-      });
+      // SavedItem inserts bind id, userId, productId and createdAt.
+      for (const ids of chunkForD1(newIds, 4)) {
+        await db.savedItem.createMany({
+          data: ids.map((productId) => ({ userId, productId })),
+        });
+      }
       synced = newIds.length;
     }
 

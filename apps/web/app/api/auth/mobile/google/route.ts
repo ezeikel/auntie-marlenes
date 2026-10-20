@@ -1,25 +1,35 @@
-import { OAuth2Client } from 'google-auth-library';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { createToken } from '@/lib/auth-mobile';
 import { db } from '@/lib/prisma';
 
-const client = new OAuth2Client(process.env.GOOGLE_WEB_CLIENT_ID);
+const GOOGLE_JWKS = createRemoteJWKSet(
+  new URL('https://www.googleapis.com/oauth2/v3/certs'),
+);
 
 export async function POST(req: Request) {
   try {
     const { idToken } = await req.json();
 
-    if (!idToken) {
+    if (!idToken || typeof idToken !== 'string') {
       return Response.json({ error: 'idToken is required' }, { status: 400 });
     }
 
-    const ticket = await client.verifyIdToken({
-      idToken,
-      audience: process.env.GOOGLE_WEB_CLIENT_ID,
+    // The mobile app signs in with a web client id as `webClientId`, so its
+    // tokens carry that id as `aud`. Vercel prod never set GOOGLE_WEB_CLIENT_ID
+    // (the old library skipped the check), so also accept the NextAuth client.
+    const audience = [
+      process.env.GOOGLE_WEB_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_ID,
+    ].filter((id): id is string => Boolean(id));
+    if (audience.length === 0) throw new Error('GOOGLE_WEB_CLIENT_ID not set');
+    const { payload } = await jwtVerify(idToken, GOOGLE_JWKS, {
+      issuer: ['accounts.google.com', 'https://accounts.google.com'],
+      audience,
+      algorithms: ['RS256'],
+      requiredClaims: ['sub', 'iat', 'exp'],
+      clockTolerance: 300,
     });
-
-    const payload = ticket.getPayload();
-
-    if (!payload?.email) {
+    if (typeof payload.email !== 'string' || !payload.email) {
       return Response.json({ error: 'Invalid token' }, { status: 400 });
     }
 
@@ -32,7 +42,9 @@ export async function POST(req: Request) {
       user = await db.user.create({
         data: {
           email: payload.email,
-          name: payload.name || payload.email.split('@')[0],
+          name:
+            (typeof payload.name === 'string' ? payload.name : '') ||
+            payload.email.split('@')[0],
         },
       });
     }

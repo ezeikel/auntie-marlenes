@@ -6,3 +6,7 @@ dist
 
 # Generated Prisma Client
 src/generated/
+# Private migration data and Wrangler local state
+.copy/
+.wrangler/
+src/generated/

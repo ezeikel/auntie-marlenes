@@ -1,23 +1,37 @@
-import jwt from 'jsonwebtoken';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { createToken } from '@/lib/auth-mobile';
 import { db } from '@/lib/prisma';
+
+const APPLE_JWKS = createRemoteJWKSet(
+  new URL('https://appleid.apple.com/auth/keys'),
+);
 
 export async function POST(req: Request) {
   try {
     const { identityToken } = await req.json();
 
-    if (!identityToken) {
+    if (!identityToken || typeof identityToken !== 'string') {
       return Response.json(
         { error: 'identityToken is required' },
         { status: 400 },
       );
     }
 
-    // Decode the Apple identity token (without verification for simplicity)
-    // In production, you should verify the token signature
-    const decoded = jwt.decode(identityToken) as any;
-
-    if (!decoded || !decoded.email) {
+    // Comma-separated bundle ids: production, preview and dev builds each sign
+    // in with their own, and Apple puts the bundle id in the token's `aud`.
+    const audience = (process.env.APPLE_MOBILE_CLIENT_ID ?? '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (audience.length === 0)
+      throw new Error('APPLE_MOBILE_CLIENT_ID not set');
+    const { payload: decoded } = await jwtVerify(identityToken, APPLE_JWKS, {
+      issuer: 'https://appleid.apple.com',
+      audience,
+      algorithms: ['RS256'],
+      requiredClaims: ['sub', 'iat', 'exp'],
+    });
+    if (typeof decoded.email !== 'string' || !decoded.email) {
       return Response.json({ error: 'Invalid Apple token' }, { status: 400 });
     }
 

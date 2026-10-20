@@ -14,7 +14,7 @@ const createCartSchema = z.object({
  * Optional auth via Bearer token (pre-fills buyer identity)
  */
 export async function POST(request: NextRequest) {
-  const limited = rateLimit(request, { limit: 30, windowMs: 60_000 });
+  const limited = await rateLimit(request, { limit: 30, windowMs: 60_000 });
   if (limited) return limited;
 
   try {
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
  * Query param: cartId
  */
 export async function GET(request: NextRequest) {
-  const limited = rateLimit(request, { limit: 30, windowMs: 60_000 });
+  const limited = await rateLimit(request, { limit: 30, windowMs: 60_000 });
   if (limited) return limited;
 
   try {

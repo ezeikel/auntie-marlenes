@@ -188,29 +188,6 @@ export default async function CookiePolicyPage({
                   </p>
                 </div>
               </div>
-
-              <div className="border border-gray-200 rounded-lg p-5">
-                <h3 className="font-semibold text-cocoa mb-3">
-                  Vercel Analytics
-                </h3>
-                <p className="text-sm mb-2">
-                  Vercel Analytics measures our website's performance, including
-                  page load times and responsiveness. This helps us ensure the
-                  site runs smoothly and quickly for all visitors.
-                </p>
-                <div className="text-sm bg-gray-50 rounded p-3 mt-2">
-                  <p>
-                    <strong>Provider:</strong> Vercel
-                  </p>
-                  <p>
-                    <strong>Purpose:</strong> Website performance monitoring
-                    (Core Web Vitals)
-                  </p>
-                  <p>
-                    <strong>Duration:</strong> Session
-                  </p>
-                </div>
-              </div>
             </div>
           </section>
 

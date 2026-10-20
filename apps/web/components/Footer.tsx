@@ -6,7 +6,7 @@ import {
   faYoutube,
 } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { cacheLife, cacheTag } from 'next/cache';
+import { unstable_cache } from 'next/cache';
 import Link from 'next/link';
 import { socialLinks } from '@/lib/constants';
 import NewsletterForm from './NewsletterForm';
@@ -19,12 +19,16 @@ const iconMap = {
   youtube: faYoutube,
 };
 
+const getCopyrightYear = unstable_cache(
+  async () => new Date().getFullYear(),
+  ['footer'],
+  {
+    tags: ['footer'],
+    revalidate: 2592000,
+  },
+);
 async function CachedCopyright() {
-  'use cache';
-  cacheLife('max'); // Cache for 30 days, revalidate monthly (ideal for annual data)
-  cacheTag('footer'); // Tag for webhook invalidation
-
-  const year = new Date().getFullYear();
+  const year = await getCopyrightYear();
 
   return (
     <p className="text-center md:text-left text-white/80">

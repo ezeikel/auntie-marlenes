@@ -23,7 +23,9 @@
       "!**/src/generated",
       "!next-env.d.ts",
       "!nativewind-env.d.ts",
-      "!expo-env.d.ts"
+      "!expo-env.d.ts",
+      "!**/.open-next",
+      "!**/.wrangler"
     ]
   },
   "formatter": {

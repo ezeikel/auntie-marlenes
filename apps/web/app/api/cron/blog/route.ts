@@ -7,8 +7,8 @@ import { postToWorker } from '@/lib/worker';
  * Blog generation now runs on the Hetzner content worker (flat-cost box)
  * instead of Vercel compute. This route stays thin: authenticate the cron
  * caller, hand off to the worker's guarded /generate/blog (which drafts +
- * auto-publishes one post into Sanity), and return immediately. Vercel
- * auto-sends CRON_SECRET as a bearer on scheduled invocations.
+ * auto-publishes one post into Sanity), and return immediately. The scheduled
+ * handler sends CRON_SECRET as a bearer.
  *
  * Schedule: daily at 09:00 UTC (see vercel.json).
  */
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
     }
     return NextResponse.json(
       { success: true, accepted: true, message: 'blog cron handed off' },
-      { status: 202 },
+      { status: 200 },
     );
   } catch (error) {
     return NextResponse.json(

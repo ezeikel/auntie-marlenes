@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '24'
 
 jobs:
   lint-and-typecheck:
@@ -84,10 +84,12 @@ jobs:
           NEXT_PUBLIC_POSTHOG_HOST: /relay-hyx5
           SHOPIFY_STOREFRONT_API_ENDPOINT: https://afro-hair-and-beauty.myshopify.com/api/2024-01/graphql.json
           SHOPIFY_STOREFRONT_ACCESS_TOKEN: ${{ secrets.SHOPIFY_STOREFRONT_ACCESS_TOKEN }}
-          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
           NEXT_AUTH_SECRET: placeholder-ci-secret
           GOOGLE_CLIENT_ID: placeholder
           GOOGLE_CLIENT_SECRET: placeholder
           RESEND_API_KEY: re_placeholder
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        run: pnpm build
+        run: pnpm --filter @auntie-marlenes/web exec opennextjs-cloudflare build
+
+      - name: Check Worker bundle and bindings
+        run: pnpm --filter @auntie-marlenes/web exec wrangler deploy --dry-run --outdir .wrangler/dry-run

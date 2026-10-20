@@ -1,4 +1,3 @@
-import { Analytics } from '@vercel/analytics/react';
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
 import { notFound } from 'next/navigation';
@@ -185,7 +184,6 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
             <Toaster position="bottom-right" richColors closeButton />
           </Providers>
         </Suspense>
-        <Analytics />
       </body>
     </html>
   );

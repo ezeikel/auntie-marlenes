@@ -1,0 +1,26 @@
+[
+  {
+    "route": "/api/cron/blog",
+    "scheduledStatus": 200,
+    "authenticatedStatus": 200,
+    "unauthenticatedStatus": 401
+  },
+  {
+    "route": "/api/cron/abandoned-cart",
+    "scheduledStatus": 200,
+    "authenticatedStatus": 200,
+    "unauthenticatedStatus": 401
+  },
+  {
+    "route": "/api/cron/restock-reminder",
+    "scheduledStatus": 200,
+    "authenticatedStatus": 200,
+    "unauthenticatedStatus": 401
+  },
+  {
+    "route": "/api/cron/publish-next",
+    "scheduledStatus": 200,
+    "authenticatedStatus": 200,
+    "unauthenticatedStatus": 401
+  }
+]

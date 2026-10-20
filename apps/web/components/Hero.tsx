@@ -6,16 +6,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { mediaUrl } from '@/lib/media';
 
 // Six hero scenes cycling as cross-faded background. Videos on desktop,
 // static stills on mobile/tablet. Pattern mirrors parkingticketpal.com.
 const HERO_VIDEOS = [
-  '/videos/hero/hero-01-bonnet.mp4',
-  '/videos/hero/hero-02-mother-daughter.mp4',
-  '/videos/hero/hero-03-kitchen-beautician.mp4',
-  '/videos/hero/hero-04-locs-oil.mp4',
-  '/videos/hero/hero-05-barbershop-fade.mp4',
-  '/videos/hero/hero-06-dad-braids.mp4',
+  mediaUrl('/videos/hero/hero-01-bonnet.mp4'),
+  mediaUrl('/videos/hero/hero-02-mother-daughter.mp4'),
+  mediaUrl('/videos/hero/hero-03-kitchen-beautician.mp4'),
+  mediaUrl('/videos/hero/hero-04-locs-oil.mp4'),
+  mediaUrl('/videos/hero/hero-05-barbershop-fade.mp4'),
+  mediaUrl('/videos/hero/hero-06-dad-braids.mp4'),
 ];
 
 const HERO_IMAGES = [

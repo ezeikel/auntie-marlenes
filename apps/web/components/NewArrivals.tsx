@@ -1,15 +1,10 @@
-import { cacheLife, cacheTag } from 'next/cache';
 import Link from 'next/link';
-import { searchProducts } from '@/app/actions';
 import { Button } from '@/components/ui/button';
+import { cachedNewArrivals as searchProducts } from '@/lib/cached-products';
 import { getServerCountry } from '@/lib/server-location';
 import ProductCard from './ProductCard';
 
 async function CachedNewArrivals({ country }: { country: string }) {
-  'use cache';
-  cacheLife('days');
-  cacheTag('new-arrivals');
-
   const products = await searchProducts({
     query: 'tag:new-arrival',
     sortKey: 'CREATED_AT',

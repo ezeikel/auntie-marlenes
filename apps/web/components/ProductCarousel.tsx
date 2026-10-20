@@ -1,5 +1,3 @@
-import { cacheLife, cacheTag } from 'next/cache';
-import { getProducts } from '@/app/actions';
 import {
   Carousel,
   CarouselContent,
@@ -7,16 +5,13 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import { cachedFeaturedProducts as getProducts } from '@/lib/cached-products';
 import { getServerCountry } from '@/lib/server-location';
 import ProductCard from './ProductCard';
 
 // Cached component that fetches featured products
 // Country becomes part of the cache key automatically
 async function CachedProductCarousel({ country }: { country: string }) {
-  'use cache';
-  cacheLife('days'); // Cache for 1 day
-  cacheTag('featured-products'); // Tag for webhook invalidation
-
   const products = await getProducts(country);
 
   return (

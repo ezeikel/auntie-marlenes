@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { getOgFont } from '@/lib/og-fonts';
 import { getSanityImageUrl } from '@/lib/sanity-blog';
 import { client } from '@/sanity/lib/client';
 import { postBySlugQuery } from '@/sanity/lib/queries';
@@ -26,23 +27,8 @@ export default async function Image({
     // Fallback
   }
 
-  const playfairBold = fetch(
-    'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap',
-  ).then(async (res) => {
-    const css = await res.text();
-    const fontUrl = css.match(/url\(([^)]+)\)/)?.[1]?.replace(/["']/g, '');
-    if (!fontUrl) throw new Error('Could not extract Playfair font URL');
-    return fetch(fontUrl).then((fontRes) => fontRes.arrayBuffer());
-  });
-
-  const interSemiBold = fetch(
-    'https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap',
-  ).then(async (res) => {
-    const css = await res.text();
-    const fontUrl = css.match(/url\(([^)]+)\)/)?.[1]?.replace(/["']/g, '');
-    if (!fontUrl) throw new Error('Could not extract Inter SemiBold font URL');
-    return fetch(fontUrl).then((fontRes) => fontRes.arrayBuffer());
-  });
+  const playfairBold = getOgFont('Playfair Display', 700);
+  const interSemiBold = getOgFont('Inter', 600);
 
   if (!post) {
     return new ImageResponse(

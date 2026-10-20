@@ -6,12 +6,13 @@ Sentry.init({
   dsn: SENTRY_DSN,
   sendDefaultPii: true,
   // Must be the NEXT_PUBLIC_ variable: Next.js only inlines NEXT_PUBLIC_* into
-  // the browser bundle, so a bare VERCEL_ENV would be undefined here and
+  // the browser bundle, so a bare APP_ENV would be undefined here and
   // @sentry/nextjs would fall back to a `vercel-` prefixed environment.
-  environment:
-    process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.NODE_ENV || 'development',
+  environment: process.env.NEXT_PUBLIC_APP_ENV || 'development',
   // Local dev browsers should not burn quota or pollute triage.
-  enabled: process.env.NODE_ENV === 'production',
+  enabled:
+    process.env.NODE_ENV === 'production' &&
+    ['production', 'staging'].includes(process.env.NEXT_PUBLIC_APP_ENV || ''),
   integrations: [Sentry.replayIntegration()],
   tracesSampleRate: 1,
   enableLogs: true,

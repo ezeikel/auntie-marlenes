@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "auntie-marlenes-db",
+  "compatibility_date": "2026-10-19",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "auntie-marlenes",
+      "database_id": "b7941a75-858c-42a2-ae1d-88bb3f755292",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

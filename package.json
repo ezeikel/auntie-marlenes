@@ -52,7 +52,8 @@
       "esbuild",
       "prisma",
       "sharp",
-      "unrs-resolver"
+      "unrs-resolver",
+      "better-sqlite3"
     ]
   }
 }

@@ -1,6 +1,4 @@
-import { cacheLife, cacheTag } from 'next/cache';
 import Link from 'next/link';
-import { searchProducts } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import {
   Carousel,
@@ -9,6 +7,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import { cachedBundleProducts as searchProducts } from '@/lib/cached-products';
 import { getServerCountry, getServerUserId } from '@/lib/server-location';
 import ProductCard from './ProductCard';
 
@@ -21,10 +20,6 @@ async function CachedBundleDeals({
   country: string;
   userId?: string | null;
 }) {
-  'use cache';
-  cacheLife('days'); // Cache for 1 day
-  cacheTag('bundle-deals'); // Tag for webhook invalidation
-
   // Get products on sale (with compareAtPrice)
   const saleProducts = await searchProducts({
     onSale: true,
