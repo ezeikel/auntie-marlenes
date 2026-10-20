@@ -10,7 +10,8 @@ local tests. No binding is read on import, including `PrismaAdapter(db)` setup.
 The application generator uses `runtime = "workerd"`; Node copy/test scripts use
 the separate `prisma-node` generator. `db:generate` also generates the preserved
 Postgres client to ignored `.copy/pg-client`. Run `pnpm build` after generation,
-because consumers resolve compiled `dist/` exports.
+because consumers resolve compiled `dist/` exports. The build also copies the
+generated workerd query-compiler JavaScript and WASM files that `tsc` does not emit.
 
 ## Database migrations
 

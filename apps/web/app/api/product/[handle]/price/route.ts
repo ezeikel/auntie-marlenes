@@ -6,7 +6,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ handle: string }> },
 ) {
-  const limited = rateLimit(request, { limit: 60, windowMs: 60_000 });
+  const limited = await rateLimit(request, { limit: 60, windowMs: 60_000 });
   if (limited) return limited;
 
   const { handle } = await params;

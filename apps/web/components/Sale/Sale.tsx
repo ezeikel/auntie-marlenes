@@ -1,8 +1,7 @@
-import { cacheLife, cacheTag } from 'next/cache';
 import { after } from 'next/server';
-import { searchProducts } from '@/app/actions';
 import DynamicProductListing from '@/components/DynamicProductListing';
 import { TRACKING_EVENTS } from '@/constants/events';
+import { cachedSaleProducts as searchProducts } from '@/lib/cached-products';
 import { getServerCountry, getServerUserId } from '@/lib/server-location';
 import { track } from '@/utils/analytics-server';
 
@@ -21,10 +20,6 @@ async function CachedSaleProducts({
   country: string;
   userId?: string | null;
 }) {
-  'use cache';
-  cacheLife('days'); // Cache for 1 day - products don't change often
-  cacheTag('sale-products'); // Tag for webhook invalidation
-
   // Map sort parameter to Shopify sortKey
   let sortKey:
     | 'TITLE'

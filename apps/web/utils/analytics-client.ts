@@ -1,12 +1,10 @@
 'use client';
 
-import { track as vercelTrackClient } from '@vercel/analytics';
 import { useSession } from 'next-auth/react';
 import posthog from 'posthog-js';
 import { useCallback } from 'react';
 import { TRACKING_EVENTS } from '@/constants/events';
 import type { EventProperties, TrackingEvent } from '@/types';
-import { cleanVercelProperties } from '@/utils/analytics';
 import {
   trackAddToCart,
   trackFacebookPixelCustomEvent,
@@ -153,8 +151,6 @@ export const useAnalytics = () => {
           }
           posthog.capture(event, enrichedProperties);
         }
-
-        vercelTrackClient(event, cleanVercelProperties(enrichedProperties));
 
         // Track Facebook Pixel events
         trackFacebookPixelEvent(event, properties);

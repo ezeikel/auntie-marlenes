@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { getOgFont } from '@/lib/og-fonts';
 
 // Force Node.js runtime to avoid Edge Runtime limitations
 export const runtime = 'nodejs';
@@ -12,31 +13,12 @@ export const size = {
 
 export const contentType = 'image/png';
 
-// Load fonts from Google Fonts (fetch CSS first, then extract font URL)
-const getPlayfairBoldFont = fetch(
-  'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap',
-).then(async (res) => {
-  const css = await res.text();
-  const fontUrl = css.match(/url\(([^)]+)\)/)?.[1]?.replace(/["']/g, '');
-  if (!fontUrl) throw new Error('Could not extract Playfair font URL');
-  return fetch(fontUrl).then((fontRes) => fontRes.arrayBuffer());
-});
-
-const getInterRegularFont = fetch(
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap',
-).then(async (res) => {
-  const css = await res.text();
-  const fontUrl = css.match(/url\(([^)]+)\)/)?.[1]?.replace(/["']/g, '');
-  if (!fontUrl) throw new Error('Could not extract Inter font URL');
-  return fetch(fontUrl).then((fontRes) => fontRes.arrayBuffer());
-});
-
 // Image generation
 export default async function Image() {
   // Load fonts
   const [playfairBoldData, interRegularData] = await Promise.all([
-    getPlayfairBoldFont,
-    getInterRegularFont,
+    getOgFont('Playfair Display', 700),
+    getOgFont('Inter', 400),
   ]);
 
   return new ImageResponse(

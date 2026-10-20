@@ -1,3 +1,5 @@
+import { mediaUrl } from '@/lib/media';
+
 export type SocialMediaVideo = {
   id: string;
   videoUrl: string;
@@ -23,8 +25,9 @@ export const socialMediaVideos: SocialMediaVideo[] = [
   // },
   {
     id: '2',
-    videoUrl:
+    videoUrl: mediaUrl(
       '/videos/social-media-showcase/1716915799558_604bb3c7-2db1-40b8-9415-a8e99b99e240.mp4',
+    ),
     thumbnailUrl:
       '/placeholder.svg?height=800&width=450&text=Skin+Care+Routine',
     caption: 'I use this every single day for glowing skin',
@@ -46,8 +49,9 @@ export const socialMediaVideos: SocialMediaVideo[] = [
   // },
   {
     id: '4',
-    videoUrl:
+    videoUrl: mediaUrl(
       '/videos/social-media-showcase/1728320606637_b807f4f2-20e9-48b8-9d7d-7e0eaf6f5c5d.mp4',
+    ),
     thumbnailUrl: '/placeholder.svg?height=800&width=450&text=Skin+Glow',
     caption: 'POWERFUL SKIN CARE SECRET: natural ingredients',
     author: '@skincareguru',
@@ -57,8 +61,9 @@ export const socialMediaVideos: SocialMediaVideo[] = [
   },
   {
     id: '5',
-    videoUrl:
+    videoUrl: mediaUrl(
       '/videos/social-media-showcase/1740786295611_wid_NjdjMjRhNzdhY2FjNjcwMDQwY2ZmMDQy_h264cmobile.mp4',
+    ),
     thumbnailUrl: '/placeholder.svg?height=800&width=450&text=Deep+Treatment',
     caption:
       'TAKE A DEEP DIVE INTO OUR AWARD-WINNING MOISTURIZING DEEP CONDITIONER',
@@ -69,8 +74,9 @@ export const socialMediaVideos: SocialMediaVideo[] = [
   },
   {
     id: '6',
-    videoUrl:
+    videoUrl: mediaUrl(
       '/videos/social-media-showcase/1756140887235_wid_NjhhYzk1NTdiN2Y2MmUwMDU4ZjY1ZGNm_h264cmobile.mp4',
+    ),
     thumbnailUrl: '/placeholder.svg?height=800&width=450&text=Curl+Definition',
     caption: 'My curls and skin have never looked better',
     author: '@curlygirl',
@@ -80,8 +86,9 @@ export const socialMediaVideos: SocialMediaVideo[] = [
   },
   {
     id: '7',
-    videoUrl:
+    videoUrl: mediaUrl(
       '/videos/social-media-showcase/1759529737198_wid_NjhlMDRiMDg3NjE4MTA5ZmQ0MzdmMDIz_h264cmobile.mp4',
+    ),
     thumbnailUrl: '/placeholder.svg?height=800&width=450&text=Curl+Definition',
     caption: 'My curls and skin have never looked better',
     author: '@curlygirl',
@@ -91,8 +98,9 @@ export const socialMediaVideos: SocialMediaVideo[] = [
   },
   {
     id: '8',
-    videoUrl:
+    videoUrl: mediaUrl(
       '/videos/social-media-showcase/1759530412952_wid_NjhlMDRkYWM3NjE4MTA5ZmQ0MzdmMGZk_h264cmobile.mp4',
+    ),
     thumbnailUrl: '/placeholder.svg?height=800&width=450&text=Curl+Definition',
     caption: 'My curls and skin have never looked better',
     author: '@curlygirl',

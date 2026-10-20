@@ -1,70 +1,46 @@
-import { NextRequest } from 'next/server';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { connection, type NextRequest } from 'next/server';
 
-type RateLimitEntry = {
-  count: number;
-  resetTime: number;
+type Limiter = {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
+};
+type RateLimitEnv = {
+  RATE_LIMIT_10: Limiter;
+  RATE_LIMIT_30: Limiter;
+  RATE_LIMIT_60: Limiter;
 };
 
-const store = new Map<string, RateLimitEntry>();
-
-// Clean up expired entries every 5 minutes
-const CLEANUP_INTERVAL = 5 * 60 * 1000;
-let lastCleanup = Date.now();
-
-function cleanup() {
-  const now = Date.now();
-  if (now - lastCleanup < CLEANUP_INTERVAL) return;
-  lastCleanup = now;
-
-  for (const [key, entry] of store) {
-    if (now > entry.resetTime) {
-      store.delete(key);
-    }
-  }
-}
-
-/**
- * Simple in-memory sliding window rate limiter.
- * Returns a 429 Response if the limit is exceeded, or null if allowed.
- */
-export function rateLimit(
+/** Native, per-location counters persist across isolates. Keep IP:path keys. */
+export async function rateLimit(
   request: NextRequest,
   { limit, windowMs }: { limit: number; windowMs: number },
-): Response | null {
-  cleanup();
-
+): Promise<Response | null> {
+  if (windowMs !== 60_000 || ![10, 30, 60].includes(limit)) {
+    throw new Error(`Unsupported rate limit: ${limit}/${windowMs}`);
+  }
+  await connection(); // Never consume rate-limit tokens during prerendering.
+  const env = getCloudflareContext().env as unknown as RateLimitEnv;
+  const binding = env[`RATE_LIMIT_${limit}` as keyof RateLimitEnv];
   const ip =
+    request.headers.get('cf-connecting-ip') ||
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     request.headers.get('x-real-ip') ||
     'unknown';
-
-  const key = `${ip}:${request.nextUrl.pathname}`;
-  const now = Date.now();
-
-  const entry = store.get(key);
-
-  if (!entry || now > entry.resetTime) {
-    store.set(key, { count: 1, resetTime: now + windowMs });
-    return null;
-  }
-
-  entry.count++;
-
-  if (entry.count > limit) {
-    const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
-    return Response.json(
-      { error: 'Too many requests' },
-      {
-        status: 429,
-        headers: {
-          'Retry-After': retryAfter.toString(),
-          'X-RateLimit-Limit': limit.toString(),
-          'X-RateLimit-Remaining': '0',
-          'X-RateLimit-Reset': Math.ceil(entry.resetTime / 1000).toString(),
-        },
+  const { success } = await binding.limit({
+    key: `${ip}:${request.nextUrl.pathname}`,
+  });
+  if (success) return null;
+  // The binding doesn't expose its reset time; advertise a conservative window.
+  return Response.json(
+    { error: 'Too many requests' },
+    {
+      status: 429,
+      headers: {
+        'Retry-After': '60',
+        'X-RateLimit-Limit': String(limit),
+        'X-RateLimit-Remaining': '0',
+        'X-RateLimit-Reset': String(Math.ceil(Date.now() / 1000) + 60),
       },
-    );
-  }
-
-  return null;
+    },
+  );
 }

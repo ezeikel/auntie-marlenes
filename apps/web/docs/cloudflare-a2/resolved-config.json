@@ -1,0 +1,152 @@
+[
+  {
+    "environment": "default",
+    "name": "auntie-marlenes-web",
+    "triggers": {
+      "crons": ["0 9 * * *", "0 * * * *", "0 10 * * *", "0 12 * * *"]
+    },
+    "bindings": {
+      "d1": [
+        {
+          "binding": "DB",
+          "database_name": "auntie-marlenes",
+          "database_id": "00000000-0000-0000-0000-000000000000",
+          "migrations_dir": "../../packages/db/migrations"
+        },
+        {
+          "binding": "NEXT_TAG_CACHE_D1",
+          "database_name": "auntie-marlenes-cache",
+          "database_id": "00000000-0000-0000-0000-000000000001"
+        }
+      ],
+      "r2": [
+        {
+          "binding": "NEXT_INC_CACHE_R2_BUCKET",
+          "bucket_name": "auntie-marlenes-cache"
+        }
+      ],
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "NEXT_CACHE_DO_QUEUE",
+            "class_name": "DOQueueHandler"
+          }
+        ]
+      },
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "auntie-marlenes-web"
+        }
+      ],
+      "assets": {
+        "directory": ".open-next/assets",
+        "binding": "ASSETS"
+      },
+      "ratelimits": [
+        {
+          "name": "RATE_LIMIT_10",
+          "namespace_id": "73010",
+          "simple": {
+            "limit": 10,
+            "period": 60
+          }
+        },
+        {
+          "name": "RATE_LIMIT_30",
+          "namespace_id": "73030",
+          "simple": {
+            "limit": 30,
+            "period": 60
+          }
+        },
+        {
+          "name": "RATE_LIMIT_60",
+          "namespace_id": "73060",
+          "simple": {
+            "limit": 60,
+            "period": 60
+          }
+        }
+      ]
+    },
+    "limits": {
+      "cpu_ms": 300000
+    }
+  },
+  {
+    "environment": "staging",
+    "name": "auntie-marlenes-web-staging",
+    "triggers": {
+      "crons": []
+    },
+    "bindings": {
+      "d1": [
+        {
+          "binding": "DB",
+          "database_name": "auntie-marlenes",
+          "database_id": "00000000-0000-0000-0000-000000000000",
+          "migrations_dir": "../../packages/db/migrations"
+        },
+        {
+          "binding": "NEXT_TAG_CACHE_D1",
+          "database_name": "auntie-marlenes-cache",
+          "database_id": "00000000-0000-0000-0000-000000000001"
+        }
+      ],
+      "r2": [
+        {
+          "binding": "NEXT_INC_CACHE_R2_BUCKET",
+          "bucket_name": "auntie-marlenes-cache"
+        }
+      ],
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "NEXT_CACHE_DO_QUEUE",
+            "class_name": "DOQueueHandler"
+          }
+        ]
+      },
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "auntie-marlenes-web-staging"
+        }
+      ],
+      "assets": {
+        "directory": ".open-next/assets",
+        "binding": "ASSETS"
+      },
+      "ratelimits": [
+        {
+          "name": "RATE_LIMIT_10",
+          "namespace_id": "74010",
+          "simple": {
+            "limit": 10,
+            "period": 60
+          }
+        },
+        {
+          "name": "RATE_LIMIT_30",
+          "namespace_id": "74030",
+          "simple": {
+            "limit": 30,
+            "period": 60
+          }
+        },
+        {
+          "name": "RATE_LIMIT_60",
+          "namespace_id": "74060",
+          "simple": {
+            "limit": 60,
+            "period": 60
+          }
+        }
+      ]
+    },
+    "limits": {
+      "cpu_ms": 300000
+    }
+  }
+]

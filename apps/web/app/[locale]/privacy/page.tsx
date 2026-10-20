@@ -259,11 +259,6 @@ export default async function PrivacyPolicyPage({
                     might get stuck.
                   </li>
                   <li>
-                    <strong>Vercel Analytics</strong> — Monitors our
-                    website&apos;s performance (page load speeds, errors) so we
-                    can keep things running smoothly.
-                  </li>
-                  <li>
                     <strong>Sentry</strong> — Tracks technical errors on our
                     site. If something breaks, Sentry helps us find and fix it
                     quickly. It may collect limited technical data about your
@@ -353,8 +348,8 @@ export default async function PrivacyPolicyPage({
                 <p className="text-sm">
                   These help us understand how visitors interact with our
                   website. Note that Plausible Analytics does not use cookies at
-                  all. PostHog and Vercel Analytics may set cookies to help us
-                  measure site usage and performance.
+                  all. PostHog may set cookies to help us measure site usage and
+                  performance.
                 </p>
               </div>
 

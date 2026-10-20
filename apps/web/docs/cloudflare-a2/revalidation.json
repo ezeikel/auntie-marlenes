@@ -1,0 +1,17 @@
+{
+  "status": 200,
+  "body": {
+    "message": "Revalidation successful",
+    "revalidated": true,
+    "tags": [
+      "blog-list",
+      "blog-posts",
+      "blog-post-90s-natural-hair-styles-are-back-retro-trends-revived"
+    ],
+    "document": {
+      "_type": "post",
+      "_id": "local-a2-revalidation",
+      "slug": "90s-natural-hair-styles-are-back-retro-trends-revived"
+    }
+  }
+}

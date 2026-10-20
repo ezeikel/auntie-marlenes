@@ -1,9 +1,7 @@
 import 'server-only';
 
-import { track as vercelTrackServer } from '@vercel/analytics/server';
 import { createPostHogClient } from '@/lib/posthog-server';
 import type { EventProperties, TrackingEvent } from '@/types';
-import { cleanVercelProperties } from '@/utils/analytics';
 import { getCurrentUser, getUserId } from '@/utils/user';
 
 type TrackOptions = {
@@ -109,8 +107,6 @@ export const track = async <TEvent extends TrackingEvent>(
       });
       await posthog.shutdown();
     }
-
-    await vercelTrackServer(event, cleanVercelProperties(enrichedProperties));
   } catch (error) {
     console.error('Server-side analytics tracking error:', error);
   }

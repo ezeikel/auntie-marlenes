@@ -11,7 +11,9 @@ Sentry.init({
   // Without this, @sentry/nextjs derives a `vercel-` prefixed value, so prod
   // errors land under `vercel-production` and an `environment:production`
   // filter never matches them.
-  environment: process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
+  environment: process.env.APP_ENV || 'development',
   // Local dev servers should not burn quota or pollute triage.
-  enabled: process.env.NODE_ENV === 'production',
+  enabled:
+    process.env.NODE_ENV === 'production' &&
+    ['production', 'staging'].includes(process.env.APP_ENV || ''),
 });

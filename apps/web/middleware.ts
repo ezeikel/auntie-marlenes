@@ -48,6 +48,7 @@ export default async function middleware(request: NextRequest) {
     pathname.startsWith('/_next/image') ||
     pathname.startsWith('/_vercel') ||
     pathname === '/favicon.ico' ||
+    pathname === '/opengraph-image' ||
     pathname.includes('.')
   ) {
     return NextResponse.next();

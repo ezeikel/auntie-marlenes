@@ -6,7 +6,7 @@
  */
 
 import type { PortableTextBlock } from '@portabletext/types';
-import { cacheLife, cacheTag } from 'next/cache';
+import { unstable_cache } from 'next/cache';
 import type { Image as SanityImage } from 'sanity';
 import { client } from '@/sanity/lib/client';
 import { urlForImage } from '@/sanity/lib/image';
@@ -138,17 +138,19 @@ function formatDate(dateString: string): string {
  * Get all published blog posts
  */
 export async function getAllPosts(): Promise<SanityPost[]> {
-  'use cache';
-  cacheLife('blog-list');
-  cacheTag('blog-list', 'blog-posts');
-
-  try {
-    const posts = await client.fetch<SanityPost[]>(postsQuery);
-    return posts || [];
-  } catch (error) {
-    console.error('Error fetching all posts:', error);
-    return [];
-  }
+  return unstable_cache(
+    async () => {
+      try {
+        const posts = await client.fetch<SanityPost[]>(postsQuery);
+        return posts || [];
+      } catch (error) {
+        console.error('Error fetching all posts:', error);
+        return [];
+      }
+    },
+    ['blog-list'],
+    { tags: ['blog-list', 'blog-posts'], revalidate: 86400 },
+  )();
 }
 
 /**
@@ -163,17 +165,19 @@ export async function getAllPostsLegacy(): Promise<BlogPost[]> {
  * Get a single post by slug
  */
 export async function getPostBySlug(slug: string): Promise<SanityPost | null> {
-  'use cache';
-  cacheLife('blog-post');
-  cacheTag('blog-posts', `blog-post-${slug}`);
-
-  try {
-    const post = await client.fetch<SanityPost>(postBySlugQuery, { slug });
-    return post || null;
-  } catch (error) {
-    console.error('Error fetching post by slug:', error);
-    return null;
-  }
+  return unstable_cache(
+    async () => {
+      try {
+        const post = await client.fetch<SanityPost>(postBySlugQuery, { slug });
+        return post || null;
+      } catch (error) {
+        console.error('Error fetching post by slug:', error);
+        return null;
+      }
+    },
+    ['blog-post', slug],
+    { tags: ['blog-posts', `blog-post-${slug}`], revalidate: 604800 },
+  )();
 }
 
 /**
@@ -207,20 +211,22 @@ export async function getRelatedPosts(
   categoryId: string,
   limit = 3,
 ): Promise<SanityPost[]> {
-  'use cache';
-  cacheLife('blog-list');
-  cacheTag('blog-posts');
-
-  try {
-    const posts = await client.fetch<SanityPost[]>(relatedPostsQuery, {
-      slug: currentSlug,
-      categoryId,
-    });
-    return posts?.slice(0, limit) || [];
-  } catch (error) {
-    console.error('Error fetching related posts:', error);
-    return [];
-  }
+  return unstable_cache(
+    async () => {
+      try {
+        const posts = await client.fetch<SanityPost[]>(relatedPostsQuery, {
+          slug: currentSlug,
+          categoryId,
+        });
+        return posts?.slice(0, limit) || [];
+      } catch (error) {
+        console.error('Error fetching related posts:', error);
+        return [];
+      }
+    },
+    ['related-posts', currentSlug, categoryId, String(limit)],
+    { tags: ['blog-posts'], revalidate: 86400 },
+  )();
 }
 
 /**
@@ -239,17 +245,19 @@ export async function getRelatedPostsLegacy(
  * Get featured posts
  */
 export async function getFeaturedPosts(): Promise<SanityPost[]> {
-  'use cache';
-  cacheLife('blog-list');
-  cacheTag('blog-list', 'blog-posts');
-
-  try {
-    const posts = await client.fetch<SanityPost[]>(featuredPostsQuery);
-    return posts || [];
-  } catch (error) {
-    console.error('Error fetching featured posts:', error);
-    return [];
-  }
+  return unstable_cache(
+    async () => {
+      try {
+        const posts = await client.fetch<SanityPost[]>(featuredPostsQuery);
+        return posts || [];
+      } catch (error) {
+        console.error('Error fetching featured posts:', error);
+        return [];
+      }
+    },
+    ['featured-posts'],
+    { tags: ['blog-list', 'blog-posts'], revalidate: 86400 },
+  )();
 }
 
 /**
@@ -264,17 +272,20 @@ export async function getFeaturedPostsLegacy(): Promise<BlogPost[]> {
  * Get all categories
  */
 export async function getCategories(): Promise<SanityCategory[]> {
-  'use cache';
-  cacheLife('blog-list');
-  cacheTag('blog-list', 'blog-categories');
-
-  try {
-    const categories = await client.fetch<SanityCategory[]>(categoriesQuery);
-    return categories || [];
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    return [];
-  }
+  return unstable_cache(
+    async () => {
+      try {
+        const categories =
+          await client.fetch<SanityCategory[]>(categoriesQuery);
+        return categories || [];
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        return [];
+      }
+    },
+    ['blog-categories'],
+    { tags: ['blog-list', 'blog-categories'], revalidate: 86400 },
+  )();
 }
 
 /**

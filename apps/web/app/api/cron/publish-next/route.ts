@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 
-export const maxDuration = 15;
-
 /**
  * Daily cron — picks the next product in the rotation and publishes an
  * image post + reel to Instagram and Facebook.
@@ -13,7 +11,7 @@ export const maxDuration = 15;
  * Schedule: daily at 12:00 UTC (noon — catches the UK lunchtime scroll).
  */
 export async function GET(request: NextRequest) {
-  // Verify the request is from Vercel Cron
+  // Verify the request is from the scheduled handler
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
 
@@ -30,7 +28,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const workerUrl = process.env.CONTENT_WORKER_URL;
+  const workerUrl = process.env.CONTENT_WORKER_URL?.replace(/\/+$/, '');
   const workerSecret = process.env.CONTENT_WORKER_SECRET;
 
   if (!workerUrl || !workerSecret) {
@@ -52,6 +50,7 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${workerSecret}`,
       },
+      signal: AbortSignal.timeout(10_000),
       body: JSON.stringify({
         dry_run: false,
         platforms: ['instagram', 'facebook'],
@@ -79,7 +78,7 @@ export async function GET(request: NextRequest) {
         success: true,
         accepted: true,
       },
-      { status: 202 },
+      { status: 200 },
     );
   } catch (error) {
     console.error('[cron/publish-next] Failed to reach worker:', error);

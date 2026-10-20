@@ -1,0 +1,162 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "auntie-marlenes-web",
+  "main": "custom-worker.ts",
+  "compatibility_date": "2026-10-19",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "auntie-marlenes-web"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "auntie-marlenes-cache"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "auntie-marlenes",
+      "database_id": "b7941a75-858c-42a2-ae1d-88bb3f755292",
+      "migrations_dir": "../../packages/db/migrations"
+    },
+    {
+      "binding": "NEXT_TAG_CACHE_D1",
+      "database_name": "auntie-marlenes-cache",
+      "database_id": "190b8d2e-12db-4eab-89c5-4ea3ccee145f"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "NEXT_CACHE_DO_QUEUE",
+        "class_name": "DOQueueHandler"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DOQueueHandler"]
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "RATE_LIMIT_10",
+      "namespace_id": "73010",
+      "simple": {
+        "limit": 10,
+        "period": 60
+      }
+    },
+    {
+      "name": "RATE_LIMIT_30",
+      "namespace_id": "73030",
+      "simple": {
+        "limit": 30,
+        "period": 60
+      }
+    },
+    {
+      "name": "RATE_LIMIT_60",
+      "namespace_id": "73060",
+      "simple": {
+        "limit": 60,
+        "period": 60
+      }
+    }
+  ],
+  "limits": {
+    "cpu_ms": 300000
+  },
+  "vars": {
+    "APP_ENV": "production"
+  },
+  "triggers": {
+    "crons": ["0 9 * * *", "0 * * * *", "0 10 * * *", "0 12 * * *"]
+  },
+  "env": {
+    "staging": {
+      "assets": {
+        "directory": ".open-next/assets",
+        "binding": "ASSETS"
+      },
+      "r2_buckets": [
+        {
+          "binding": "NEXT_INC_CACHE_R2_BUCKET",
+          "bucket_name": "auntie-marlenes-cache"
+        }
+      ],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "auntie-marlenes",
+          "database_id": "b7941a75-858c-42a2-ae1d-88bb3f755292",
+          "migrations_dir": "../../packages/db/migrations"
+        },
+        {
+          "binding": "NEXT_TAG_CACHE_D1",
+          "database_name": "auntie-marlenes-cache",
+          "database_id": "190b8d2e-12db-4eab-89c5-4ea3ccee145f"
+        }
+      ],
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "NEXT_CACHE_DO_QUEUE",
+            "class_name": "DOQueueHandler"
+          }
+        ]
+      },
+      "ratelimits": [
+        {
+          "name": "RATE_LIMIT_10",
+          "namespace_id": "74010",
+          "simple": {
+            "limit": 10,
+            "period": 60
+          }
+        },
+        {
+          "name": "RATE_LIMIT_30",
+          "namespace_id": "74030",
+          "simple": {
+            "limit": 30,
+            "period": 60
+          }
+        },
+        {
+          "name": "RATE_LIMIT_60",
+          "namespace_id": "74060",
+          "simple": {
+            "limit": 60,
+            "period": 60
+          }
+        }
+      ],
+      "limits": {
+        "cpu_ms": 300000
+      },
+      "vars": {
+        "APP_ENV": "staging"
+      },
+      "name": "auntie-marlenes-web-staging",
+      "triggers": {
+        "crons": []
+      },
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "auntie-marlenes-web-staging"
+        }
+      ]
+    }
+  }
+}

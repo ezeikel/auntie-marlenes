@@ -19,7 +19,7 @@ const syncSavedSchema = z.object({
  * Used when user logs in to merge their local saved items with backend
  */
 export async function POST(request: NextRequest) {
-  const limited = rateLimit(request, { limit: 10, windowMs: 60_000 });
+  const limited = await rateLimit(request, { limit: 10, windowMs: 60_000 });
   if (limited) return limited;
 
   try {

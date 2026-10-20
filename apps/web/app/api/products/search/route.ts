@@ -3,7 +3,7 @@ import { searchProducts } from '@/app/actions';
 import { rateLimit } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
-  const limited = rateLimit(request, { limit: 60, windowMs: 60_000 });
+  const limited = await rateLimit(request, { limit: 60, windowMs: 60_000 });
   if (limited) return limited;
 
   const { searchParams } = new URL(request.url);

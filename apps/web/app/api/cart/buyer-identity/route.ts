@@ -16,7 +16,7 @@ const buyerIdentitySchema = z.object({
  * Called when user logs in to associate cart with their email
  */
 export async function PATCH(request: NextRequest) {
-  const limited = rateLimit(request, { limit: 10, windowMs: 60_000 });
+  const limited = await rateLimit(request, { limit: 10, windowMs: 60_000 });
   if (limited) return limited;
 
   try {

@@ -16,7 +16,7 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/copy-prisma-assets.mjs",
     "dev": "tsc --watch",
     "clean": "rm -rf .turbo node_modules",
     "typecheck": "pnpm check-types",

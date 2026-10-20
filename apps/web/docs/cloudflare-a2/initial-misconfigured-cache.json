@@ -1,0 +1,99 @@
+[
+  {
+    "round": 1,
+    "type": "cached page",
+    "path": "/about",
+    "statuses": {
+      "200": 20
+    },
+    "full": 20,
+    "errors": 0,
+    "minBytes": 57599,
+    "maxBytes": 79328
+  },
+  {
+    "round": 1,
+    "type": "dynamic page",
+    "path": "/bag",
+    "statuses": {
+      "200": 20
+    },
+    "full": 0,
+    "errors": 0,
+    "minBytes": 56571,
+    "maxBytes": 56571
+  },
+  {
+    "round": 1,
+    "type": "product page",
+    "path": "/product/nalas-baby-kids-tropical-blast-curl-defining-jelly-150ml",
+    "statuses": {
+      "0": 19,
+      "500": 1
+    },
+    "full": 0,
+    "errors": 19,
+    "minBytes": 0,
+    "maxBytes": 368
+  },
+  {
+    "round": 1,
+    "type": "use-cache holes",
+    "path": "/",
+    "statuses": {
+      "200": 20
+    },
+    "full": 0,
+    "errors": 0,
+    "minBytes": 225428,
+    "maxBytes": 225428
+  },
+  {
+    "round": 2,
+    "type": "cached page",
+    "path": "/about",
+    "statuses": {
+      "200": 20
+    },
+    "full": 20,
+    "errors": 0,
+    "minBytes": 79328,
+    "maxBytes": 79328
+  },
+  {
+    "round": 2,
+    "type": "dynamic page",
+    "path": "/bag",
+    "statuses": {
+      "200": 20
+    },
+    "full": 0,
+    "errors": 0,
+    "minBytes": 56571,
+    "maxBytes": 56571
+  },
+  {
+    "round": 2,
+    "type": "product page",
+    "path": "/product/nalas-baby-kids-tropical-blast-curl-defining-jelly-150ml",
+    "statuses": {
+      "0": 20
+    },
+    "full": 0,
+    "errors": 20,
+    "minBytes": 0,
+    "maxBytes": 0
+  },
+  {
+    "round": 2,
+    "type": "use-cache holes",
+    "path": "/",
+    "statuses": {
+      "0": 20
+    },
+    "full": 0,
+    "errors": 20,
+    "minBytes": 0,
+    "maxBytes": 0
+  }
+]

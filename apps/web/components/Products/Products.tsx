@@ -1,7 +1,6 @@
-import { cacheLife, cacheTag } from 'next/cache';
-import { searchProducts } from '@/app/actions';
 import DynamicProductListing from '@/components/DynamicProductListing';
 import EmptyCategory from '@/components/EmptyCategory';
+import { cachedCategoryProducts as searchProducts } from '@/lib/cached-products';
 import { getServerCountry, getServerUserId } from '@/lib/server-location';
 import { deslugify } from '@/lib/utils/slugify';
 
@@ -30,10 +29,6 @@ async function CachedCategoryProducts({
   country: string;
   userId?: string | null;
 }) {
-  'use cache';
-  cacheLife('days'); // Cache for 1 day - products don't change often
-  cacheTag('category-products'); // Tag for webhook invalidation
-
   // Get the category name from slug
   const categoryName = deslugify(categorySlug);
 

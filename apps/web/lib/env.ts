@@ -37,6 +37,8 @@ const serverSchema = z.object({
   SENTRY_AUTH_TOKEN: z.string().optional(),
 
   // Mobile auth
+  APPLE_MOBILE_CLIENT_ID: z.string().min(1).optional(),
+  APP_ENV: z.enum(['production', 'staging', '']).optional(),
   GOOGLE_WEB_CLIENT_ID: z.string().min(1).optional(),
 });
 
@@ -55,6 +57,7 @@ const clientSchema = z.object({
   NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_POSTHOG_HOST: z.string().optional(),
   NEXT_PUBLIC_META_PIXEL_ID: z.string().optional(),
+  NEXT_PUBLIC_APP_ENV: z.enum(['production', 'staging', '']).optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
 });
 
@@ -67,8 +70,12 @@ function validateEnv() {
     };
   }
 
-  const serverResult = serverSchema.safeParse(process.env);
-  const clientResult = clientSchema.safeParse(process.env);
+  // An empty optional .dev.vars entry means unconfigured, not an invalid key.
+  const configuredEnv = Object.fromEntries(
+    Object.entries(process.env).filter(([, value]) => value !== ''),
+  );
+  const serverResult = serverSchema.safeParse(configuredEnv);
+  const clientResult = clientSchema.safeParse(configuredEnv);
 
   const errors: string[] = [];
 

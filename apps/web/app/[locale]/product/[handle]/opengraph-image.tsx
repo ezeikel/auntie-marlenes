@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { getProductByHandle } from '@/app/actions';
+import { getOgFont } from '@/lib/og-fonts';
 
 // Force Node.js runtime to support Prisma database queries
 export const runtime = 'nodejs';
@@ -45,23 +46,8 @@ export default async function Image({
   }
 
   // Fetch custom fonts from Google Fonts (fetch CSS first, then extract font URL)
-  const playfairBold = fetch(
-    'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap',
-  ).then(async (res) => {
-    const css = await res.text();
-    const fontUrl = css.match(/url\(([^)]+)\)/)?.[1]?.replace(/["']/g, '');
-    if (!fontUrl) throw new Error('Could not extract Playfair font URL');
-    return fetch(fontUrl).then((fontRes) => fontRes.arrayBuffer());
-  });
-
-  const interRegular = fetch(
-    'https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap',
-  ).then(async (res) => {
-    const css = await res.text();
-    const fontUrl = css.match(/url\(([^)]+)\)/)?.[1]?.replace(/["']/g, '');
-    if (!fontUrl) throw new Error('Could not extract Inter Regular font URL');
-    return fetch(fontUrl).then((fontRes) => fontRes.arrayBuffer());
-  });
+  const playfairBold = getOgFont('Playfair Display', 700);
+  const interRegular = getOgFont('Inter', 400);
 
   const interSemiBold = fetch(
     'https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap',

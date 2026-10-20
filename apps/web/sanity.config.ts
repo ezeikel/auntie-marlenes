@@ -14,7 +14,7 @@ export default defineConfig({
   projectId,
   dataset,
 
-  basePath: '/studio',
+  basePath: '/',
 
   plugins: [structureTool()],
 

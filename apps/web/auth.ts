@@ -3,6 +3,7 @@ import type { AdapterUser } from '@auth/core/adapters';
 import type { Account, Profile, Session, User } from '@auth/core/types';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { render } from '@react-email/render';
+import { after } from 'next/server';
 import NextAuth from 'next-auth';
 import AppleProvider from 'next-auth/providers/apple';
 import FacebookProvider from 'next-auth/providers/facebook';
@@ -20,200 +21,228 @@ type AppleProfile = Profile & {
   };
 };
 
-// Apple's client secret is a short-lived ES256 JWT, generated at module init.
-// CRITICALLY wrapped in try/catch: a malformed APPLE_PRIVATE_KEY (bad PEM / wrong
-// newline encoding) makes generateAppleClientSecret throw "Failed to read private
-// key", and because this runs at module init that thrown error takes down the
-// ENTIRE NextAuth handler — every /api/auth/* route 500s, so NO provider works,
-// not just Apple. On failure we leave clientSecret empty and omit the Apple
-// provider below, keeping Google / Facebook / magic-link alive. Skip generation
-// entirely when any of the Apple env vars are missing so the build/dev server
-// still starts on machines that haven't provisioned them yet.
-let clientSecret = '';
-if (
-  process.env.APPLE_TEAM_ID &&
-  process.env.APPLE_KEY_ID &&
-  process.env.APPLE_CLIENT_ID &&
-  process.env.APPLE_PRIVATE_KEY
-) {
+// Resolve once per isolate, on the first auth request. A bad key disables only
+// Apple, so other providers continue to work. Refresh before the JWT expires.
+let appleSecret: { value: string; expiresAt: number } | undefined;
+let appleSecretPromise: Promise<string> | undefined;
+async function getAppleSecret(): Promise<string> {
+  if (appleSecret && Date.now() < appleSecret.expiresAt)
+    return appleSecret.value;
+  if (appleSecretPromise) return appleSecretPromise;
+  appleSecretPromise = (async () => {
+    if (
+      !process.env.APPLE_TEAM_ID ||
+      !process.env.APPLE_KEY_ID ||
+      !process.env.APPLE_CLIENT_ID ||
+      !process.env.APPLE_PRIVATE_KEY
+    )
+      return '';
+    try {
+      const value = await generateAppleClientSecret({
+        teamId: process.env.APPLE_TEAM_ID,
+        keyId: process.env.APPLE_KEY_ID,
+        clientId: process.env.APPLE_CLIENT_ID,
+        privateKey: process.env.APPLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      });
+      appleSecret = { value, expiresAt: Date.now() + 60 * 60 * 1000 };
+      return value;
+    } catch (error) {
+      console.error(
+        'Apple client secret generation failed; Apple sign-in disabled.',
+        error,
+      );
+      return '';
+    }
+  })();
   try {
-    clientSecret = await generateAppleClientSecret({
-      teamId: process.env.APPLE_TEAM_ID,
-      keyId: process.env.APPLE_KEY_ID,
-      clientId: process.env.APPLE_CLIENT_ID,
-      privateKey: process.env.APPLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-    });
-  } catch (error) {
-    console.error(
-      'Apple client secret generation failed; Apple sign-in disabled.',
-      error,
-    );
+    return await appleSecretPromise;
+  } finally {
+    appleSecretPromise = undefined;
   }
 }
 
-const config = {
-  adapter: PrismaAdapter(db),
-  session: {
-    strategy: 'database' as const,
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60, // 24 hours
-  },
-  pages: {
-    signIn: '/sign-in',
-  },
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      allowDangerousEmailAccountLinking: true,
-    }),
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID as string,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
-      allowDangerousEmailAccountLinking: true,
-      authorization: {
-        params: {
-          scope: 'public_profile email',
+const getConfig = async () => {
+  const clientSecret = await getAppleSecret();
+  return {
+    trustHost: true,
+
+    adapter: PrismaAdapter(db),
+    session: {
+      strategy: 'database' as const,
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      updateAge: 24 * 60 * 60, // 24 hours
+    },
+    pages: {
+      signIn: '/sign-in',
+    },
+    providers: [
+      GoogleProvider({
+        clientId: process.env.GOOGLE_CLIENT_ID as string,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+        allowDangerousEmailAccountLinking: true,
+      }),
+      FacebookProvider({
+        clientId: process.env.FACEBOOK_CLIENT_ID as string,
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
+        allowDangerousEmailAccountLinking: true,
+        authorization: {
+          params: {
+            scope: 'public_profile email',
+          },
         },
-      },
-    }),
-    // Only include Apple when its client secret generated successfully — a bad
-    // APPLE_PRIVATE_KEY leaves clientSecret '' (see above) and Apple is omitted
-    // rather than added with an unusable secret.
-    ...(clientSecret
-      ? [
-          AppleProvider({
-            clientId: process.env.APPLE_CLIENT_ID as string,
-            clientSecret,
-            allowDangerousEmailAccountLinking: true,
-          }),
-        ]
-      : []),
-    Resend({
-      apiKey: process.env.RESEND_API_KEY as string,
-      from: process.env.EMAIL_FROM || 'no-reply@auntiemarlenes.com',
-      async sendVerificationRequest({ identifier: email, url }) {
-        try {
-          const emailHtml = await render(MagicLinkEmail({ magicLink: url }));
+      }),
+      // Only include Apple when its client secret generated successfully — a bad
+      // APPLE_PRIVATE_KEY leaves clientSecret '' (see above) and Apple is omitted
+      // rather than added with an unusable secret.
+      ...(clientSecret
+        ? [
+            AppleProvider({
+              clientId: process.env.APPLE_CLIENT_ID as string,
+              clientSecret,
+              allowDangerousEmailAccountLinking: true,
+            }),
+          ]
+        : []),
+      Resend({
+        apiKey: process.env.RESEND_API_KEY as string,
+        from: process.env.EMAIL_FROM || 'no-reply@auntiemarlenes.com',
+        async sendVerificationRequest({ identifier: email, url }) {
+          try {
+            const emailHtml = await render(MagicLinkEmail({ magicLink: url }));
 
-          await resendClient.emails.send({
-            from: process.env.EMAIL_FROM || 'no-reply@auntiemarlenes.com',
-            to: email,
-            subject: "Sign in to Auntie Marlene's",
-            html: emailHtml,
-          });
-        } catch (error) {
-          console.error('Failed to send verification email', { email }, error);
-          throw error;
-        }
-      },
-    }),
-  ],
-  callbacks: {
-    async signIn({
-      account,
-      profile,
-      email,
-    }: {
-      user: User;
-      account: Account | null;
-      profile?: Profile;
-      email?: { verificationRequest?: boolean };
-    }) {
-      // handle magic link request
-      if (email?.verificationRequest) {
-        return true;
-      }
-
-      if (
-        account?.provider === 'google' ||
-        account?.provider === 'apple' ||
-        account?.provider === 'facebook'
-      ) {
-        const appleProfile = profile as AppleProfile;
-        const existingUser = profile?.email
-          ? await db.user.findUnique({ where: { email: profile.email } })
-          : null;
-
-        if (existingUser) {
+            await resendClient.emails.send({
+              from: process.env.EMAIL_FROM || 'no-reply@auntiemarlenes.com',
+              to: email,
+              subject: "Sign in to Auntie Marlene's",
+              html: emailHtml,
+            });
+          } catch (error) {
+            console.error(
+              'Failed to send verification email',
+              { email },
+              error,
+            );
+            throw error;
+          }
+        },
+      }),
+    ],
+    callbacks: {
+      async signIn({
+        account,
+        profile,
+        email,
+      }: {
+        user: User;
+        account: Account | null;
+        profile?: Profile;
+        email?: { verificationRequest?: boolean };
+      }) {
+        // handle magic link request
+        if (email?.verificationRequest) {
           return true;
         }
-
-        let name;
 
         if (
           account?.provider === 'google' ||
+          account?.provider === 'apple' ||
           account?.provider === 'facebook'
         ) {
-          name = profile?.name;
-        } else if (account?.provider === 'apple' && appleProfile?.user) {
-          // Apple only returns the user object this first time the user authorises the app - subsequent authorisations don't return the user object
-          name = `${appleProfile.user.firstName} ${appleProfile.user.lastName}`;
-        }
+          const appleProfile = profile as AppleProfile;
+          const existingUser = profile?.email
+            ? await db.user.findUnique({ where: { email: profile.email } })
+            : null;
 
-        await db.user.create({
-          data: {
-            email: profile?.email as string,
-            name: name as string,
-          },
-        });
+          if (existingUser) {
+            return true;
+          }
 
-        // Send welcome email (non-blocking)
-        sendWelcomeEmail({
-          email: profile?.email as string,
-          name: name as string,
-        }).catch((err) =>
-          console.error('[Auth] Failed to send welcome email:', err),
-        );
+          let name: string | null | undefined;
 
-        return true;
-      }
+          if (
+            account?.provider === 'google' ||
+            account?.provider === 'facebook'
+          ) {
+            name = profile?.name;
+          } else if (account?.provider === 'apple' && appleProfile?.user) {
+            // Apple only returns the user object this first time the user authorises the app - subsequent authorisations don't return the user object
+            name = `${appleProfile.user.firstName} ${appleProfile.user.lastName}`;
+          }
 
-      if (account?.provider === 'resend') {
-        const userEmail = account.providerAccountId;
+          await db.user.create({
+            data: {
+              email: profile?.email as string,
+              name: name as string,
+            },
+          });
 
-        if (!userEmail) return false;
+          // Send welcome email (non-blocking)
+          after(async () => {
+            await sendWelcomeEmail({
+              email: profile?.email as string,
+              name: name as string,
+            }).catch((err) =>
+              console.error('[Auth] Failed to send welcome email:', err),
+            );
+          });
 
-        const existingUser = await db.user.findUnique({
-          where: { email: userEmail },
-        });
-
-        if (existingUser) {
           return true;
         }
 
-        await db.user.create({
-          data: {
-            email: userEmail,
-          },
-        });
+        if (account?.provider === 'resend') {
+          const userEmail = account.providerAccountId;
 
-        // Send welcome email (non-blocking)
-        sendWelcomeEmail({ email: userEmail }).catch((err) =>
-          console.error('[Auth] Failed to send welcome email:', err),
-        );
+          if (!userEmail) return false;
 
-        return true;
-      }
+          const existingUser = await db.user.findUnique({
+            where: { email: userEmail },
+          });
 
-      return false;
+          if (existingUser) {
+            return true;
+          }
+
+          await db.user.create({
+            data: {
+              email: userEmail,
+            },
+          });
+
+          // Send welcome email (non-blocking)
+          after(async () => {
+            await sendWelcomeEmail({ email: userEmail }).catch((err) =>
+              console.error('[Auth] Failed to send welcome email:', err),
+            );
+          });
+
+          return true;
+        }
+
+        return false;
+      },
+      async session({
+        session,
+        user,
+      }: {
+        session: Session;
+        user: AdapterUser;
+      }) {
+        // Add user id to session
+        if (session.user && user) {
+          session.user.id = user.id;
+        }
+        return session;
+      },
     },
-    async session({ session, user }: { session: Session; user: AdapterUser }) {
-      // Add user id to session
-      if (session.user && user) {
-        session.user.id = user.id;
-      }
-      return session;
-    },
-  },
-  secret: process.env.NEXT_AUTH_SECRET,
+    secret: process.env.NEXT_AUTH_SECRET,
+  };
 };
 
-// pass the config to NextAuth
+// Resolve environment bindings and the Apple secret inside the request.
 export const {
   handlers,
   auth,
   signIn,
   signOut,
   // @ts-expect-error - Type 'typeof import("next-auth")' has no call signatures
-} = NextAuth(config);
+} = NextAuth(getConfig);
