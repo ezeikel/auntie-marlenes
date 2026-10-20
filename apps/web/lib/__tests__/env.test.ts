@@ -24,7 +24,6 @@ describe('env validation', () => {
     // Remove build phase flag and required vars
     delete process.env.NEXT_PHASE;
     delete process.env.SHOPIFY_STOREFRONT_API_ENDPOINT;
-    delete process.env.DATABASE_URL;
     delete process.env.NEXT_AUTH_SECRET;
     delete process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 

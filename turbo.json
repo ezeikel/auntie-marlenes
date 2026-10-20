@@ -34,14 +34,14 @@
       "dependsOn": ["^build"],
       "outputs": []
     },
+    "@auntie-marlenes/db#test": {
+      "dependsOn": ["db:generate"],
+      "outputs": []
+    },
     "db:generate": {
       "cache": false
     },
-    "db:migrate": {
-      "cache": false,
-      "persistent": true
-    },
-    "db:deploy": {
+    "db:check-drift": {
       "cache": false
     },
     "env:pull": {

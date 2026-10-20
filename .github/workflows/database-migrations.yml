@@ -1,81 +1,35 @@
 name: Database Migrations
 
 on:
+  pull_request:
+    branches: [main]
   push:
-    branches:
-      - main
+    branches: [main]
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '24'
 
 jobs:
   validate-schema:
     runs-on: ubuntu-latest
-    name: Validate Prisma Schema
-
+    name: Validate and replay local D1 migrations
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
+          cache: pnpm
       - name: Install dependencies
         env:
           FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
         run: pnpm install --frozen-lockfile
-
       - name: Validate Prisma schema
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        working-directory: ./packages/db
-        run: pnpm prisma validate
+        run: pnpm --filter @auntie-marlenes/db exec prisma validate
+      - name: Check Prisma formatting
+        run: pnpm --filter @auntie-marlenes/db exec prisma format --check
+      - name: Check migration drift without credentials
+        run: pnpm --filter @auntie-marlenes/db db:check-drift
 
-      - name: Check for formatting issues
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        working-directory: ./packages/db
-        run: pnpm prisma format --check
-
-  migrate:
-    runs-on: ubuntu-latest
-    name: Migrate Database
-    needs: validate-schema
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-        env:
-          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
-
-      - name: Install dependencies
-        env:
-          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma client
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        working-directory: ./packages/db
-        run: pnpm prisma generate
-
-      - name: Run database migrations
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        working-directory: ./packages/db
-        run: pnpm prisma migrate deploy
+# A6 wires production D1 migrations before deployment, behind the cutover gate.
+# A1 is local-only: this workflow has no production migration job.

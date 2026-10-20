@@ -1,6 +1,8 @@
 // Re-export the Prisma client
 // Re-export Prisma types
-export { db, Prisma } from './client';
+
+export { chunkForD1 } from './chunk';
+export { db, getDb, isDatabaseConfigured, setD1BindingGetter } from './client';
 // Re-export specific model types with custom names
 export type {
   SavedItem as DbSavedItemType,

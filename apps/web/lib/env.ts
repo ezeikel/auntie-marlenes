@@ -14,9 +14,6 @@ const serverSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
 
-  // Database
-  DATABASE_URL: z.string().url(),
-
   // Sanity
   SANITY_API_TOKEN: z.string().min(1).optional(),
   SANITY_REVALIDATE_SECRET: z.string().min(1).optional(),

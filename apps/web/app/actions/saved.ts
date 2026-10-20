@@ -1,6 +1,6 @@
 'use server';
 
-import { db } from '@auntie-marlenes/db';
+import { chunkForD1, db } from '@auntie-marlenes/db';
 import { revalidateTag } from 'next/cache';
 import { after } from 'next/server';
 import { auth } from '@/auth';
@@ -214,25 +214,27 @@ export const syncLocalSavesToDB = async ({
 
   try {
     // Get existing saved items to avoid duplicates
-    const existing = await db.savedItem.findMany({
-      where: {
-        userId,
-        productId: { in: productIds },
-      },
-      select: { productId: true },
-    });
+    const existing: { productId: string }[] = [];
+    for (const ids of chunkForD1(productIds, 1, 1)) {
+      existing.push(
+        ...(await db.savedItem.findMany({
+          where: { userId, productId: { in: ids } },
+          select: { productId: true },
+        })),
+      );
+    }
 
     const existingIds = new Set(existing.map((item) => item.productId));
     const newIds = productIds.filter((id) => !existingIds.has(id));
 
     // Batch create new saved items
     if (newIds.length > 0) {
-      await db.savedItem.createMany({
-        data: newIds.map((productId) => ({
-          userId,
-          productId,
-        })),
-      });
+      // SavedItem inserts bind id, userId, productId and createdAt.
+      for (const ids of chunkForD1(newIds, 4)) {
+        await db.savedItem.createMany({
+          data: ids.map((productId) => ({ userId, productId })),
+        });
+      }
     }
 
     // Revalidate caches
