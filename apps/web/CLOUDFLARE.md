@@ -133,9 +133,20 @@ unchanged Vercel configuration. Unknown schedules/missing secrets fail closed.
 There are no `WORKER_URL` call sites in web. Both URL constructions are env-only,
 with trailing slashes removed and no IP fallback. **Production needs a public
 hostname for the content worker**, since Workers generally refuse fetches to raw
-IPs with `global_fetch_strictly_public`. Claude must create/test a DNS-only A
-record pointing at the existing box, retaining port 3020 unless the hostname
-fronts a proxy. A2 makes no DNS or box changes and does not call that live service.
+IPs with `global_fetch_strictly_public`. Production uses
+`CONTENT_WORKER_URL=http://content-worker.auntiemarlenes.com:3020`, a DNS-only A
+record to the box (created 20 Oct 2026). A probe Worker got 200 from
+`/health` on that hostname and 403 on the raw IP.
+
+## Media
+
+Videos are not in `public/`: Workers static assets cap each file at 25 MiB.
+They live in the R2 bucket `auntie-marlenes-prod` under `videos/`, served at
+`https://assets.auntiemarlenes.com/videos/...` (see `lib/media.ts`). Add a new
+video with `wrangler r2 object put auntie-marlenes-prod/videos/<path> --file
+<file> --content-type video/mp4 --remote`. `apps/worker/src/hero-videos-ab.ts`
+still writes hero candidates to `apps/web/public/videos/hero` locally; upload
+any keeper to R2 rather than committing it.
 
 For local scheduled checks, run a no-op worker on localhost:3029, verify both
 email tables are empty, and start preview with `--test-scheduled`. Invoke
