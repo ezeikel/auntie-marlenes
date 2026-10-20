@@ -80,4 +80,10 @@ jobs:
           SHOPIFY_STOREFRONT_API_ENDPOINT: https://afro-hair-and-beauty.myshopify.com/api/2024-01/graphql.json
           SHOPIFY_STOREFRONT_ACCESS_TOKEN: ${{ secrets.SHOPIFY_STOREFRONT_ACCESS_TOKEN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          # Page-data collection imports modules that check these exist. Build-only
+          # placeholders; the Worker reads the real values from its secrets.
+          NEXT_AUTH_SECRET: placeholder-build-only
+          GOOGLE_CLIENT_ID: placeholder
+          GOOGLE_CLIENT_SECRET: placeholder
+          RESEND_API_KEY: re_placeholder
         run: pnpm --filter @auntie-marlenes/web run deploy
