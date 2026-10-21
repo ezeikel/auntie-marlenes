@@ -13,6 +13,24 @@ Postgres client to ignored `.copy/pg-client`. Run `pnpm build` after generation,
 because consumers resolve compiled `dist/` exports. The build also copies the
 generated workerd query-compiler JavaScript and WASM files that `tsc` does not emit.
 
+## Development database
+
+`next dev` uses the shared hosted D1 database **`auntie-marlenes-dev`** (a copy of production
+data, made 21 October 2026), so every machine sees the same dev data. The
+bindings live in `apps/web/wrangler.dev.jsonc`, which is never deployed.
+
+- At startup the Next config runs `wrangler d1 info auntie-marlenes-dev`. If it succeeds it binds
+  the hosted database (log line `[dev db] hosted auntie-marlenes-dev`). The first requests can
+  fail for a few seconds while the remote connection opens.
+- If it fails (offline, or wrangler not logged in) it falls back to a **local
+  copy** in `packages/db/.wrangler/state` and logs why. `D1_LOCAL=1 pnpm dev` forces the local copy.
+- `pnpm db:dev:pull` (repo root) refreshes the local copy from the hosted one. Run
+  it before going offline. Local writes stay local and are lost on the next pull.
+- Each machine needs `pnpm exec wrangler login` once (or `CLOUDFLARE_API_TOKEN`).
+- Apply new migrations to production (`db:migrate:remote`), the hosted dev database
+  (`pnpm db:migrate:dev`) and the local copy (`db:migrate:local`).
+
+
 ## Database migrations
 
 **Never `prisma db push`. Never hand-write migration SQL.** Wrangler owns D1

@@ -1,0 +1,48 @@
+// Bindings for `next dev` only (read by initOpenNextCloudflareForDev in the
+// Next config). Never deployed: deploys use wrangler.jsonc.
+//
+// DB is the shared hosted dev database `auntie-marlenes-dev`, a copy of production data, so
+// every machine sees the same dev data. When Cloudflare is not reachable
+// (offline, or wrangler not logged in) the Next config falls back to a local
+// copy of the same database; refresh it with `pnpm db:dev:pull`.
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "auntie-marlenes-web-dev",
+  "compatibility_date": "2026-10-19",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "auntie-marlenes-dev",
+      "database_id": "4eb1c59e-503a-48cf-a689-81d996841c30",
+      "migrations_dir": "../../packages/db/migrations",
+      "remote": true
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "RATE_LIMIT_10",
+      "namespace_id": "73010",
+      "simple": {
+        "limit": 10,
+        "period": 60
+      }
+    },
+    {
+      "name": "RATE_LIMIT_30",
+      "namespace_id": "73030",
+      "simple": {
+        "limit": 30,
+        "period": 60
+      }
+    },
+    {
+      "name": "RATE_LIMIT_60",
+      "namespace_id": "73060",
+      "simple": {
+        "limit": 60,
+        "period": 60
+      }
+    }
+  ]
+}

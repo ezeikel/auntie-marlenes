@@ -24,11 +24,13 @@
     "db:studio": "prisma studio",
     "check-types": "tsc --noEmit --emitDeclarationOnly false && tsc -p tsconfig.scripts.json",
     "test": "vitest run",
-    "db:migrate:local": "wrangler d1 migrations apply auntie-marlenes --local",
+    "db:migrate:local": "wrangler d1 migrations apply auntie-marlenes-dev --local --persist-to .wrangler/state -c ../../apps/web/wrangler.dev.jsonc",
     "db:migrate:remote": "wrangler d1 migrations apply auntie-marlenes --remote",
     "db:check-drift": "node scripts/check-drift.mjs",
     "db:copy-from-neon": "pnpm db:generate && tsx scripts/copy-from-neon.ts",
-    "db:parity": "pnpm db:generate && tsx scripts/parity.ts"
+    "db:parity": "pnpm db:generate && tsx scripts/parity.ts",
+    "db:migrate:dev": "wrangler d1 migrations apply auntie-marlenes-dev --remote -c ../../apps/web/wrangler.dev.jsonc",
+    "db:dev:pull": "node scripts/dev-pull.mjs"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "1.20.1",

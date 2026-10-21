@@ -13,7 +13,9 @@
     "test": "turbo run test",
     "prepare": "husky",
     "clean": "rm -rf apps/*/node_modules packages/*/node_modules",
-    "clean:deep": "rm -rf apps/*/node_modules packages/*/node_modules pnpm-lock.yaml && pnpm install"
+    "clean:deep": "rm -rf apps/*/node_modules packages/*/node_modules pnpm-lock.yaml && pnpm install",
+    "db:dev:pull": "pnpm --filter @auntie-marlenes/db db:dev:pull",
+    "db:migrate:dev": "pnpm --filter @auntie-marlenes/db db:migrate:dev"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.4",

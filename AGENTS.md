@@ -14,6 +14,7 @@ search = sonar. Regenerate: `tsx ~/Development/Personal/scripts/model-registry/f
 - `packages/db` - Prisma database client
 
 ## Database migrations (D1 preparation; NON-NEGOTIABLE)
+- Dev uses the shared hosted D1 `auntie-marlenes-dev`, falling back to a local copy when offline (`packages/db/README.md` → Development database).
 
 The DB package targets Cloudflare D1 through Prisma 7.8. A1 is local-only;
 production remains on Neon until the later cutover gate. Do not deploy this
