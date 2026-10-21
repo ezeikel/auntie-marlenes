@@ -1,0 +1,111 @@
+{
+  "date": "2026-10-21",
+  "localOnly": true,
+  "checks": {
+    "rootTypecheck": "PASS",
+    "rootTypecheckTasks": 10,
+    "rootTests": "PASS",
+    "rootTestCount": 113,
+    "beaconTestCount": 28,
+    "rootLint": "PASS",
+    "openNextBuild": "PASS",
+    "wranglerDryRun": "PASS",
+    "staticAssetHtmlCount": 0
+  },
+  "curl": [
+    {
+      "case": "html",
+      "statusOn": 200,
+      "statusOff": 200,
+      "beaconsOn": 1,
+      "beaconsOff": 0,
+      "correctTokenOn": 1,
+      "headerMismatchesExcludingDate": 0
+    },
+    {
+      "case": "notFound",
+      "statusOn": 404,
+      "statusOff": 404,
+      "beaconsOn": 1,
+      "beaconsOff": 0,
+      "correctTokenOn": 1,
+      "headerMismatchesExcludingDate": 0
+    },
+    {
+      "case": "json",
+      "statusOn": 400,
+      "statusOff": 400,
+      "beaconsOn": 0,
+      "beaconsOff": 0,
+      "correctTokenOn": 0,
+      "headerMismatchesExcludingDate": 0,
+      "bodyMismatchesBetweenPreviewRuns": 0
+    },
+    {
+      "case": "asset",
+      "statusOn": 200,
+      "statusOff": 200,
+      "beaconsOn": 0,
+      "beaconsOff": 0,
+      "correctTokenOn": 0,
+      "headerMismatchesExcludingDate": 0,
+      "bodyMismatchesBetweenPreviewRuns": 0
+    },
+    {
+      "case": "range",
+      "statusOn": 200,
+      "statusOff": 200,
+      "beaconsOn": 0,
+      "beaconsOff": 0,
+      "correctTokenOn": 0,
+      "headerMismatchesExcludingDate": 0,
+      "bodyMismatchesBetweenPreviewRuns": 0
+    },
+    {
+      "case": "rsc",
+      "statusOn": 200,
+      "statusOff": 200,
+      "beaconsOn": 0,
+      "beaconsOff": 0,
+      "correctTokenOn": 0,
+      "headerMismatchesExcludingDate": 0,
+      "bodyMismatchesBetweenPreviewRuns": 1
+    },
+    {
+      "case": "head",
+      "statusOn": 200,
+      "statusOff": 200,
+      "beaconsOn": 0,
+      "beaconsOff": 0,
+      "correctTokenOn": 0,
+      "headerMismatchesExcludingDate": 0,
+      "bodyMismatchesBetweenPreviewRuns": 0
+    },
+    {
+      "case": "post",
+      "statusOn": 400,
+      "statusOff": 400,
+      "beaconsOn": 0,
+      "beaconsOff": 0,
+      "correctTokenOn": 0,
+      "headerMismatchesExcludingDate": 0,
+      "bodyMismatchesBetweenPreviewRuns": 0
+    },
+    {
+      "case": "redirect",
+      "statusOn": 307,
+      "statusOff": 307,
+      "beaconsOn": 0,
+      "beaconsOff": 0,
+      "correctTokenOn": 0,
+      "headerMismatchesExcludingDate": 0,
+      "bodyMismatchesBetweenPreviewRuns": 0
+    }
+  ],
+  "parityControl": "JSON and static asset; RSC additionally checked for beacon absence. RSC bodies differ between preview runs; headers match excluding Date.",
+  "cleanup": {
+    "previewsStopped": true,
+    "localStorefrontFixtureStopped": true,
+    "buildOutputDirectoriesRemoved": 3
+  }
+}

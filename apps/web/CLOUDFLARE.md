@@ -29,6 +29,25 @@ Neither command needs remote binding access. `cf-typegen` creates an ignored
 `cloudflare-env.d.ts`; exclude its global runtime declarations from Next's TS
 program, as cadem does, to avoid overriding DOM `Response.json()` types.
 
+## Web Analytics
+
+`custom-worker.ts` streams HTML responses through `lib/cf-web-analytics.ts`.
+The public `CF_WEB_ANALYTICS_TOKEN` is committed in both production and staging
+Wrangler vars. The deploy workflow uses that configuration without `--var` or
+`keep_vars` overrides. PostHog and consent handling are unchanged.
+
+The helper inserts before the body's closing tag, detecting existing beacon
+scripts first. Next's global 404 can omit the opening body element; a streaming
+document-end fallback covers that HTML and other fragments. HEAD, POST, Range,
+redirects and non-HTML responses bypass rewriting. The CSP adds only the beacon
+host to `script-src` and the collection host to `connect-src`.
+
+The validated OpenNext asset output contains zero static HTML files: HTML pages
+already pass through the Worker, so asset routing needs no changes. Real workerd
+unit tests cover duplicate detection, response identity, headers/status, 404
+fragments and delivery before the input stream closes. Local acceptance results
+are recorded in `docs/cloudflare-web-analytics.json`.
+
 For isolated migration QA, copy `.dev.vars.example` to private `.dev.vars`, add
 only read-only storefront settings, then use `pnpm preview:local`. Its build
 helper clears all original `.env.local` server values before loading the local

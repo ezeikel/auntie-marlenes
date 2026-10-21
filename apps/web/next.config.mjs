@@ -24,11 +24,11 @@ const nextConfig = {
     const csp = [
       "default-src 'self'",
       "media-src 'self' assets.auntiemarlenes.com",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' connect.facebook.net",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' connect.facebook.net https://static.cloudflareinsights.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: cdn.shopify.com cdn.sanity.io www.facebook.com images.pexels.com",
       "font-src 'self' fonts.gstatic.com",
-      "connect-src 'self' *.sentry.io eu.i.posthog.com eu-assets.i.posthog.com",
+      "connect-src 'self' *.sentry.io eu.i.posthog.com eu-assets.i.posthog.com https://cloudflareinsights.com",
       "frame-src 'self'",
       "object-src 'none'",
       "base-uri 'self'",

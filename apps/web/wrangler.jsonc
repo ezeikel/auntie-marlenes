@@ -77,6 +77,7 @@
     "cpu_ms": 300000
   },
   "vars": {
+    "CF_WEB_ANALYTICS_TOKEN": "5f95be76a48a47399417761d1a19824b",
     "APP_ENV": "production",
     "APPLE_MOBILE_CLIENT_ID": "com.chewybytes.auntiemarlenes.app,com.chewybytes.auntiemarlenes.app.internal,com.chewybytes.auntiemarlenes.app.dev",
     "CONTENT_WORKER_URL": "http://content-worker.auntiemarlenes.com:3020"
@@ -147,6 +148,7 @@
         "cpu_ms": 300000
       },
       "vars": {
+        "CF_WEB_ANALYTICS_TOKEN": "5f95be76a48a47399417761d1a19824b",
         "APP_ENV": "staging",
         "APPLE_MOBILE_CLIENT_ID": "com.chewybytes.auntiemarlenes.app,com.chewybytes.auntiemarlenes.app.internal,com.chewybytes.auntiemarlenes.app.dev",
         "CONTENT_WORKER_URL": "http://content-worker.auntiemarlenes.com:3020"
