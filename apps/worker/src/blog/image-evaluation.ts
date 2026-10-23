@@ -7,6 +7,7 @@
  */
 
 import { generateText, Output } from 'ai';
+import { sonnet5NoThinking } from '../model-options';
 import { models } from './models';
 import { type ImageEvaluation, imageEvaluationSchema } from './schemas';
 
@@ -71,6 +72,7 @@ Analyze the attached image and determine if it's a good match for this blog post
     const { output: evaluation } = await generateText({
       model: models.judge,
       output: Output.object({ schema: imageEvaluationSchema }),
+      providerOptions: sonnet5NoThinking,
       messages: [
         {
           role: 'user',

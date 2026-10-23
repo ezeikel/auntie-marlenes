@@ -2,6 +2,7 @@ import {
   experimental_generateImage as generateImage,
   generateObject,
 } from 'ai';
+import { sonnet5NoThinking } from '../model-options';
 import { findBestImage, type ImageEvaluation } from './image-evaluation';
 import { models } from './models';
 import {
@@ -58,6 +59,7 @@ async function generateImageSearchTerms(
     schema: imageSearchSchema,
     prompt,
     temperature: 0.7,
+    providerOptions: sonnet5NoThinking,
   });
 
   return searchTerms as ImageSearchTerms;

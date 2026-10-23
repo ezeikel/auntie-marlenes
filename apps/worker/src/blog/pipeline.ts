@@ -1,4 +1,5 @@
 import { generateObject, generateText } from 'ai';
+import { sonnet5NoThinking } from '../model-options';
 import { getAllProducts } from '../shopify';
 import { getAuthorBySpecialty } from './authors';
 import { generateDynamicTopics } from './dynamic-topics';
@@ -83,6 +84,7 @@ const generateBlogMeta = async (
     system: BLOG_META_SYSTEM,
     prompt,
     temperature: 0.7,
+    providerOptions: sonnet5NoThinking,
   });
 
   const meta = object as BlogMeta;

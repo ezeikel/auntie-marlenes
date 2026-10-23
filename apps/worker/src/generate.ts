@@ -9,6 +9,7 @@ import { google } from '@ai-sdk/google';
 import { fal } from '@fal-ai/client';
 import { generateText } from 'ai';
 import sharp from 'sharp';
+import { sonnet5NoThinking } from './model-options';
 import { buildHeadlinePrompt, buildImagePrompt } from './prompts';
 import { uploadFile } from './storage';
 
@@ -215,6 +216,7 @@ export async function generateHeadline(product: {
   const result = await generateText({
     model: claude,
     prompt,
+    providerOptions: sonnet5NoThinking,
   });
 
   try {

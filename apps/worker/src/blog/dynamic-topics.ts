@@ -8,6 +8,7 @@
 
 import { generateObject } from 'ai';
 import { z } from 'zod';
+import { sonnet5NoThinking } from '../model-options';
 import { models } from './models';
 import { BLOG_CATEGORIES, type BlogCategory, type BlogTopic } from './topics';
 
@@ -85,6 +86,7 @@ Return exactly ${count} distinct topics, each with a fitting category and 3-5 ke
       system: DYNAMIC_TOPICS_SYSTEM,
       prompt,
       temperature: 0.9,
+      providerOptions: sonnet5NoThinking,
     });
 
     const seen = new Set<string>();

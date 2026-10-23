@@ -12,6 +12,7 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { generateObject } from 'ai';
 import { z } from 'zod';
+import { sonnet5NoThinking } from './model-options';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const claude: any = anthropic('claude-sonnet-5');
@@ -116,6 +117,7 @@ export async function generateCaptions(product: {
     model: claude,
     schema: captionSchema,
     system: CAPTION_SYSTEM,
+    providerOptions: sonnet5NoThinking,
     prompt: `Generate Instagram and Facebook captions (post + reel for each platform) for: ${product.name} by ${product.brand} (category: ${product.category}).${sceneContext}`,
   });
 
