@@ -82,7 +82,8 @@ async function generateImageWithGptImage(
       model: models.image,
       prompt: `Generate a high-quality professional photograph for this blog post. Do not include any text in the image. ${prompt}`,
       size: '1024x1024',
-      providerOptions: { openai: { quality: 'high' } },
+      // Fleet default is medium (~$0.053 vs ~$0.211 for high at 1024x1024).
+      providerOptions: { openai: { quality: 'medium' } },
     });
 
     const buffer = Buffer.from(image.base64, 'base64');
