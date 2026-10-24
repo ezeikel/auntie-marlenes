@@ -86,5 +86,4 @@ jobs:
           GOOGLE_CLIENT_ID: placeholder
           GOOGLE_CLIENT_SECRET: placeholder
           CLOUDFLARE_EMAIL_API_TOKEN: placeholder-build-only-not-a-credential
-          CLOUDFLARE_ACCOUNT_ID: placeholder
         run: pnpm --filter @auntie-marlenes/web run deploy
