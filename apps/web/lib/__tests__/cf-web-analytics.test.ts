@@ -134,7 +134,7 @@ describe('Cloudflare Web Analytics streaming injection', () => {
       const result = await rewrite({ status });
       expect(count(result.html)).toBe(1);
       expect(result.html).toContain(
-        `data-cf-beacon='{"token":"${token}"}'></script></body>`,
+        `data-cf-beacon='{"token":"${token}","send":{"to":"/cdn-cgi/rum"}}'></script></body>`,
       );
       expect(result.status).toBe(status);
       expect(result.statusText).toBe('Fixture');
@@ -160,7 +160,9 @@ describe('Cloudflare Web Analytics streaming injection', () => {
     const result = await rewrite({
       html: '<body><!-- <script src="https://static.cloudflareinsights.com/beacon.min.js"></script> --></body>',
     });
-    expect(result.html).toContain(`data-cf-beacon='{"token":"${token}"}'`);
+    expect(result.html).toContain(
+      `data-cf-beacon='{"token":"${token}","send":{"to":"/cdn-cgi/rum"}}'`,
+    );
   });
   it.each(['<div>Not found</div></body></html>', '<p>HTML fragment</p>'])(
     'covers HTML with no opening body element: %s',

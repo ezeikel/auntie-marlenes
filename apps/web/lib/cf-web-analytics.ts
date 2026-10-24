@@ -26,7 +26,12 @@ export function injectWebAnalytics(
     return response;
   }
 
-  const beacon = JSON.stringify({ token: configuredToken })
+  // Report to the zone's own /cdn-cgi/rum: the shared collector
+  // (cloudflareinsights.com) refuses zone Web Analytics site tokens with a 404.
+  const beacon = JSON.stringify({
+    token: configuredToken,
+    send: { to: '/cdn-cgi/rum' },
+  })
     .replaceAll('&', '&amp;')
     .replaceAll("'", '&#39;')
     .replaceAll('<', '&lt;')
