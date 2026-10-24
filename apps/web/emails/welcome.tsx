@@ -17,13 +17,13 @@ export default function WelcomeEmail({
   return (
     <EmailLayout
       unsubscribeUrl={unsubscribeUrl}
-      preview="Welcome to Auntie Marlene's — your go-to for Black hair & beauty essentials."
+      preview="Welcome to Auntie Marlene's, your go-to for Black hair and beauty essentials."
     >
       <Text style={heading}>Welcome to the Family</Text>
       <Text style={subtext}>
         {greeting} we're so glad you're here! Auntie Marlene's is your modern
-        Black beauty supply store — premium braiding hair, wigs, extensions,
-        skin care, and styling essentials, all in one place.
+        Black beauty supply store: premium braiding hair, wigs, extensions, skin
+        care, and styling essentials, all in one place.
       </Text>
 
       <Section style={highlightBox}>

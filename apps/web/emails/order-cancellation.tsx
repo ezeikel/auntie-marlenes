@@ -31,7 +31,7 @@ export default function OrderCancellationEmail({
 
       <Text style={subtext}>
         If this wasn't expected or you have questions, please don't hesitate to
-        reach out — we're happy to help.
+        reach out. We're happy to help.
       </Text>
 
       <Section style={ctaSection}>

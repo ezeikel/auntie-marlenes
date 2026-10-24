@@ -98,7 +98,7 @@ export async function sendOrderConfirmationEmail(order: {
 
   await deliver({
     to: order.email,
-    subject: `Order confirmed — #${order.order_number}`,
+    subject: `Order confirmed: #${order.order_number}`,
     html,
     kind: 'order_confirmation',
   });

@@ -42,12 +42,12 @@ export default function AbandonedCartEmail({
   return (
     <EmailLayout
       unsubscribeUrl={unsubscribeUrl}
-      preview="You left something beautiful behind — your items are still waiting for you."
+      preview="You left something beautiful behind. Your items are still waiting for you."
     >
       <Text style={heading}>You Left Something Behind</Text>
       <Text style={subtext}>
         {greeting} we noticed you didn't finish your order. Your items are still
-        in your bag — ready whenever you are.
+        in your bag, ready whenever you are.
       </Text>
 
       <Section style={itemsBox}>

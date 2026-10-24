@@ -37,8 +37,8 @@ export default function ShippingUpdateEmail({
     <EmailLayout preview={`Your order ${orderNumber} is on its way!`}>
       <Text style={heading}>Your Order Is On Its Way!</Text>
       <Text style={subtext}>
-        Hi {customerName}, great news — your order {orderNumber} has been
-        shipped and is heading your way.
+        Hi {customerName}, great news: your order {orderNumber} has been shipped
+        and is heading your way.
       </Text>
 
       {(trackingNumber || carrier) && (

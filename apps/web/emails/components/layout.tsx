@@ -58,7 +58,7 @@ export default function EmailLayout({
           <Section style={footer}>
             <Hr style={divider} />
             <Text style={footerText}>
-              Auntie Marlene's — Black-Owned & Family-Run
+              Auntie Marlene's · Black-Owned & Family-Run
             </Text>
             <Text style={footerSubtext}>
               Where Beautiful Skin Meets Gorgeous Hair

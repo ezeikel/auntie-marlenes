@@ -52,7 +52,7 @@ export default function OrderConfirmationEmail({
 
   return (
     <EmailLayout
-      preview={`Order ${orderNumber} confirmed — thank you for your order!`}
+      preview={`Order ${orderNumber} confirmed. Thank you for your order!`}
     >
       <Text style={heading}>Order Confirmed</Text>
       <Text style={subtext}>
@@ -158,8 +158,8 @@ export default function OrderConfirmationEmail({
         Questions about your order?{' '}
         <Link href={`${siteUrl}/contact`} style={helpLink}>
           Get in touch
-        </Link>{' '}
-        — we're happy to help.
+        </Link>
+        . We're happy to help.
       </Text>
     </EmailLayout>
   );
