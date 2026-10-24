@@ -70,7 +70,7 @@ describe('migration field fidelity', () => {
   });
 
   it('orders every model before its FK dependants and includes all four auth tables', () => {
-    expect(models).toHaveLength(7);
+    expect(models).toHaveLength(8);
     expect(
       models.filter((m) =>
         ['User', 'Account', 'Session', 'VerificationToken'].includes(m.name),
