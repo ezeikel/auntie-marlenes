@@ -2,11 +2,13 @@
 
 import { faArrowRight, faCheck } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import Turnstile, { type BoundTurnstileObject } from 'react-turnstile';
 import { subscribeToNewsletter } from '@/app/actions/newsletter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TRACKING_EVENTS } from '@/constants/events';
+import { TURNSTILE_SITE_KEY } from '@/lib/turnstile';
 import { useAnalytics } from '@/utils/analytics-client';
 
 const NewsletterForm = () => {
@@ -16,13 +18,18 @@ const NewsletterForm = () => {
     'idle' | 'loading' | 'success' | 'error'
   >('idle');
   const [message, setMessage] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<BoundTurnstileObject | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
 
     setStatus('loading');
-    const result = await subscribeToNewsletter(email.trim());
+    const result = await subscribeToNewsletter(email.trim(), turnstileToken);
+    // Tokens are single-use: get a fresh one for any retry.
+    setTurnstileToken(null);
+    turnstileRef.current?.reset();
     setStatus(result.success ? 'success' : 'error');
     setMessage(result.message);
 
@@ -66,6 +73,17 @@ const NewsletterForm = () => {
           <FontAwesomeIcon icon={faArrowRight} />
           <span className="sr-only">Subscribe</span>
         </Button>
+        {/* Inside the wrapper so the invisible widget adds no space-y gap. */}
+        <Turnstile
+          sitekey={TURNSTILE_SITE_KEY}
+          appearance="interaction-only"
+          onLoad={(_widgetId, bound) => {
+            turnstileRef.current = bound;
+          }}
+          onVerify={setTurnstileToken}
+          onExpire={() => setTurnstileToken(null)}
+          refreshExpired="auto"
+        />
       </div>
       {status === 'error' && <p className="text-sm text-red-300">{message}</p>}
     </form>

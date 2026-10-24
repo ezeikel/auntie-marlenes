@@ -1,8 +1,11 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { sendWelcomeEmail } from '@/lib/email';
+import { isValidEmail } from '@/lib/email-format';
 import { logger } from '@/lib/logger';
 import { db } from '@/lib/prisma';
+import { verifyTurnstile } from '@/lib/turnstile';
 
 type NewsletterResult = {
   success: boolean;
@@ -14,10 +17,22 @@ type NewsletterResult = {
 // the list a future campaign would read.
 export async function subscribeToNewsletter(
   email: string,
+  turnstileToken?: string | null,
 ): Promise<NewsletterResult> {
   const normalised = email.trim().toLowerCase();
-  if (!normalised || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(normalised)) {
+  if (!normalised || !isValidEmail(normalised)) {
     return { success: false, message: 'Please enter a valid email address.' };
+  }
+
+  const headersList = await headers();
+  const ip =
+    headersList.get('cf-connecting-ip') ??
+    headersList.get('x-forwarded-for')?.split(',')[0]?.trim();
+  if (!(await verifyTurnstile(turnstileToken, ip))) {
+    return {
+      success: false,
+      message: "Please confirm you're not a robot and try again.",
+    };
   }
 
   try {
