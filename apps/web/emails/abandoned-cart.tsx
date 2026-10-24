@@ -23,6 +23,8 @@ interface AbandonedCartEmailProps {
   totalPrice: string;
   currency: string;
   checkoutUrl: string;
+  /** Signed link from lib/unsubscribe.ts. */
+  unsubscribeUrl?: string;
 }
 
 export default function AbandonedCartEmail({
@@ -31,13 +33,17 @@ export default function AbandonedCartEmail({
   totalPrice = '0.00',
   currency = 'GBP',
   checkoutUrl = '#',
+  unsubscribeUrl,
 }: AbandonedCartEmailProps) {
   const currencySymbol =
     currency === 'GBP' ? '£' : currency === 'EUR' ? '€' : '$';
   const greeting = customerName ? `Hi ${customerName},` : 'Hi there,';
 
   return (
-    <EmailLayout preview="You left something beautiful behind — your items are still waiting for you.">
+    <EmailLayout
+      unsubscribeUrl={unsubscribeUrl}
+      preview="You left something beautiful behind — your items are still waiting for you."
+    >
       <Text style={heading}>You Left Something Behind</Text>
       <Text style={subtext}>
         {greeting} we noticed you didn't finish your order. Your items are still

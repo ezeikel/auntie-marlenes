@@ -9,6 +9,12 @@ import WelcomeEmail from '@/emails/welcome';
 import { sendEmail } from '@/lib/cloudflare-email';
 import { getFromAddress, REPLY_TO } from '@/lib/email-config';
 import { logger } from '@/lib/logger';
+import { isUnsubscribed } from '@/lib/newsletter-subscribers';
+import {
+  getUnsubscribeHeaders,
+  getUnsubscribeUrl,
+  UNSUBSCRIBE_MAILTO,
+} from '@/lib/unsubscribe';
 
 // Sent from the onboarded subdomain; replies go to the shop inbox.
 const FROM = getFromAddress();
@@ -18,6 +24,8 @@ const deliver = async (message: {
   subject: string;
   html: string;
   kind: string;
+  /** Marketing emails: adds RFC 8058 one-click List-Unsubscribe headers. */
+  marketing?: boolean;
 }) => {
   const result = await sendEmail({
     from: FROM,
@@ -25,12 +33,19 @@ const deliver = async (message: {
     replyTo: REPLY_TO,
     subject: message.subject,
     html: message.html,
-    headers: { 'X-Email-Kind': message.kind },
+    headers: {
+      'X-Email-Kind': message.kind,
+      ...(message.marketing ? await getUnsubscribeHeaders(message.to) : {}),
+    },
   });
   if (!result.ok) {
     throw new Error(`Email send failed: ${result.code} ${result.message}`);
   }
 };
+
+/** The signed footer link for a marketing email; a mailto without the secret. */
+const unsubscribeUrlFor = async (email: string) =>
+  (await getUnsubscribeUrl(email)) ?? UNSUBSCRIBE_MAILTO;
 
 interface OrderLineItem {
   title: string;
@@ -145,6 +160,13 @@ export async function sendAbandonedCartEmail(checkout: {
   customerName?: string;
 }) {
   if (!checkout.email) return;
+  // Unsolicited marketing: respect an opt-out from any earlier email.
+  if (await isUnsubscribed(checkout.email)) {
+    logger.info('[Email] Abandoned cart skipped, unsubscribed', {
+      email: checkout.email,
+    });
+    return;
+  }
 
   const lineItems = (checkout.lineItems || []).map((item: any) => ({
     title: item.title || '',
@@ -160,6 +182,7 @@ export async function sendAbandonedCartEmail(checkout: {
       totalPrice: checkout.totalPrice,
       currency: checkout.currency || 'GBP',
       checkoutUrl: checkout.checkoutUrl,
+      unsubscribeUrl: await unsubscribeUrlFor(checkout.email),
     }),
   );
 
@@ -168,6 +191,7 @@ export async function sendAbandonedCartEmail(checkout: {
     subject: 'You left something beautiful behind',
     html,
     kind: 'abandoned_cart',
+    marketing: true,
   });
 
   logger.info('[Email] Abandoned cart email sent', { email: checkout.email });
@@ -179,11 +203,19 @@ export async function sendRestockReminderEmail(data: {
   lineItems: Array<{ title: string; handle?: string; image?: string }>;
 }) {
   if (!data.email) return;
+  // Unsolicited marketing: respect an opt-out from any earlier email.
+  if (await isUnsubscribed(data.email)) {
+    logger.info('[Email] Restock reminder skipped, unsubscribed', {
+      email: data.email,
+    });
+    return;
+  }
 
   const html = await render(
     RestockReminderEmail({
       customerName: data.customerName,
       lineItems: data.lineItems,
+      unsubscribeUrl: await unsubscribeUrlFor(data.email),
     }),
   );
 
@@ -192,6 +224,7 @@ export async function sendRestockReminderEmail(data: {
     subject: 'Time to restock? Your favourites are waiting',
     html,
     kind: 'restock_reminder',
+    marketing: true,
   });
 
   logger.info('[Email] Restock reminder sent', { email: data.email });
@@ -203,6 +236,7 @@ export async function sendWelcomeEmail(data: { email: string; name?: string }) {
   const html = await render(
     WelcomeEmail({
       customerName: data.name,
+      unsubscribeUrl: await unsubscribeUrlFor(data.email),
     }),
   );
 
@@ -211,6 +245,7 @@ export async function sendWelcomeEmail(data: { email: string; name?: string }) {
     subject: "Welcome to Auntie Marlene's",
     html,
     kind: 'welcome',
+    marketing: true,
   });
 
   logger.info('[Email] Welcome email sent', { email: data.email });
@@ -260,6 +295,7 @@ export async function sendQuizResultsEmail(data: {
       customerName: data.customerName,
       results: data.results,
       recommendations: data.recommendations,
+      unsubscribeUrl: await unsubscribeUrlFor(data.email),
     }),
   );
 
@@ -270,6 +306,7 @@ export async function sendQuizResultsEmail(data: {
     subject: `Your personalized ${typeLabel} care routine`,
     html,
     kind: 'quiz_results',
+    marketing: true,
   });
 
   logger.info('[Email] Quiz results email sent', { email: data.email });

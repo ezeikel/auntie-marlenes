@@ -4,13 +4,21 @@ import EmailLayout, { colors, siteUrl } from './components/layout';
 
 interface WelcomeEmailProps {
   customerName?: string;
+  /** Signed link from lib/unsubscribe.ts. */
+  unsubscribeUrl?: string;
 }
 
-export default function WelcomeEmail({ customerName }: WelcomeEmailProps) {
+export default function WelcomeEmail({
+  customerName,
+  unsubscribeUrl,
+}: WelcomeEmailProps) {
   const greeting = customerName ? `Hi ${customerName},` : 'Hi there,';
 
   return (
-    <EmailLayout preview="Welcome to Auntie Marlene's — your go-to for Black hair & beauty essentials.">
+    <EmailLayout
+      unsubscribeUrl={unsubscribeUrl}
+      preview="Welcome to Auntie Marlene's — your go-to for Black hair & beauty essentials."
+    >
       <Text style={heading}>Welcome to the Family</Text>
       <Text style={subtext}>
         {greeting} we're so glad you're here! Auntie Marlene's is your modern

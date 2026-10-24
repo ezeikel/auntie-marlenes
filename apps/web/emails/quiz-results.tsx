@@ -21,6 +21,8 @@ interface QuizResultsEmailProps {
   customerName?: string;
   results: Record<string, string>;
   recommendations: ProductRec[];
+  /** Signed link from lib/unsubscribe.ts. */
+  unsubscribeUrl?: string;
 }
 
 export default function QuizResultsEmail({
@@ -28,12 +30,14 @@ export default function QuizResultsEmail({
   customerName,
   results = {},
   recommendations = [],
+  unsubscribeUrl,
 }: QuizResultsEmailProps) {
   const greeting = customerName ? `Hi ${customerName},` : 'Hi there,';
   const isHair = quizType === 'hair';
 
   return (
     <EmailLayout
+      unsubscribeUrl={unsubscribeUrl}
       preview={`Your personalized ${isHair ? 'hair' : 'skin'} care routine is ready.`}
     >
       <Text style={heading}>Your {isHair ? 'Hair' : 'Skin'} Profile</Text>

@@ -26,9 +26,18 @@ const colors = {
 interface EmailLayoutProps {
   preview: string;
   children: React.ReactNode;
+  /**
+   * Signed per-recipient link (lib/unsubscribe.ts). Marketing emails pass it;
+   * order emails leave it out and get an order footer instead.
+   */
+  unsubscribeUrl?: string;
 }
 
-export default function EmailLayout({ preview, children }: EmailLayoutProps) {
+export default function EmailLayout({
+  preview,
+  children,
+  unsubscribeUrl,
+}: EmailLayoutProps) {
   return (
     <Html>
       <Head />
@@ -67,14 +76,21 @@ export default function EmailLayout({ preview, children }: EmailLayoutProps) {
                 FAQ
               </Link>
             </Text>
-            <Text style={footerSmall}>
-              You're receiving this email because you interacted with Auntie
-              Marlene's. If you'd prefer not to hear from us, you can{' '}
-              <Link href={`${siteUrl}/unsubscribe`} style={footerLink}>
-                unsubscribe
-              </Link>
-              .
-            </Text>
+            {unsubscribeUrl ? (
+              <Text style={footerSmall}>
+                You're receiving this email because you interacted with Auntie
+                Marlene's. If you'd prefer not to hear from us, you can{' '}
+                <Link href={unsubscribeUrl} style={footerLink}>
+                  unsubscribe
+                </Link>
+                .
+              </Text>
+            ) : (
+              <Text style={footerSmall}>
+                You're receiving this email about an order you placed with
+                Auntie Marlene's.
+              </Text>
+            )}
             <Text style={footerSmall}>
               &copy; {new Date().getFullYear()} Auntie Marlene's. All rights
               reserved.

@@ -20,16 +20,22 @@ interface LineItem {
 interface RestockReminderEmailProps {
   customerName?: string;
   lineItems: LineItem[];
+  /** Signed link from lib/unsubscribe.ts. */
+  unsubscribeUrl?: string;
 }
 
 export default function RestockReminderEmail({
   customerName,
   lineItems = [],
+  unsubscribeUrl,
 }: RestockReminderEmailProps) {
   const greeting = customerName ? `Hi ${customerName},` : 'Hi there,';
 
   return (
-    <EmailLayout preview="Time to restock? Your favourite products are waiting for you.">
+    <EmailLayout
+      unsubscribeUrl={unsubscribeUrl}
+      preview="Time to restock? Your favourite products are waiting for you."
+    >
       <Text style={heading}>Time to Restock?</Text>
       <Text style={subtext}>
         {greeting} it's been about a month since your last order. Running low on
