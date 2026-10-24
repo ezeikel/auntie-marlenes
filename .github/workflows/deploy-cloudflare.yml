@@ -85,5 +85,6 @@ jobs:
           NEXT_AUTH_SECRET: placeholder-build-only
           GOOGLE_CLIENT_ID: placeholder
           GOOGLE_CLIENT_SECRET: placeholder
-          RESEND_API_KEY: re_placeholder
+          CLOUDFLARE_EMAIL_API_TOKEN: placeholder-build-only-not-a-credential
+          CLOUDFLARE_ACCOUNT_ID: placeholder
         run: pnpm --filter @auntie-marlenes/web run deploy

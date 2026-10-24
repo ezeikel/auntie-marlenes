@@ -18,9 +18,11 @@ const serverSchema = z.object({
   SANITY_API_TOKEN: z.string().min(1).optional(),
   SANITY_REVALIDATE_SECRET: z.string().min(1).optional(),
 
-  // Email
-  RESEND_API_KEY: z.string().min(1),
-  RESEND_AUDIENCE_ID: z.string().min(1).optional(),
+  // Email (Cloudflare Email Sending, REST)
+  CLOUDFLARE_EMAIL_API_TOKEN: z.string().min(1),
+  CLOUDFLARE_ACCOUNT_ID: z.string().min(1),
+  EMAIL_DOMAIN: z.string().min(1).optional(),
+  EMAIL_FROM: z.string().min(1).optional(),
 
   // Cron
   CRON_SECRET: z.string().min(1).optional(),

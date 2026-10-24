@@ -110,3 +110,15 @@ model DeliveredOrder {
   @@index([reminderSent, deliveredAt])
   @@map("delivered_orders")
 }
+
+// Newsletter sign-ups from the site footer (app/actions/newsletter.ts).
+// Replaces the Resend Audience; nothing sends to this list automatically yet.
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  source         String?
+  subscribedAt   DateTime  @default(now())
+  unsubscribedAt DateTime?
+
+  @@map("newsletter_subscribers")
+}

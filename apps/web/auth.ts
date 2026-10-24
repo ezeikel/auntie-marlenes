@@ -6,13 +6,14 @@ import { render } from '@react-email/render';
 import { after } from 'next/server';
 import NextAuth from 'next-auth';
 import AppleProvider from 'next-auth/providers/apple';
+import type { EmailConfig } from 'next-auth/providers/email';
 import FacebookProvider from 'next-auth/providers/facebook';
 import GoogleProvider from 'next-auth/providers/google';
-import Resend from 'next-auth/providers/resend';
 import MagicLinkEmail from '@/components/emails/MagicLinkEmail';
 import { generateAppleClientSecret } from '@/lib/apple';
+import { sendEmail } from '@/lib/cloudflare-email';
 import { sendWelcomeEmail } from '@/lib/email';
-import resendClient from '@/lib/resend';
+import { getFromAddress, isEmailConfigured } from '@/lib/email-config';
 
 type AppleProfile = Profile & {
   user?: {
@@ -103,29 +104,9 @@ const getConfig = async () => {
             }),
           ]
         : []),
-      Resend({
-        apiKey: process.env.RESEND_API_KEY as string,
-        from: process.env.EMAIL_FROM || 'no-reply@auntiemarlenes.com',
-        async sendVerificationRequest({ identifier: email, url }) {
-          try {
-            const emailHtml = await render(MagicLinkEmail({ magicLink: url }));
-
-            await resendClient.emails.send({
-              from: process.env.EMAIL_FROM || 'no-reply@auntiemarlenes.com',
-              to: email,
-              subject: "Sign in to Auntie Marlene's",
-              html: emailHtml,
-            });
-          } catch (error) {
-            console.error(
-              'Failed to send verification email',
-              { email },
-              error,
-            );
-            throw error;
-          }
-        },
-      }),
+      // Magic link through Cloudflare Email Sending; only offered when the
+      // credential is present, so other providers keep working without it.
+      ...(isEmailConfigured() ? [emailProvider] : []),
     ],
     callbacks: {
       async signIn({
@@ -189,7 +170,7 @@ const getConfig = async () => {
           return true;
         }
 
-        if (account?.provider === 'resend') {
+        if (account?.provider === 'email') {
           const userEmail = account.providerAccountId;
 
           if (!userEmail) return false;
@@ -239,6 +220,31 @@ const getConfig = async () => {
 };
 
 // Resolve environment bindings and the Apple secret inside the request.
+// A plain Auth.js "email" provider (the shape next-auth/providers/resend
+// returns) that delivers the magic link through Cloudflare Email Sending.
+const emailProvider: EmailConfig = {
+  id: 'email',
+  type: 'email',
+  name: 'Email',
+  from: getFromAddress('no-reply'),
+  maxAge: 24 * 60 * 60,
+  options: {},
+  async sendVerificationRequest({ identifier: email, url }) {
+    const emailHtml = await render(MagicLinkEmail({ magicLink: url }));
+    const result = await sendEmail({
+      from: getFromAddress('no-reply'),
+      to: email,
+      subject: "Sign in to Auntie Marlene's",
+      html: emailHtml,
+      headers: { 'X-Email-Kind': 'magic_link' },
+    });
+    if (!result.ok) {
+      console.error('Failed to send verification email', { email }, result);
+      throw new Error(`Magic link email failed: ${result.code}`);
+    }
+  },
+};
+
 export const {
   handlers,
   auth,

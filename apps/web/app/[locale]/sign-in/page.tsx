@@ -40,7 +40,7 @@ const SignInContent = () => {
 
     setIsLoading(true);
     try {
-      const result = await signIn('resend', {
+      const result = await signIn('email', {
         email,
         redirect: false,
         callbackUrl,

@@ -1,43 +1,56 @@
 'use server';
 
-import resend from '@/lib/resend';
+import { sendWelcomeEmail } from '@/lib/email';
+import { logger } from '@/lib/logger';
+import { db } from '@/lib/prisma';
 
 type NewsletterResult = {
   success: boolean;
   message: string;
 };
 
+// Subscribers live in our own `newsletter_subscribers` table (D1), not a
+// third-party audience. Nothing sends to this list automatically yet; it is
+// the list a future campaign would read.
 export async function subscribeToNewsletter(
   email: string,
 ): Promise<NewsletterResult> {
-  if (!email || !email.includes('@')) {
+  const normalised = email.trim().toLowerCase();
+  if (!normalised || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(normalised)) {
     return { success: false, message: 'Please enter a valid email address.' };
   }
 
   try {
-    // Get or create the audience
-    const audienceId = process.env.RESEND_AUDIENCE_ID;
-
-    if (!audienceId) {
-      // If no audience ID configured, just send a welcome email
-      await resend.emails.send({
-        from: "Auntie Marlene's <hello@auntiemarlenes.com>",
-        to: email,
-        subject: "Welcome to Auntie Marlene's!",
-        html: `<p>Thanks for subscribing! You'll be the first to know about new products, offers, and hair care tips.</p><p>With love,<br/>The Auntie Marlene's Team</p>`,
-      });
+    const existing = await db.newsletterSubscriber.findUnique({
+      where: { email: normalised },
+    });
+    if (existing && !existing.unsubscribedAt) {
       return {
         success: true,
-        message: "You're in! Check your inbox for a welcome message.",
+        message:
+          "You're already on the list. Watch your inbox for new arrivals.",
       };
     }
+    if (existing) {
+      await db.newsletterSubscriber.update({
+        where: { email: normalised },
+        data: { unsubscribedAt: null, subscribedAt: new Date() },
+      });
+    } else {
+      await db.newsletterSubscriber.create({
+        data: { email: normalised, source: 'web' },
+      });
+    }
 
-    // Add contact to Resend audience
-    await resend.contacts.create({
-      email,
-      audienceId,
-      unsubscribed: false,
-    });
+    // Best-effort welcome; the subscription stands even if the email fails.
+    try {
+      await sendWelcomeEmail({ email: normalised });
+    } catch (error) {
+      logger.error(
+        '[newsletter] welcome email failed',
+        error instanceof Error ? error : undefined,
+      );
+    }
 
     return {
       success: true,

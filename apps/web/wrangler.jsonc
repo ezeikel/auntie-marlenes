@@ -79,6 +79,7 @@
   "vars": {
     "CF_WEB_ANALYTICS_TOKEN": "5f95be76a48a47399417761d1a19824b",
     "APP_ENV": "production",
+    "CLOUDFLARE_ACCOUNT_ID": "3b270a88f8cd0aaf0e9f28f6683a7a85",
     "APPLE_MOBILE_CLIENT_ID": "com.chewybytes.auntiemarlenes.app,com.chewybytes.auntiemarlenes.app.internal,com.chewybytes.auntiemarlenes.app.dev",
     "CONTENT_WORKER_URL": "http://content-worker.auntiemarlenes.com:3020"
   },
@@ -150,6 +151,7 @@
       "vars": {
         "CF_WEB_ANALYTICS_TOKEN": "5f95be76a48a47399417761d1a19824b",
         "APP_ENV": "staging",
+        "CLOUDFLARE_ACCOUNT_ID": "3b270a88f8cd0aaf0e9f28f6683a7a85",
         "APPLE_MOBILE_CLIENT_ID": "com.chewybytes.auntiemarlenes.app,com.chewybytes.auntiemarlenes.app.internal,com.chewybytes.auntiemarlenes.app.dev",
         "CONTENT_WORKER_URL": "http://content-worker.auntiemarlenes.com:3020"
       },

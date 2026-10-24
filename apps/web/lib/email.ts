@@ -6,10 +6,31 @@ import QuizResultsEmail from '@/emails/quiz-results';
 import RestockReminderEmail from '@/emails/restock-reminder';
 import ShippingUpdateEmail from '@/emails/shipping-update';
 import WelcomeEmail from '@/emails/welcome';
+import { sendEmail } from '@/lib/cloudflare-email';
+import { getFromAddress, REPLY_TO } from '@/lib/email-config';
 import { logger } from '@/lib/logger';
-import resend from '@/lib/resend';
 
-const FROM = "Auntie Marlene's <hello@auntiemarlenes.com>";
+// Sent from the onboarded subdomain; replies go to the shop inbox.
+const FROM = getFromAddress();
+
+const deliver = async (message: {
+  to: string;
+  subject: string;
+  html: string;
+  kind: string;
+}) => {
+  const result = await sendEmail({
+    from: FROM,
+    to: message.to,
+    replyTo: REPLY_TO,
+    subject: message.subject,
+    html: message.html,
+    headers: { 'X-Email-Kind': message.kind },
+  });
+  if (!result.ok) {
+    throw new Error(`Email send failed: ${result.code} ${result.message}`);
+  }
+};
 
 interface OrderLineItem {
   title: string;
@@ -60,11 +81,11 @@ export async function sendOrderConfirmationEmail(order: {
     }),
   );
 
-  await resend.emails.send({
-    from: FROM,
+  await deliver({
     to: order.email,
     subject: `Order confirmed — #${order.order_number}`,
     html,
+    kind: 'order_confirmation',
   });
 
   logger.info('[Email] Order confirmation sent', {
@@ -102,11 +123,11 @@ export async function sendShippingUpdateEmail(order: {
     }),
   );
 
-  await resend.emails.send({
-    from: FROM,
+  await deliver({
     to: order.email,
     subject: `Your order #${order.order_number} is on its way!`,
     html,
+    kind: 'shipping_update',
   });
 
   logger.info('[Email] Shipping update sent', {
@@ -142,11 +163,11 @@ export async function sendAbandonedCartEmail(checkout: {
     }),
   );
 
-  await resend.emails.send({
-    from: FROM,
+  await deliver({
     to: checkout.email,
     subject: 'You left something beautiful behind',
     html,
+    kind: 'abandoned_cart',
   });
 
   logger.info('[Email] Abandoned cart email sent', { email: checkout.email });
@@ -166,11 +187,11 @@ export async function sendRestockReminderEmail(data: {
     }),
   );
 
-  await resend.emails.send({
-    from: FROM,
+  await deliver({
     to: data.email,
     subject: 'Time to restock? Your favourites are waiting',
     html,
+    kind: 'restock_reminder',
   });
 
   logger.info('[Email] Restock reminder sent', { email: data.email });
@@ -185,11 +206,11 @@ export async function sendWelcomeEmail(data: { email: string; name?: string }) {
     }),
   );
 
-  await resend.emails.send({
-    from: FROM,
+  await deliver({
     to: data.email,
     subject: "Welcome to Auntie Marlene's",
     html,
+    kind: 'welcome',
   });
 
   logger.info('[Email] Welcome email sent', { email: data.email });
@@ -211,11 +232,11 @@ export async function sendOrderCancellationEmail(order: {
     }),
   );
 
-  await resend.emails.send({
-    from: FROM,
+  await deliver({
     to: order.email,
     subject: `Your order #${order.order_number} has been cancelled`,
     html,
+    kind: 'order_cancellation',
   });
 
   logger.info('[Email] Cancellation email sent', {
@@ -244,11 +265,11 @@ export async function sendQuizResultsEmail(data: {
 
   const typeLabel = data.quizType === 'hair' ? 'hair' : 'skin';
 
-  await resend.emails.send({
-    from: FROM,
+  await deliver({
     to: data.email,
     subject: `Your personalized ${typeLabel} care routine`,
     html,
+    kind: 'quiz_results',
   });
 
   logger.info('[Email] Quiz results email sent', { email: data.email });

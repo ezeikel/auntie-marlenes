@@ -286,11 +286,13 @@ export default async function PrivacyPolicyPage({
                 <h3 className="font-semibold text-amber-900 mb-3">Email</h3>
                 <ul className="text-sm text-amber-800 space-y-3">
                   <li>
-                    <strong>Resend</strong> — We use Resend to send you
-                    transactional emails (order confirmations, shipping updates,
-                    password resets) and marketing newsletters if you&apos;ve
-                    opted in. Resend processes your email address and name to
-                    deliver these messages.
+                    <strong>Cloudflare Email Sending</strong> — We use
+                    Cloudflare to send you transactional emails (order
+                    confirmations, shipping updates, sign-in links) and, if
+                    you&apos;ve opted in, our newsletter. Cloudflare processes
+                    your email address and name to deliver these messages. Your
+                    newsletter subscription is stored in our own database, not
+                    with a third-party mailing-list provider.
                   </li>
                 </ul>
               </div>
@@ -552,7 +554,7 @@ export default async function PrivacyPolicyPage({
                     requirements and uses standard contractual clauses.
                   </li>
                   <li>
-                    <strong>PostHog, Sentry, Vercel, Resend</strong> — These
+                    <strong>PostHog, Sentry, Cloudflare</strong> — These
                     services are based in the United States. Data transfers are
                     protected by the UK-US Data Bridge (an extension of the
                     EU-US Data Privacy Framework) and/or standard contractual

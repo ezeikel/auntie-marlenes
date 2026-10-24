@@ -1,10 +1,9 @@
 import { NextRequest } from 'next/server';
-import { Resend } from 'resend';
 import { createMagicLinkToken } from '@/lib/auth-mobile';
+import { sendEmail } from '@/lib/cloudflare-email';
+import { getFromAddress } from '@/lib/email-config';
 import { logger } from '@/lib/logger';
 import { db } from '@/lib/prisma';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * POST /api/auth/mobile/magic-link - Send magic link email
@@ -31,10 +30,10 @@ export async function POST(request: NextRequest) {
     // Format: auntiemarlenes://magic-link?token=xxx
     const magicLinkUrl = `auntiemarlenes://magic-link?token=${token}`;
 
-    // Send email via Resend
+    // Send email via Cloudflare Email Sending
     try {
-      await resend.emails.send({
-        from: 'Auntie Marlenes <noreply@auntiemarlenes.com>',
+      const result = await sendEmail({
+        from: getFromAddress('no-reply'),
         to: email,
         subject: 'Sign in to Auntie Marlenes',
         html: `
@@ -48,7 +47,11 @@ export async function POST(request: NextRequest) {
             <p style="color: #666; font-size: 14px;">If you didn't request this email, you can safely ignore it.</p>
           </div>
         `,
+        headers: { 'X-Email-Kind': 'mobile_magic_link' },
       });
+      if (!result.ok) {
+        throw new Error(`${result.code}: ${result.message}`);
+      }
 
       logger.info('[Auth] Magic link email sent', { email });
     } catch (emailError) {
