@@ -107,6 +107,13 @@ afterEach(() => {
 });
 
 describe('unsubscribe tokens', () => {
+  it('accepts a plus address whose + arrived as a space (Workers query decoding)', async () => {
+    const token = await createUnsubscribeToken('reader+tag@example.com');
+    expect(await verifyUnsubscribeToken('reader tag@example.com', token)).toBe(
+      true,
+    );
+  });
+
   it('verifies a token for the address it was issued for, in any case', async () => {
     const token = await createUnsubscribeToken('Shopper@Example.com');
     expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/);

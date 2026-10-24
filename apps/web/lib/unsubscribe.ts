@@ -20,7 +20,11 @@ const siteUrl = () => SITE_URL;
 export const UNSUBSCRIBE_MAILTO =
   'mailto:hello@auntiemarlenes.com?subject=Unsubscribe';
 
-export const normaliseEmail = (email: string) => email.trim().toLowerCase();
+// Cloudflare Workers hand route handlers a query string in which an encoded
+// `+` (%2B) has become a literal `+`, which URLSearchParams reads as a space.
+// An address never contains a space, so turn spaces back into `+`.
+export const normaliseEmail = (email: string) =>
+  email.trim().toLowerCase().replace(/ /g, '+');
 
 const readSecret = (): string | null =>
   process.env[SECRET_NAME]?.trim() || null;

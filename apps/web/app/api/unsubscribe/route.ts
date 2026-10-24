@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { unsubscribeNewsletterSubscriber } from '@/lib/newsletter-subscribers';
-import { verifyUnsubscribeToken } from '@/lib/unsubscribe';
+import { normaliseEmail, verifyUnsubscribeToken } from '@/lib/unsubscribe';
 
 /**
  * RFC 8058 one-click unsubscribe, the target of the List-Unsubscribe header.
@@ -18,7 +18,7 @@ const readParams = async (request: Request) => {
     email ||= form?.get('e')?.toString() ?? null;
     token ||= form?.get('t')?.toString() ?? null;
   }
-  return { email, token };
+  return { email: email ? normaliseEmail(email) : null, token };
 };
 
 export async function POST(request: Request) {
