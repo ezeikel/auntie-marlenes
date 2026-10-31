@@ -33,7 +33,7 @@
     "db:dev:pull": "node scripts/dev-pull.mjs"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "1.20.1",
+    "@opennextjs/cloudflare": "1.20.15",
     "@prisma/adapter-d1": "7.8.0",
     "@prisma/client": "7.8.0"
   },

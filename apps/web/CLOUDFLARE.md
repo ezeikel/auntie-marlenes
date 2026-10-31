@@ -6,7 +6,7 @@ placeholders, including the DB ID copied from `packages/db/wrangler.jsonc`.
 
 ## Build and local data
 
-Use Node 22.12+ (validated with 22.23.2), pnpm, and OpenNext **1.20.1**.
+Use Node 22.12+ (validated with 22.23.2), pnpm, and OpenNext **1.20.15** (Next **16.4.1**).
 The DB package build copies Prisma's generated JS/WASM as well as compiling TS;
 otherwise workerd's query compiler imports are missing from `dist/`.
 
