@@ -4,7 +4,7 @@ const SENTRY_DSN = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
 
 Sentry.init({
   dsn: SENTRY_DSN,
-  sendDefaultPii: true,
+  sendDefaultPii: false,
   // Must be the NEXT_PUBLIC_ variable: Next.js only inlines NEXT_PUBLIC_* into
   // the browser bundle, so a bare APP_ENV would be undefined here and
   // @sentry/nextjs would fall back to a `vercel-` prefixed environment.

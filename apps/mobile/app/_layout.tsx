@@ -20,7 +20,7 @@ const navigationIntegration = Sentry.reactNavigationIntegration();
 
 Sentry.init({
   dsn: SENTRY_DSN,
-  sendDefaultPii: true,
+  sendDefaultPii: false,
   // OFF in the simulator / local dev (`__DEV__`): a debug build with Metro HMR
   // throws constant errors mid-edit that flood the dashboard and are not real
   // bugs, and the Metro console is right there anyway. ON for preview and

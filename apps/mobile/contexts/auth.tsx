@@ -131,8 +131,6 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
               try {
                 Sentry.setUser({
                   id: response.user.id,
-                  email: response.user.email,
-                  username: response.user.name || undefined,
                 });
                 logger.info(
                   '[Auth] User identified with Sentry:',
@@ -193,8 +191,6 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
         try {
           Sentry.setUser({
             id: response.user.id,
-            email: response.user.email,
-            username: response.user.name || undefined,
           });
           logger.info('[Auth] User identified with Sentry:', response.user.id);
         } catch (error) {
@@ -264,8 +260,6 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
         try {
           Sentry.setUser({
             id: response.user.id,
-            email: response.user.email,
-            username: response.user.name || undefined,
           });
           logger.info('[Auth] User identified with Sentry:', response.user.id);
         } catch (error) {
@@ -324,8 +318,6 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
           try {
             Sentry.setUser({
               id: response.user.id,
-              email: response.user.email,
-              username: response.user.name || undefined,
             });
             logger.info(
               '[Auth] User identified with Sentry:',
