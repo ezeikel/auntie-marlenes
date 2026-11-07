@@ -7,6 +7,14 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  # Keep only the newest run per branch. A newer main commit contains the older
+  # one, so its run is the evidence; grouping push runs by SHA queued every
+  # superseded commit on the two-slot CI box (7 Nov 2026: a four-hour backlog).
+  # Deploys and migrations do not wait on this workflow.
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   NODE_VERSION: '24'
 
