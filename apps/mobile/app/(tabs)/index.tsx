@@ -1,15 +1,9 @@
 import { CATEGORIES } from '@auntie-marlenes/constants';
 import * as Haptics from 'expo-haptics';
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { FlatList, Image, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductCard from '@/components/ProductCard';
+import { Spinner } from '@/components/ui/Spinner';
 import { useSaved } from '@/contexts/saved';
 import { useProducts } from '@/hooks/useProducts';
 
@@ -25,7 +19,7 @@ export default function HomeScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-warm-beige">
-        <ActivityIndicator size="large" color="#5D4037" />
+        <Spinner size={36} color="#5D4037" />
       </View>
     );
   }

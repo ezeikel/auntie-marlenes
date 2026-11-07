@@ -1,5 +1,6 @@
 import type { ShopifyCart } from '@auntie-marlenes/types';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
 
 type BagCheckoutFooterProps = {
   cart: ShopifyCart | null;
@@ -59,7 +60,7 @@ export default function BagCheckoutFooter({
           }`}
         >
           {isProcessing ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <Spinner color="#FFFFFF" />
           ) : (
             <Text className="text-white text-base font-inter-bold uppercase">
               Proceed to Checkout

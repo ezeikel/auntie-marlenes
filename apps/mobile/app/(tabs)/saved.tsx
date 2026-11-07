@@ -3,19 +3,13 @@ import { faHeart } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Dimensions,
-  FlatList,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import { Dimensions, FlatList, Pressable, Text, View } from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import ProductCard from '@/components/ProductCard';
+import { Spinner } from '@/components/ui/Spinner';
 import { useSaved } from '@/contexts/saved';
 import { useBottomTabBarHeight } from '@/hooks/useBottomTabBarHeight';
 import { useProducts } from '@/hooks/useProducts';
@@ -45,7 +39,7 @@ export default function SavedScreen() {
         className="flex-1 bg-warm-beige items-center justify-center"
         edges={['top']}
       >
-        <ActivityIndicator size="large" color="#5D4037" />
+        <Spinner size={36} color="#5D4037" />
       </SafeAreaView>
     );
   }

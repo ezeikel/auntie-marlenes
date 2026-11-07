@@ -14,7 +14,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Dimensions,
   Image,
   Pressable,
@@ -34,6 +33,7 @@ import DeliveryInfoSheet from '@/components/bottom-sheets/DeliveryInfoSheet';
 import ProductDetailsSheet from '@/components/bottom-sheets/ProductDetailsSheet';
 import VariantSelectorSheet from '@/components/bottom-sheets/VariantSelectorSheet';
 import PaginationDot from '@/components/ui/PaginationDot';
+import { Spinner } from '@/components/ui/Spinner';
 import { useCart } from '@/contexts/cart';
 import { useSaved } from '@/contexts/saved';
 import { useProduct } from '@/hooks/useProducts';
@@ -127,7 +127,7 @@ export default function ProductDetailScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-warm-beige">
-        <ActivityIndicator size="large" color="#5D4037" />
+        <Spinner size={36} color="#5D4037" />
       </View>
     );
   }

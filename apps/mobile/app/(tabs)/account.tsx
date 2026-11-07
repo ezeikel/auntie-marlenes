@@ -12,7 +12,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Dimensions,
   Pressable,
@@ -24,6 +23,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import { Spinner } from '@/components/ui/Spinner';
 import { useAuthContext } from '@/contexts/auth';
 import { useBottomTabBarHeight } from '@/hooks/useBottomTabBarHeight';
 import { getCurrentUser } from '@/lib/api/auth';
@@ -100,7 +100,7 @@ export default function AccountScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-warm-beige">
-        <ActivityIndicator size="large" color="#5D4037" />
+        <Spinner size={36} color="#5D4037" />
       </View>
     );
   }

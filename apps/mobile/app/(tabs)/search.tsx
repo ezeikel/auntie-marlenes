@@ -6,7 +6,6 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   Dimensions,
   FlatList,
   Pressable,
@@ -20,6 +19,7 @@ import {
 } from 'react-native-safe-area-context';
 import { useDebouncedCallback } from 'use-debounce';
 import ProductCard from '@/components/ProductCard';
+import { Spinner } from '@/components/ui/Spinner';
 import { useBottomTabBarHeight } from '@/hooks/useBottomTabBarHeight';
 import { useSearchProducts } from '@/hooks/useProducts';
 
@@ -119,7 +119,7 @@ export default function SearchScreen() {
           }}
         >
           <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#5D4037" />
+            <Spinner size={36} color="#5D4037" />
           </View>
         </View>
       ) : debouncedQuery.length === 0 ? (

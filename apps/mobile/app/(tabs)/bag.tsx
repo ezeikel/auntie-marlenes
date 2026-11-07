@@ -5,7 +5,6 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Dimensions,
   Image,
   Pressable,
@@ -21,6 +20,7 @@ import { toast } from 'sonner-native';
 import BagCheckoutFooter from '@/components/BagCheckoutFooter';
 import BagHeader from '@/components/BagHeader';
 import EmptyBagState from '@/components/EmptyBagState';
+import { Spinner } from '@/components/ui/Spinner';
 import { useCart } from '@/contexts/cart';
 import { useBottomTabBarHeight } from '@/hooks/useBottomTabBarHeight';
 import * as logger from '@/lib/logger';
@@ -139,7 +139,7 @@ export default function BagScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 bg-warm-beige items-center justify-center">
-        <ActivityIndicator size="large" color="#5D4037" />
+        <Spinner size={36} color="#5D4037" />
       </View>
     );
   }
