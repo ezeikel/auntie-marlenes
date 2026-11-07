@@ -1,8 +1,7 @@
 # Proposal: Auntie Marlene's privacy page entry for the Umami counter
 
-Status: PROPOSAL. Not live. The counter is OFF: `NEXT_PUBLIC_UMAMI_SCRIPT_URL` and `NEXT_PUBLIC_UMAMI_WEBSITE_ID` are not set in
-`.github/workflows/deploy-cloudflare.yml`, so the layout renders nothing. The owner approves the wording, then one change adds the
-entry to `apps/web/app/[locale]/privacy/page.tsx` (and updates "Last updated") and the two values to the workflow.
+Status: APPROVED by the owner on 7 November 2026 (the entry as written). The privacy page carries it, "Last updated" is November 2026,
+and the two values are set in `.github/workflows/deploy-cloudflare.yml`.
 
 ## Where it goes
 

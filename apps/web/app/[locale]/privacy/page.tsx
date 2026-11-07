@@ -36,7 +36,7 @@ export default async function PrivacyPolicyPage({
           <h1 className="text-4xl font-playfair font-bold text-cocoa mb-4">
             Privacy Policy
           </h1>
-          <p className="text-sm text-gray-500 mb-8">Last updated: March 2026</p>
+          <p className="text-sm text-gray-500 mb-8">Last updated: November 2026</p>
 
           <div className="text-gray-700 space-y-4 mb-12">
             <p>
@@ -251,6 +251,18 @@ export default async function PrivacyPolicyPage({
                     analytics tool that does not use cookies and does not track
                     you across websites. It gives us basic stats like page views
                     and referral sources without collecting personal data.
+                  </li>
+                  <li>
+                    <strong>Umami</strong> — A cookie-free analytics tool that we
+                    run ourselves on our own server in Germany. On our public
+                    pages (the home page, the shop and product pages, the blog
+                    and our information pages) it counts visits. It receives the
+                    page address, with no query string apart from the
+                    advertising campaign tags on a link (such as utm_source), no
+                    page title, and the site you came from. It does not run on
+                    your account, bag, saved items or order pages, it sets
+                    nothing on your device, and it respects your
+                    browser&apos;s Do Not Track setting.
                   </li>
                   <li>
                     <strong>PostHog</strong> — Helps us understand how people
