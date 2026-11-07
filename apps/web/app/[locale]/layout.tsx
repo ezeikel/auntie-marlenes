@@ -12,6 +12,7 @@ import Footer from '@/components/Footer';
 import Header from '@/components/HeaderWrapper';
 import SavedItemsSync from '@/components/SavedItemsSync';
 import { Toaster } from '@/components/ui/sonner';
+import { UmamiScript } from '@/components/umami-script';
 import { type Locale, locales } from '@/i18n/config';
 import { SITE_URL } from '@/lib/site';
 import Providers from '../providers';
@@ -184,6 +185,7 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
             <Toaster position="bottom-right" richColors closeButton />
           </Providers>
         </Suspense>
+        <UmamiScript />
       </body>
     </html>
   );
