@@ -14,12 +14,24 @@ import {
 } from '@/utils/facebook-pixel';
 
 type SessionUser = {
-  dbId?: string;
   name?: string | null;
   email?: string | null;
   image?: string | null;
   id?: string;
 };
+
+/**
+ * The PostHog identity for a signed-in session. `user.id` is the database user
+ * id, the same distinct id the server tracker uses (utils/user.ts getUserId).
+ * This read `user.dbId` until 7 November 2026, a field nothing ever set, so
+ * client-side identify never fired.
+ */
+export const sessionAnalyticsIdentity = (sessionUser?: SessionUser | null) => ({
+  userId: sessionUser?.id || undefined,
+  userProperties: sessionUser
+    ? { email: sessionUser.email, name: sessionUser.name }
+    : undefined,
+});
 
 /**
  * Map custom tracking events to Facebook Pixel standard events
@@ -129,14 +141,9 @@ export const useAnalytics = () => {
       properties: EventProperties[TEvent],
     ) => {
       try {
-        const sessionUser = session?.user as SessionUser;
-        const userId = sessionUser?.dbId;
-        const userProperties = sessionUser
-          ? {
-              email: sessionUser.email,
-              name: sessionUser.name,
-            }
-          : undefined;
+        const { userId, userProperties } = sessionAnalyticsIdentity(
+          session?.user as SessionUser | undefined,
+        );
 
         const enrichedProperties = {
           ...properties,
