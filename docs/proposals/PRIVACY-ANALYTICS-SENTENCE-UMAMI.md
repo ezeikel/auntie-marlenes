@@ -30,7 +30,8 @@ Umami: A cookie-free analytics tool that we run ourselves on our own server in G
 - Shopify hosts the checkout. Umami never runs there, and the privacy page already says so for Shopify's own processing.
 - Shop categories come from Shopify, so the allowlist accepts any single path segment as a category except the private page names.
   A mistyped address that returns a 404 page can therefore be counted as a page view.
-- The repo also injects Cloudflare Web Analytics (`lib/cf-web-analytics.ts`), which the privacy page does not mention.
+- The repo can inject the Cloudflare Web Analytics beacon (`lib/cf-web-analytics.ts`, only when a token is configured; not checked
+  whether one is), which the privacy page does not mention.
 
 ## Not checked
 
