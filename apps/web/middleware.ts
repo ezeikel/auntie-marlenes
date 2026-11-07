@@ -2,12 +2,31 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import createIntlMiddleware from 'next-intl/middleware';
 import { routing } from './i18n/routing';
+import {
+  UMAMI_STRIPPED_HEADERS,
+  UMAMI_UPSTREAM,
+  umamiProxyTarget,
+} from './lib/umami';
 
 // Create the next-intl middleware
 const intlMiddleware = createIntlMiddleware(routing);
 
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Umami through our own domain: the tracker script and its collect endpoint, so a content blocker that
+  // refuses a third-party tracker does not drop it (see lib/umami.ts). Cookies, credentials and the
+  // Referer are stripped before anything reaches the analytics server.
+  const umamiTarget = umamiProxyTarget(pathname, request.method);
+  if (umamiTarget) {
+    const upstream = new URL(umamiTarget, UMAMI_UPSTREAM);
+    const upstreamHeaders = new Headers(request.headers);
+    upstreamHeaders.set('host', upstream.hostname);
+    for (const name of UMAMI_STRIPPED_HEADERS) upstreamHeaders.delete(name);
+    return NextResponse.rewrite(upstream, {
+      request: { headers: upstreamHeaders },
+    });
+  }
 
   // Skip i18n for Plausible analytics proxy routes
   if (pathname.startsWith('/js/') || pathname.startsWith('/proxy/')) {
