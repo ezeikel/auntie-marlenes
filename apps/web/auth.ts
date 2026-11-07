@@ -207,12 +207,23 @@ const getConfig = async () => {
       }: {
         session: Session;
         user: AdapterUser;
-      }) {
-        // Add user id to session
-        if (session.user && user) {
-          session.user.id = user.id;
-        }
-        return session;
+      }): Promise<Session> {
+        // Build the public session field by field, never `return session`.
+        // With database sessions @auth/core passes `{ ...adapterSession, user:
+        // <full user row> }` here and serves the result from /api/auth/session
+        // to page JavaScript, so returning it whole published the httpOnly
+        // cookie's sessionToken and the private user columns (7 November
+        // 2026). The app reads only user.name / email / image (header, saved
+        // items, analytics); id is the Session type's declared key.
+        return {
+          expires: session.expires,
+          user: {
+            id: user.id,
+            name: user.name ?? null,
+            email: user.email,
+            image: user.image ?? null,
+          },
+        };
       },
     },
     secret: process.env.NEXT_AUTH_SECRET,
