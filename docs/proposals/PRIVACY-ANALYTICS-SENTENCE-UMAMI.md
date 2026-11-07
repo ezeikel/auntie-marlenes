@@ -9,7 +9,7 @@ The "Analytics and Performance" list on the privacy page, as a new entry after P
 
 ## Proposed entry (plain text)
 
-Umami: A cookie-free analytics tool that we run ourselves on our own server in Germany. On our public pages (the home page, the shop and product pages, the blog and our information pages) it counts visits. It receives the page address, with no query string apart from the advertising campaign tags on a link (such as utm_source), no page title, and the site you came from. It does not run on your account, bag, saved items or order pages, it sets nothing on your device, and it respects your browser's Do Not Track setting.
+Umami: A cookie-free analytics tool that we run ourselves on our own server in Germany. On our public pages (the home page, the shop and product pages, the blog and our information pages) it counts visits. It receives the page address, with no query string apart from the advertising campaign tags on a link (such as utm_source), no page title, and the site you came from. It does not count visits to your account, bag, saved items or order pages, it sets nothing on your device, and it respects your browser's Do Not Track setting.
 
 ## What the code backs
 

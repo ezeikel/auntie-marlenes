@@ -253,7 +253,7 @@ export default async function PrivacyPolicyPage({
                     and our information pages) it counts visits. It receives the
                     page address, with no query string apart from the
                     advertising campaign tags on a link (such as utm_source), no
-                    page title, and the site you came from. It does not run on
+                    page title, and the site you came from. It does not count visits to
                     your account, bag, saved items or order pages, it sets
                     nothing on your device, and it respects your
                     browser&apos;s Do Not Track setting.
