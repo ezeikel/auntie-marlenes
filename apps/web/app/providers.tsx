@@ -3,7 +3,6 @@
 import { SessionProvider } from 'next-auth/react';
 import type { AbstractIntlMessages } from 'next-intl';
 import { NextIntlClientProvider } from 'next-intl';
-import PlausibleProvider from 'next-plausible';
 import { ThemeProvider } from 'next-themes';
 import { PostHogProvider } from '@/components/PostHogProvider';
 import { LocationProvider } from '@/contexts/LocationContext';
@@ -24,7 +23,6 @@ const Providers = ({
   timeZone,
 }: ProvidersProps) => {
   return (
-    <PlausibleProvider domain="auntiemarlenes.com" trackOutboundLinks>
       <PostHogProvider>
         <NextIntlClientProvider
           messages={messages}
@@ -47,7 +45,6 @@ const Providers = ({
           </ThemeProvider>
         </NextIntlClientProvider>
       </PostHogProvider>
-    </PlausibleProvider>
   );
 };
 

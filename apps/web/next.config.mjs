@@ -4,7 +4,6 @@ import { dirname, join } from 'node:path';
 import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 import { withSentryConfig } from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
-import { withPlausibleProxy } from 'next-plausible';
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
@@ -76,9 +75,7 @@ const sentryOptions = {
   reactComponentAnnotation: { enabled: true },
 };
 
-export default withPlausibleProxy()(
-  withSentryConfig(withNextIntl(nextConfig), sentryOptions),
-);
+export default withSentryConfig(withNextIntl(nextConfig), sentryOptions);
 
 // `next dev` uses the shared hosted dev database (wrangler.dev.jsonc) when
 // `wrangler d1 info` can reach it, else the local copy (refresh with

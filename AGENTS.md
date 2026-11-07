@@ -72,7 +72,7 @@ Use semantic commit style (`type(scope): message`). Keep messages as one-liners,
 - **Shopify Storefront API** (GraphQL) - Product catalog, cart, checkout
 - **Shopify Admin API** (GraphQL + REST) - Product management, webhooks, inventory
 - **Sanity CMS** - Blog content, auto-generated posts via cron
-- **Analytics**: Sentry, PostHog, Plausible, Meta Pixel, Vercel Analytics
+- **Analytics**: Sentry, PostHog, Umami, Meta Pixel, Vercel Analytics
 - **Auth**: NextAuth v5 beta with Prisma adapter
 - **Email**: React Email + Resend
 - **AI**: Vercel AI SDK (OpenAI + Google) for blog generation

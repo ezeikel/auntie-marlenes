@@ -162,32 +162,6 @@ export default async function CookiePolicyPage({
                   </p>
                 </div>
               </div>
-
-              <div className="bg-sage-green/5 border border-sage-green/20 rounded-lg p-5">
-                <h3 className="font-semibold text-cocoa mb-3">
-                  Plausible Analytics
-                </h3>
-                <p className="text-sm mb-2">
-                  Plausible is a privacy-friendly analytics tool. It's worth
-                  noting that Plausible does{' '}
-                  <strong>not actually use cookies</strong>. It collects basic
-                  visitor statistics (like page views and referral sources)
-                  without tracking individual users or storing any data on your
-                  device. We include it here for transparency.
-                </p>
-                <div className="text-sm bg-white/60 rounded p-3 mt-2">
-                  <p>
-                    <strong>Provider:</strong> Plausible
-                  </p>
-                  <p>
-                    <strong>Purpose:</strong> Privacy-friendly page view and
-                    referral analytics
-                  </p>
-                  <p>
-                    <strong>Cookies:</strong> None (cookieless tracking)
-                  </p>
-                </div>
-              </div>
             </div>
           </section>
 

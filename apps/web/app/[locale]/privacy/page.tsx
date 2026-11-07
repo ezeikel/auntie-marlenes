@@ -247,12 +247,6 @@ export default async function PrivacyPolicyPage({
                 </h3>
                 <ul className="text-sm space-y-3">
                   <li>
-                    <strong>Plausible Analytics</strong> — A privacy-friendly
-                    analytics tool that does not use cookies and does not track
-                    you across websites. It gives us basic stats like page views
-                    and referral sources without collecting personal data.
-                  </li>
-                  <li>
                     <strong>Umami</strong> — A cookie-free analytics tool that we
                     run ourselves on our own server in Germany. On our public
                     pages (the home page, the shop and product pages, the blog
@@ -361,8 +355,7 @@ export default async function PrivacyPolicyPage({
                 </h3>
                 <p className="text-sm">
                   These help us understand how visitors interact with our
-                  website. Note that Plausible Analytics does not use cookies at
-                  all. PostHog may set cookies to help us measure site usage and
+                  website. PostHog may set cookies to help us measure site usage and
                   performance.
                 </p>
               </div>
@@ -522,8 +515,7 @@ export default async function PrivacyPolicyPage({
                     don&apos;t accidentally email you again.
                   </li>
                   <li>
-                    <strong>Analytics data</strong> — Plausible does not store
-                    any personal data. PostHog data is retained according to
+                    <strong>Analytics data</strong> — PostHog data is retained according to
                     their data retention policies. Sentry error logs are
                     typically retained for 90 days.
                   </li>
@@ -576,11 +568,6 @@ export default async function PrivacyPolicyPage({
                     <strong>Meta</strong> — Based in the United States.
                     Transfers are covered by standard contractual clauses and
                     the UK-US Data Bridge.
-                  </li>
-                  <li>
-                    <strong>Plausible</strong> — Based in the EU and processes
-                    data within the EU/EEA, which has adequate data protection
-                    standards recognised by the UK.
                   </li>
                 </ul>
               </div>

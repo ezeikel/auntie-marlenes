@@ -198,8 +198,6 @@ production data was read for A2. Both email-cron tables were verified empty.
 | `/api/auth/session` | 200 |
 | `/api/auth/mobile/me` without token | 401 |
 | `/relay-hyx5/decide?v=3` | 200, PostHog JSON |
-| `/js/script.js` | 200 JavaScript |
-| `/proxy/api/event` GET | 404 from Plausible (proxied Plausible HTML, no locale redirect) |
 | all four cron routes with test bearer | 200 each |
 | all four cron routes without bearer | 401 each |
 

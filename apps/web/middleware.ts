@@ -28,11 +28,6 @@ export default async function middleware(request: NextRequest) {
     });
   }
 
-  // Skip i18n for Plausible analytics proxy routes
-  if (pathname.startsWith('/js/') || pathname.startsWith('/proxy/')) {
-    return NextResponse.next();
-  }
-
   // PostHog reverse proxy
   if (pathname.startsWith('/relay-hyx5')) {
     const url = request.nextUrl.clone();
