@@ -1,8 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CRON_ROUTES, routesForCron, runScheduledCron } from '../cron-schedule';
+import {
+  CRON_ROUTES,
+  routesForCron,
+  runScheduledCron,
+  trackWaitUntil,
+} from '../cron-schedule';
 
 afterEach(() => vi.restoreAllMocks());
+// A schedule with one route, for the background-work tests.
+const CRON = '0 9 * * *';
 const config = JSON.parse(
   readFileSync(new URL('../../wrangler.jsonc', import.meta.url), 'utf8'),
 );
@@ -73,5 +80,77 @@ describe('Cloudflare crons', () => {
         async () => new Response(null, { status: 401 }),
       ),
     ).rejects.toThrow('failed');
+  });
+  it('awaits the Sentry flush a failing route registers before it throws', async () => {
+    // What @sentry/nextjs does on a route error under OpenNext: capture, then
+    // ctx.waitUntil(flush()). The send must finish inside the scheduled run,
+    // before it rejects, or the event can be lost.
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const events: string[] = [];
+    const realWaitUntil = vi.fn();
+    const ctx = { waitUntil: realWaitUntil, props: { a: 1 } };
+    const fetchRoute = vi.fn(
+      async (_request: Request, routeCtx: typeof ctx) => {
+        expect(routeCtx.props).toEqual({ a: 1 });
+        routeCtx.waitUntil(
+          new Promise<void>((resolve) =>
+            setTimeout(() => {
+              events.push('sentry event sent');
+              resolve();
+            }, 20),
+          ),
+        );
+        return new Response('{}', { status: 500 });
+      },
+    );
+    await runScheduledCron(CRON, 'secret', fetchRoute, ctx)
+      .then(() => events.push('run resolved'))
+      .catch(() => events.push('run threw'));
+    expect(events).toEqual(['sentry event sent', 'run threw']);
+    // The task is still handed to the runtime too.
+    expect(realWaitUntil).toHaveBeenCalledOnce();
+  });
+  it('awaits background work registered by a route that succeeds', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    let flushed = false;
+    await runScheduledCron(
+      CRON,
+      'secret',
+      async (_request, routeCtx) => {
+        // A handled capture in a 200 route, and a task that itself registers
+        // another one.
+        routeCtx.waitUntil(
+          Promise.resolve().then(() =>
+            routeCtx.waitUntil(
+              new Promise<void>((resolve) =>
+                setTimeout(() => {
+                  flushed = true;
+                  resolve();
+                }, 10),
+              ),
+            ),
+          ),
+        );
+        return new Response('{}', { status: 200 });
+      },
+      { waitUntil: vi.fn() },
+    );
+    expect(flushed).toBe(true);
+  });
+  it('drains each route response instead of cancelling it', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const response = new Response('{"ok":true}');
+    const cancel = vi.spyOn(response.body as ReadableStream, 'cancel');
+    await runScheduledCron(CRON, 'secret', async () => response);
+    expect(cancel).not.toHaveBeenCalled();
+    expect(response.bodyUsed).toBe(true);
+  });
+  it('does not let a background task that never settles hold the run open', async () => {
+    const tracked = trackWaitUntil({ waitUntil: vi.fn() });
+    tracked.ctx.waitUntil(new Promise(() => {}));
+    tracked.ctx.waitUntil(Promise.reject(new Error('flush failed')));
+    const started = Date.now();
+    await tracked.settle(50);
+    expect(Date.now() - started).toBeLessThan(1000);
   });
 });

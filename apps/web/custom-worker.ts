@@ -24,9 +24,14 @@ export default {
     return injectWebAnalytics(request, response, env.CF_WEB_ANALYTICS_TOKEN);
   },
   scheduled(controller, env, ctx) {
+    // The routes get a ctx whose waitUntil work (Sentry flushes) the dispatch
+    // awaits before it resolves or rejects.
     ctx.waitUntil(
-      runScheduledCron(controller.cron, env.CRON_SECRET, (request) =>
-        handler.fetch(request, env, ctx),
+      runScheduledCron(
+        controller.cron,
+        env.CRON_SECRET,
+        (request, routeCtx) => handler.fetch(request, env, routeCtx),
+        ctx,
       ),
     );
   },

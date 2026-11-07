@@ -57,6 +57,31 @@ const logToPostHog = (
   }
 };
 
+// OpenNext keeps the Workers ExecutionContext for the current invocation here
+// (the same lookup @sentry/nextjs makes in captureRequestError).
+const CLOUDFLARE_CONTEXT = Symbol.for('__cloudflare-context__');
+
+/**
+ * On Cloudflare Workers, extend the invocation until Sentry has sent.
+ *
+ * The Sentry SDK sends an event asynchronously, and Workers cancel any
+ * request that is neither awaited nor passed to ctx.waitUntil once the
+ * invocation ends, so a handled capture in a route or cron that then answers
+ * normally was silently dropped. In the browser, Node, tests and scripts there
+ * is no context and this does nothing.
+ */
+export const keepAliveUntilSentryFlushed = (): void => {
+  const ctx = (
+    globalThis as {
+      [CLOUDFLARE_CONTEXT]?: {
+        ctx?: { waitUntil?: (promise: Promise<unknown>) => void };
+      };
+    }
+  )[CLOUDFLARE_CONTEXT]?.ctx;
+  if (typeof ctx?.waitUntil !== 'function') return;
+  ctx.waitUntil(Sentry.flush(2000).catch(() => false));
+};
+
 /**
  * Log to Sentry
  */
@@ -81,6 +106,7 @@ const logToSentry = (
           },
         },
       });
+      keepAliveUntilSentryFlushed();
     } else if (level === 'warn') {
       Sentry.captureMessage(message, {
         level: 'warning',
@@ -88,6 +114,7 @@ const logToSentry = (
           log: context,
         },
       });
+      keepAliveUntilSentryFlushed();
     }
   } catch (err) {
     console.warn('Sentry logging failed:', err);
