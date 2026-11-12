@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
 import { createMagicLinkToken } from '@/lib/auth-mobile';
-import { sendEmail } from '@/lib/cloudflare-email';
 import { getFromAddress } from '@/lib/email-config';
 import { logger } from '@/lib/logger';
+import { sendOperationalEmail as sendEmail } from '@/lib/operational-email';
 import { db } from '@/lib/prisma';
 
 /**

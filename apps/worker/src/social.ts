@@ -1,3 +1,5 @@
+import { postToSlack } from './slack-alert.js';
+
 /**
  * Instagram & Facebook publishing via Meta Graph API.
  * Adapted from PTP's apps/web/app/actions/social.ts.
@@ -269,6 +271,49 @@ export interface PublishResult {
   error?: string;
 }
 
+const socialFailures = new Set<string>();
+
+async function reportPublishResults(results: PublishResult[]) {
+  if (!process.env.SLACK_BOT_TOKEN) return;
+  await Promise.all(
+    results.map(async (result) => {
+      const kind = `${result.platform} ${result.type}`;
+      if (!result.success) {
+        if (socialFailures.has(kind)) return;
+        socialFailures.add(kind);
+        await postToSlack('alerts', `Could not publish ${kind}`);
+        return;
+      }
+
+      if (socialFailures.delete(kind)) {
+        void postToSlack('alerts', `Publishing recovered · ${kind}`);
+      }
+      const field =
+        result.platform === 'instagram' ? 'permalink' : 'permalink_url';
+      const lines: string[] = [];
+      try {
+        const { token } = getConfig();
+        const url = `${GRAPH_API}/${encodeURIComponent(result.mediaId ?? '')}?fields=${field}`;
+        const response = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(5_000),
+        });
+        const data = (await response.json()) as Record<string, unknown>;
+        const link = data[field];
+        if (
+          typeof link === 'string' &&
+          /^https:\/\/(?:www\.)?(?:instagram|facebook)\.com\//.test(link)
+        ) {
+          lines.push(link);
+        }
+      } catch {
+        // Permalinks are optional. The platform already confirmed publication.
+      }
+      await postToSlack('social', `Published ${kind}`, lines);
+    }),
+  );
+}
+
 /**
  * Publish content to Instagram (image post + optional reel).
  */
@@ -340,6 +385,9 @@ export async function publishToInstagram(options: {
     }
   }
 
+  void reportPublishResults(results).catch(() => {
+    console.warn('[slack] Could not report social publishing result');
+  });
   return results;
 }
 
@@ -408,5 +456,8 @@ export async function publishToFacebook(options: {
     }
   }
 
+  void reportPublishResults(results).catch(() => {
+    console.warn('[slack] Could not report social publishing result');
+  });
   return results;
 }

@@ -1,3 +1,4 @@
+import { postToSlack } from './slack-alert.js';
 import 'dotenv/config';
 
 // Sentry patches the runtime on init — keep this import above every other
@@ -165,6 +166,7 @@ app.get('/health', (c) => {
  * auto-published (status:'published'); compliance is enforced in the prompts.
  */
 app.post('/generate/blog', (c) => {
+  const previousStatus = blogRunState.read().status;
   if (!blogRunState.begin()) {
     return c.json(
       { ok: false, accepted: false, reason: 'already-running' },
@@ -178,9 +180,18 @@ app.post('/generate/blog', (c) => {
         throw new Error(result.error ?? 'Blog generation failed');
       }
       blogRunState.succeed(result.slug);
+      if (previousStatus === 'failed') {
+        void postToSlack('alerts', 'Blog publishing recovered');
+      }
+      void postToSlack('social', 'Blog article published', [
+        `https://www.auntiemarlenes.com/blog/${encodeURIComponent(result.slug)}`,
+      ]);
     })
     .catch((err) => {
       blogRunState.fail(err);
+      if (previousStatus !== 'failed') {
+        void postToSlack('alerts', 'Blog publication failed');
+      }
       Sentry.captureException(err);
       console.error('[/generate/blog] uncaught:', err);
     });

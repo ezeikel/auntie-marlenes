@@ -6,10 +6,10 @@ import QuizResultsEmail from '@/emails/quiz-results';
 import RestockReminderEmail from '@/emails/restock-reminder';
 import ShippingUpdateEmail from '@/emails/shipping-update';
 import WelcomeEmail from '@/emails/welcome';
-import { sendEmail } from '@/lib/cloudflare-email';
 import { getFromAddress, REPLY_TO } from '@/lib/email-config';
 import { logger } from '@/lib/logger';
 import { isUnsubscribed } from '@/lib/newsletter-subscribers';
+import { sendOperationalEmail as sendEmail } from '@/lib/operational-email';
 import {
   getUnsubscribeHeaders,
   getUnsubscribeUrl,

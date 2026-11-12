@@ -72,7 +72,11 @@ export async function loadModels() {
       ),
     }),
   ]);
-  const models = target.datamodel.models;
+  // The paid-order receipt was introduced after the D1 cutover. It has no
+  // historical Neon rows and does not participate in the Neon copy or parity.
+  const models = target.datamodel.models.filter(
+    (model) => model.name !== 'ShopifyPaidSlackReceipt',
+  );
   if (source.datamodel.models.length !== models.length)
     fail('Source/target model counts differ');
   for (const model of models) {

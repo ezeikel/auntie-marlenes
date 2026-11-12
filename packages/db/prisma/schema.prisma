@@ -122,3 +122,10 @@ model NewsletterSubscriber {
 
   @@map("newsletter_subscribers")
 }
+
+/// Durable claim for a paid-order Slack notification. Contains no customer data.
+model ShopifyPaidSlackReceipt {
+  orderId String @id
+
+  @@map("shopify_paid_slack_receipts")
+}
