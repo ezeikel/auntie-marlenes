@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { TRACKING_EVENTS } from '@/constants/events';
+import { runAfterResponse } from '@/lib/after-response';
 import {
   sendOrderCancellationEmail,
   sendOrderConfirmationEmail,
@@ -10,6 +11,7 @@ import {
 } from '@/lib/email';
 import { logger } from '@/lib/logger';
 import { db } from '@/lib/prisma';
+import { postToSlack } from '@/lib/slack-alert';
 import { track } from '@/utils/analytics-server';
 
 /**
@@ -100,6 +102,7 @@ export async function POST(request: Request) {
 
       case 'orders/paid':
         await handleOrderPaid(data);
+        runAfterResponse(() => notifyPaidOrder(data));
         break;
 
       case 'products/create':
@@ -286,6 +289,35 @@ async function handleOrderPaid(order: any) {
       // Checkout may not exist in our DB — that's fine
     }
   }
+}
+
+async function notifyPaidOrder(order: {
+  id?: number | string;
+  test?: boolean;
+  total_price?: string;
+  currency?: string;
+}) {
+  if (!process.env.SLACK_BOT_TOKEN || order.test !== false) return;
+  const id = String(order.id ?? '');
+  const amount = order.total_price;
+  const currency = order.currency;
+  if (
+    !/^\d+$/.test(id) ||
+    !amount ||
+    !/^\d+(\.\d{1,4})?$/.test(amount) ||
+    !currency ||
+    !/^[A-Z]{3}$/.test(currency)
+  )
+    return;
+  try {
+    await db.shopifyPaidSlackReceipt.create({ data: { orderId: id } });
+  } catch (error) {
+    if ((error as { code?: string } | null)?.code !== 'P2002') {
+      console.warn('[slack] Could not claim paid order receipt');
+    }
+    return;
+  }
+  await postToSlack('money', `Shopify order paid · ${currency} ${amount}`);
 }
 
 /**

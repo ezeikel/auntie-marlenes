@@ -10,10 +10,12 @@ import type { EmailConfig } from 'next-auth/providers/email';
 import FacebookProvider from 'next-auth/providers/facebook';
 import GoogleProvider from 'next-auth/providers/google';
 import MagicLinkEmail from '@/components/emails/MagicLinkEmail';
+import { runAfterResponse } from '@/lib/after-response';
 import { generateAppleClientSecret } from '@/lib/apple';
-import { sendEmail } from '@/lib/cloudflare-email';
 import { sendWelcomeEmail } from '@/lib/email';
 import { getFromAddress, isEmailConfigured } from '@/lib/email-config';
+import { sendOperationalEmail as sendEmail } from '@/lib/operational-email';
+import { postToSlack } from '@/lib/slack-alert';
 
 type AppleProfile = Profile & {
   user?: {
@@ -108,6 +110,11 @@ const getConfig = async () => {
       // credential is present, so other providers keep working without it.
       ...(isEmailConfigured() ? [emailProvider] : []),
     ],
+    events: {
+      createUser: () => {
+        runAfterResponse(() => postToSlack('users', 'New account created'));
+      },
+    },
     callbacks: {
       async signIn({
         account,
