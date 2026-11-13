@@ -12,9 +12,14 @@ import 'react-native-reanimated';
 import '@/global.css';
 import * as Sentry from '@sentry/react-native';
 import { useColorScheme } from '@/components/useColorScheme';
+import { initObserve, markAppInteractive, ObserveRoot } from '@/lib/observe';
 import Providers from '@/providers';
 
 const SENTRY_DSN = process.env.SENTRY_DSN || process.env.EXPO_PUBLIC_SENTRY_DSN;
+
+// Before the first render and before Sentry: Observe's configure() throws
+// after mount.
+initObserve();
 
 const navigationIntegration = Sentry.reactNavigationIntegration();
 
@@ -65,6 +70,8 @@ function RootLayout() {
     // Fonts are now embedded at build time via expo-font plugin
     // Hide splash screen once navigation is ready
     SplashScreen.hideAsync();
+    // The splash leaving is the first frame someone can act on.
+    markAppInteractive();
   }, []);
 
   return <RootLayoutNav />;
@@ -91,4 +98,4 @@ function RootLayoutNav() {
   );
 }
 
-export default Sentry.wrap(RootLayout);
+export default ObserveRoot.wrap(Sentry.wrap(RootLayout));

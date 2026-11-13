@@ -13,6 +13,7 @@ import { Toaster } from 'sonner-native';
 import { AuthContextProvider } from './contexts/auth';
 import { CartProvider } from './contexts/cart';
 import { SavedProvider } from './contexts/saved';
+import { posthog } from './lib/posthog';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,14 +37,7 @@ const Providers = ({ children }: ProvidersProps) => {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <BottomSheetModalProvider>
             <PostHogProvider
-              apiKey={process.env.EXPO_PUBLIC_POSTHOG_API_KEY || ''}
-              options={{
-                host: 'https://eu.i.posthog.com',
-                enableSessionReplay: true,
-                // posthog-react-native v4 moved lifecycle capture from the
-                // autocapture options onto the client options.
-                captureAppLifecycleEvents: true,
-              }}
+              client={posthog}
               autocapture={{
                 captureTouches: true,
                 captureScreens: true,

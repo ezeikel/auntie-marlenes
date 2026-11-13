@@ -153,6 +153,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           },
         },
       ],
+      // PostHog error tracking's Hermes source maps upload at build time
+      // with POSTHOG_CLI_API_KEY, _PROJECT_ID and _HOST from the EAS
+      // environment. skipOnConflict lets a rebuild of the same bundle pass.
+      // Before Sentry's: the other way round, the iOS bundle phase hands
+      // posthog-xcode.sh and react-native-xcode.sh to sentry-xcode.sh as one
+      // quoted argument and bundling fails.
+      ['posthog-react-native/expo', { skipOnConflict: true }],
       [
         '@sentry/react-native/expo',
         {

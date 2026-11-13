@@ -48,6 +48,7 @@
       "lightningcss": "1.30.1"
     },
     "onlyBuiltDependencies": [
+      "@posthog/cli",
       "@prisma/engines",
       "@sentry/cli",
       "core-js",

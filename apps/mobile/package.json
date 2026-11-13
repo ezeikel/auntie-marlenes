@@ -42,7 +42,8 @@
     "test": "vitest run",
     "check-types": "tsc --noEmit",
     "env:pull": "eas env:pull --environment development",
-    "test:e2e": "maestro test .maestro"
+    "test:e2e": "maestro test .maestro",
+    "postinstall": "node scripts/link-posthog-cli.mjs"
   },
   "dependencies": {
     "@auntie-marlenes/constants": "workspace:*",
@@ -58,6 +59,7 @@
     "@gorhom/bottom-sheet": "^5.2.14",
     "@hookform/resolvers": "^5.4.0",
     "@invertase/react-native-apple-authentication": "^2.5.1",
+    "@posthog/react-native-plugin": "2.13.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-google-signin/google-signin": "^16.1.2",
     "@sentry/react-native": "~8.12.0",
@@ -81,6 +83,7 @@
     "expo-haptics": "~57.0.1",
     "expo-linking": "~57.0.3",
     "expo-localization": "~57.0.1",
+    "expo-observe": "~57.0.28",
     "expo-router": "~57.0.6",
     "expo-secure-store": "~57.0.1",
     "expo-sharing": "~57.0.5",
@@ -91,8 +94,7 @@
     "graphql": "^16.14.2",
     "graphql-request": "^7.4.0",
     "nativewind": "5.0.0-preview.2",
-    "posthog-react-native": "^4.57.0",
-    "posthog-react-native-session-replay": "^1.6.0",
+    "posthog-react-native": "^4.85.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.0",
@@ -115,6 +117,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@posthog/cli": "0.20.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^24.13.3",
     "@types/react": "19.2.14",
@@ -133,7 +136,7 @@
     "doctor": {
       "reactNativeDirectoryCheck": {
         "exclude": [
-          "posthog-react-native-session-replay"
+          "@posthog/react-native-plugin"
         ],
         "listUnknownPackages": false
       }
