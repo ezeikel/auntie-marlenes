@@ -273,7 +273,39 @@ export interface PublishResult {
 
 const socialFailures = new Set<string>();
 
-async function reportPublishResults(results: PublishResult[]) {
+type PublishedContent = {
+  imageUrl?: string;
+  videoUrl?: string;
+  postCaption: string;
+  reelCaption: string;
+};
+
+/** Only share stable public R2 URLs. Private or signed URLs belong outside Slack. */
+function publicAssetUrl(value: string | undefined): string | undefined {
+  if (!value || !process.env.R2_PUBLIC_URL) return;
+  try {
+    const asset = new URL(value);
+    const base = new URL(process.env.R2_PUBLIC_URL);
+    const prefix = base.pathname.replace(/\/$/, '') + '/';
+    if (
+      asset.protocol === 'https:' &&
+      asset.origin === base.origin &&
+      asset.pathname.startsWith(prefix) &&
+      !asset.username &&
+      !asset.password &&
+      !asset.search &&
+      !asset.hash
+    )
+      return asset.href;
+  } catch {
+    // The post still has its caption and any platform permalink.
+  }
+}
+
+async function reportPublishResults(
+  results: PublishResult[],
+  content: PublishedContent,
+) {
   if (!process.env.SLACK_BOT_TOKEN) return;
   await Promise.all(
     results.map(async (result) => {
@@ -285,12 +317,10 @@ async function reportPublishResults(results: PublishResult[]) {
         return;
       }
 
-      if (socialFailures.delete(kind)) {
-        void postToSlack('alerts', `Publishing recovered · ${kind}`);
-      }
+      socialFailures.delete(kind);
       const field =
         result.platform === 'instagram' ? 'permalink' : 'permalink_url';
-      const lines: string[] = [];
+      const links: { url: string; label: string }[] = [];
       try {
         const { token } = getConfig();
         const url = `${GRAPH_API}/${encodeURIComponent(result.mediaId ?? '')}?fields=${field}`;
@@ -304,12 +334,33 @@ async function reportPublishResults(results: PublishResult[]) {
           typeof link === 'string' &&
           /^https:\/\/(?:www\.)?(?:instagram|facebook)\.com\//.test(link)
         ) {
-          lines.push(link);
+          links.push({ url: link, label: 'View published post' });
         }
       } catch {
         // Permalinks are optional. The platform already confirmed publication.
       }
-      await postToSlack('social', `Published ${kind}`, lines);
+      const imagePost = result.type === 'post';
+      const asset = publicAssetUrl(
+        imagePost ? content.imageUrl : content.videoUrl,
+      );
+      if (asset)
+        links.push({
+          url: asset,
+          label: imagePost ? 'Open image' : 'Open video',
+        });
+      const caption = imagePost ? content.postCaption : content.reelCaption;
+      await postToSlack(
+        'social',
+        `Published ${kind}`,
+        caption ? ['', caption] : [],
+        {
+          links,
+          image:
+            imagePost && asset
+              ? { url: asset, alt: `Image published to ${result.platform}` }
+              : undefined,
+        },
+      );
     }),
   );
 }
@@ -385,7 +436,7 @@ export async function publishToInstagram(options: {
     }
   }
 
-  void reportPublishResults(results).catch(() => {
+  void reportPublishResults(results, options).catch(() => {
     console.warn('[slack] Could not report social publishing result');
   });
   return results;
@@ -456,7 +507,7 @@ export async function publishToFacebook(options: {
     }
   }
 
-  void reportPublishResults(results).catch(() => {
+  void reportPublishResults(results, options).catch(() => {
     console.warn('[slack] Could not report social publishing result');
   });
   return results;
