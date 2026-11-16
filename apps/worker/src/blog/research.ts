@@ -88,7 +88,10 @@ export async function researchBlogTopic(input: {
 
   const checkedAt = input.checkedAt ?? new Date().toISOString();
   const { object } = await generateObject({
-    model: perplexity('sonar'),
+    // @ai-sdk/perplexity 3.1+ calls the Agent API, which rejects Sonar model
+    // ids. `fast` is the provider's documented replacement for `sonar`; as a
+    // preset it carries its own search tools, unlike a direct model id.
+    model: perplexity('fast'),
     schema: researchSchema,
     system: SYSTEM,
     prompt: `Research this article: "${input.topic.topic}".
