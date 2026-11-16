@@ -6,7 +6,7 @@
  */
 
 import { anthropic } from '@ai-sdk/anthropic';
-import { fal } from '@fal-ai/client';
+import { ApiError, fal } from '@fal-ai/client';
 import RunwayML from '@runwayml/sdk';
 import { generateText } from 'ai';
 import { uploadFile } from './storage';
@@ -291,6 +291,30 @@ async function animateWithRunway(
   return videoBuffer;
 }
 
+/**
+ * fal answers 401 or 403 when the key is wrong, the balance has run out or the
+ * account cannot use the model. The client reports that as a bare "Forbidden",
+ * so name the provider, the model and fal's own reason instead. It is an
+ * account problem, not a transient one, so callers should not retry it.
+ */
+export function explainFalRefusal(err: unknown, modelId: string): unknown {
+  if (
+    !(err instanceof ApiError) ||
+    (err.status !== 401 && err.status !== 403)
+  ) {
+    return err;
+  }
+  const body = err.body as { detail?: unknown } | undefined;
+  const reason =
+    typeof body?.detail === 'string'
+      ? body.detail
+      : JSON.stringify(body ?? null);
+  return new Error(
+    `fal.ai refused ${modelId} with HTTP ${err.status} (${err.message}); check FAL_KEY, the fal balance and access to this model. fal said: ${reason}`,
+    { cause: err },
+  );
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 export { type SceneAnalysis };
@@ -380,17 +404,21 @@ export async function animateScene(
       break;
   }
 
-  const result = await fal.subscribe(modelId, {
-    // input is assembled per-model above; fal's generated per-endpoint input
-    // unions can't narrow a dynamic record — runtime shape is correct.
-    input: input as never,
-    logs: true,
-    onQueueUpdate: (update) => {
-      if (update.status === 'IN_PROGRESS') {
-        console.log(`[Video] ${model}: ${update.status}...`);
-      }
-    },
-  });
+  const result = await fal
+    .subscribe(modelId, {
+      // input is assembled per-model above; fal's generated per-endpoint input
+      // unions can't narrow a dynamic record — runtime shape is correct.
+      input: input as never,
+      logs: true,
+      onQueueUpdate: (update) => {
+        if (update.status === 'IN_PROGRESS') {
+          console.log(`[Video] ${model}: ${update.status}...`);
+        }
+      },
+    })
+    .catch((err: unknown) => {
+      throw explainFalRefusal(err, modelId);
+    });
 
   const data = result.data as any;
   const videoUrl = data?.video?.url || data?.output?.url;

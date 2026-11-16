@@ -43,9 +43,10 @@ const blogRunState = new BlogRunState();
 app.use('*', logger());
 
 app.onError((err, c) => {
-  Sentry.captureException(err);
+  const sentryEventId = Sentry.captureException(err);
   console.error('[worker] Unhandled error:', err);
-  return c.json({ error: 'Internal server error' }, 500);
+  // The event id tells internal callers this failure is already reported.
+  return c.json({ error: 'Internal server error', sentryEventId }, 500);
 });
 
 // Bearer auth for publishing endpoints — only the web app cron should call these.
@@ -764,9 +765,16 @@ app.post('/jobs/publish/next', async (c) => {
     .then(async (response) => {
       const result = await response.json().catch(() => null);
       if (!response.ok || result?.success === false) {
-        throw new Error(
-          `Scheduled publishing failed with HTTP ${response.status}: ${JSON.stringify(result)}`,
-        );
+        const message = `Scheduled publishing failed with HTTP ${response.status}: ${JSON.stringify(result)}`;
+        // onError has already sent the underlying error (for example a fal
+        // refusal) to Sentry; a second, opaque report of it adds nothing.
+        if (result?.sentryEventId) {
+          console.error(
+            `[/jobs/publish/next] ${message} (reported as Sentry event ${result.sentryEventId})`,
+          );
+          return;
+        }
+        throw new Error(message);
       }
       console.log('[/jobs/publish/next] finished:', result);
     })
