@@ -11,6 +11,7 @@ export { DOQueueHandler } from './.open-next/worker.js';
 
 import { injectWebAnalytics } from './lib/cf-web-analytics';
 import { runScheduledCron } from './lib/cron-schedule';
+import { isFilePathFormPost } from './lib/probe-request';
 import { postToSlack } from './lib/slack-alert';
 
 async function postDailySummary(db: D1Database, token: string) {
@@ -45,6 +46,12 @@ export default {
       url.hostname = 'www.auntiemarlenes.com';
       // The global Response is the DOM type; workerd's runtime object is the same.
       return Response.redirect(url.toString(), 308) as unknown as CfResponse;
+    }
+    // Scanners POST malformed forms at file-like paths. Next would treat that
+    // as a server action on the catch-all category page and throw while
+    // parsing the body; no page or action lives at such a path.
+    if (isFilePathFormPost(request.method, url.pathname)) {
+      return new Response(null, { status: 404 }) as unknown as CfResponse;
     }
     const response = await handler.fetch(request, env, ctx);
     return injectWebAnalytics(request, response, env.CF_WEB_ANALYTICS_TOKEN);
