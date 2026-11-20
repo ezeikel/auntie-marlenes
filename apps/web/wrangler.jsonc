@@ -84,7 +84,7 @@
     "CONTENT_WORKER_URL": "http://content-worker.auntiemarlenes.com:3020"
   },
   "triggers": {
-    "crons": ["0 9 * * *", "0 * * * *", "0 10 * * *", "0 12 * * *"]
+    "crons": ["0 9 * * *", "0 * * * *", "0 10 * * *"]
   },
   "env": {
     "staging": {

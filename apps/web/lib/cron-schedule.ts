@@ -2,7 +2,6 @@ export const CRON_ROUTES = {
   '0 9 * * *': ['/api/cron/blog'],
   '0 * * * *': ['/api/cron/abandoned-cart'],
   '0 10 * * *': ['/api/cron/restock-reminder'],
-  '0 12 * * *': ['/api/cron/publish-next'],
 } as const;
 
 export function routesForCron(cron: string): readonly string[] {

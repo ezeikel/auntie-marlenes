@@ -14,7 +14,7 @@ const config = JSON.parse(
   readFileSync(new URL('../../wrangler.jsonc', import.meta.url), 'utf8'),
 );
 describe('Cloudflare crons', () => {
-  it('matches all four unchanged Vercel schedules', () => {
+  it('matches the Vercel schedules', () => {
     const vercel = JSON.parse(
       readFileSync(new URL('../../vercel.json', import.meta.url), 'utf8'),
     );
@@ -24,7 +24,7 @@ describe('Cloudflare crons', () => {
       ),
     ).toEqual(vercel.crons);
     expect(config.triggers.crons).toEqual(Object.keys(CRON_ROUTES));
-    expect(config.triggers.crons).toHaveLength(4);
+    expect(config.triggers.crons).toHaveLength(3);
   });
   it('keeps staging unscheduled and redeclares all bindings', () => {
     const staging = config.env.staging;

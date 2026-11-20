@@ -134,7 +134,9 @@ bearer; no production origin or public HTTP round-trip is involved.
 | `0 9 * * *` | `/api/cron/blog` | POST `/generate/blog` with `{}` |
 | `0 * * * *` | `/api/cron/abandoned-cart` | Local DB email eligibility/cleanup |
 | `0 10 * * *` | `/api/cron/restock-reminder` | Local DB reminder eligibility |
-| `0 12 * * *` | `/api/cron/publish-next` | POST `/jobs/publish/next` with `{dry_run:false, platforms:['instagram','facebook']}` |
+
+The daily product reel (`/api/cron/publish-next`, formerly `0 12 * * *`) is not scheduled: the
+social accounts are not posting. The route remains for a manual run.
 
 Scheduled GET handoffs acknowledge with HTTP 200 for this card's acceptance;
 manual blog POST retains HTTP 202. Unit tests compare all schedules against the
