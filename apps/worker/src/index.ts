@@ -747,6 +747,7 @@ app.post('/publish/content', async (c) => {
 
 // ─── Scheduled Publishing ───────────────────────────────────────────────────
 
+import { createPublishJob } from './publish-job';
 import {
   loadSchedule,
   pickNextProduct,
@@ -754,37 +755,39 @@ import {
   saveSchedule,
 } from './schedule';
 
+type PublishNextOptions = {
+  dry_run?: boolean;
+  platforms?: ('instagram' | 'facebook')[];
+  image_model?: string;
+  video_model?: string;
+};
+
+const runPublishJob = createPublishJob({
+  capture: (error, hint) => {
+    Sentry.captureException(error, hint);
+    console.error('[/jobs/publish/next] failed:', error);
+  },
+  alert: (title) => void postToSlack('alerts', title),
+});
+
 /**
  * Vercel-facing scheduled publishing boundary.
  *
  * The request is acknowledged before any generation, rendering, upload, or
- * provider call begins. The long-running synchronous endpoint remains local
- * to this worker process so operational tooling can still await a result.
+ * provider call begins. The run happens in this process and reports a failure
+ * once; /publish/next stays synchronous so operational tooling can await a
+ * result.
  */
 app.post('/jobs/publish/next', async (c) => {
-  const requestBody = await c.req.text();
-  const headers = new Headers({ 'Content-Type': 'application/json' });
-  const secret = process.env.WORKER_SECRET;
-  if (secret) headers.set('Authorization', `Bearer ${secret}`);
+  const options = await c.req
+    .json<PublishNextOptions | null>()
+    .catch(() => null);
 
-  void fetch(`http://127.0.0.1:${port}/publish/next`, {
-    method: 'POST',
-    headers,
-    body: requestBody || '{}',
-  })
-    .then(async (response) => {
-      const result = await response.json().catch(() => null);
-      if (!response.ok || result?.success === false) {
-        throw new Error(
-          `Scheduled publishing failed with HTTP ${response.status}: ${JSON.stringify(result)}`,
-        );
-      }
-      console.log('[/jobs/publish/next] finished:', result);
-    })
-    .catch((error) => {
-      Sentry.captureException(error);
-      console.error('[/jobs/publish/next] failed:', error);
-    });
+  void runPublishJob(async () => {
+    const outcome = await publishNext(options ?? {});
+    console.log('[/jobs/publish/next] finished:', outcome.body);
+    return outcome;
+  });
 
   return c.json({ ok: true, accepted: true }, 202);
 });
@@ -802,25 +805,22 @@ app.post('/jobs/publish/next', async (c) => {
  * }
  */
 app.post('/publish/next', async (c) => {
-  const {
-    dry_run = false,
-    platforms = ['instagram', 'facebook'],
-    image_model = 'gemini',
-    video_model = 'seedance',
-  } = await c.req
-    .json<{
-      dry_run?: boolean;
-      platforms?: ('instagram' | 'facebook')[];
-      image_model?: string;
-      video_model?: string;
-    }>()
-    .catch(() => ({
-      dry_run: false,
-      platforms: ['instagram', 'facebook'] as const,
-      image_model: 'gemini',
-      video_model: 'seedance',
-    }));
+  const options = await c.req
+    .json<PublishNextOptions | null>()
+    .catch(() => null);
+  const { status, body } = await publishNext(options ?? {});
+  return c.json(body, status);
+});
 
+async function publishNext({
+  dry_run = false,
+  platforms = ['instagram', 'facebook'],
+  image_model = 'gemini',
+  video_model = 'seedance',
+}: PublishNextOptions): Promise<{
+  status: 200 | 404;
+  body: Record<string, unknown>;
+}> {
   console.log(`[Publish/Next] Starting (dry_run: ${dry_run})`);
 
   // 1. Load all products + schedule state
@@ -833,7 +833,7 @@ app.post('/publish/next', async (c) => {
   const pick = pickNextProduct(allHandles, schedule);
 
   if (!pick) {
-    return c.json({ error: 'No products available' }, 404);
+    return { status: 404, body: { error: 'No products available' } };
   }
 
   // Start new cycle if needed
@@ -920,16 +920,19 @@ app.post('/publish/next', async (c) => {
   // 4. If dry run, stop here
   if (dry_run) {
     console.log('[Publish/Next] Dry run — skipping social posting');
-    return c.json({
-      success: true,
-      dry_run: true,
-      product: { handle, name: product.title, brand: product.vendor },
-      cycle: schedule.currentCycle,
-      headline: content.headline,
-      subheading: content.subheading,
-      captions,
-      content: { post: postUpload.url, reel: reelUpload.url },
-    });
+    return {
+      status: 200,
+      body: {
+        success: true,
+        dry_run: true,
+        product: { handle, name: product.title, brand: product.vendor },
+        cycle: schedule.currentCycle,
+        headline: content.headline,
+        subheading: content.subheading,
+        captions,
+        content: { post: postUpload.url, reel: reelUpload.url },
+      },
+    };
   }
 
   // 5. Publish to social
@@ -977,18 +980,21 @@ app.post('/publish/next', async (c) => {
     );
   }
 
-  return c.json({
-    success: allSucceeded,
-    product: { handle, name: product.title, brand: product.vendor },
-    cycle: schedule.currentCycle,
-    headline: content.headline,
-    subheading: content.subheading,
-    captions,
-    productTagged: !!catalogProductId,
-    content: { post: postUpload.url, reel: reelUpload.url },
-    publishing: publishResults,
-  });
-});
+  return {
+    status: 200,
+    body: {
+      success: allSucceeded,
+      product: { handle, name: product.title, brand: product.vendor },
+      cycle: schedule.currentCycle,
+      headline: content.headline,
+      subheading: content.subheading,
+      captions,
+      productTagged: !!catalogProductId,
+      content: { post: postUpload.url, reel: reelUpload.url },
+      publishing: publishResults,
+    },
+  };
+}
 
 /**
  * View the current schedule state.
