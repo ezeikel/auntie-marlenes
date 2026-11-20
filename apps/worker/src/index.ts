@@ -23,7 +23,7 @@ import { logger } from 'hono/logger';
 import { runBlogCron } from './blog/pipeline';
 import { BlogRunState } from './blog/run-state';
 import { compositePost } from './compositor';
-import { generateProductContent } from './generate';
+import { generateProductContent, isImageModel } from './generate';
 import { getAllProducts, getProductByHandle } from './shopify';
 import {
   listContent,
@@ -33,8 +33,9 @@ import {
 } from './storage';
 import { generateOutputPath, renderProductReel } from './video/render';
 import {
-  animateScene as animateWithKling,
+  animateScene as animateWithRunway,
   generateSceneAudio,
+  isVideoModel,
 } from './video-gen';
 import { animateScene as animateWithVeo } from './video-gen-veo';
 
@@ -205,28 +206,40 @@ app.post('/generate/blog', (c) => {
  * Body: {
  *   handle: string,
  *   types?: ('post' | 'reel')[],
- *   image_model?: 'gemini' | 'flux-kontext' | 'flux-2-pro',
- *   video_model?: 'veo' | 'kling-o3' | 'kling-v3' | 'pixverse' | 'hailuo' | string[]
+ *   image_model?: 'gemini',
+ *   video_model?: 'runway' | 'veo' | ('runway' | 'veo')[]
  * }
  *
- * Pass video_model as an array to compare multiple models in parallel:
- *   video_model: ["veo", "pixverse", "hailuo"]
+ * Pass video_model as an array to compare both models in parallel:
+ *   video_model: ["runway", "veo"]
  */
 app.post('/generate/product', async (c) => {
   const {
     handle,
     types = ['post'],
     image_model = 'gemini',
-    video_model = 'seedance',
+    video_model = 'runway',
   } = await c.req.json<{
     handle: string;
     types?: ('post' | 'reel')[];
-    image_model?: 'gemini' | 'flux-kontext' | 'flux-2-pro';
+    image_model?: string;
     video_model?: string | string[];
   }>();
 
   if (!handle) {
     return c.json({ error: 'handle is required' }, 400);
+  }
+  if (!isImageModel(image_model)) {
+    return c.json({ error: `Unsupported image_model: ${image_model}` }, 400);
+  }
+  const unsupportedVideoModel = [video_model]
+    .flat()
+    .find((model) => model !== 'veo' && !isVideoModel(model));
+  if (unsupportedVideoModel !== undefined) {
+    return c.json(
+      { error: `Unsupported video_model: ${unsupportedVideoModel}` },
+      400,
+    );
   }
 
   console.log(`[API] Generating content for: ${handle}`);
@@ -291,10 +304,10 @@ app.post('/generate/product', async (c) => {
           product.productType,
         );
       } else {
-        const result = await animateWithKling(
+        const result = await animateWithRunway(
           content.sceneImage,
           product.productType,
-          model as any,
+          model as 'runway',
         );
         videoBuffer = result.video;
         scene = result.scene;
@@ -513,8 +526,8 @@ import {
  *   handle: string,
  *   platforms?: ('instagram' | 'facebook')[],
  *   types?: ('post' | 'reel')[],
- *   image_model?: 'gemini' | 'flux-kontext' | 'flux-2-pro',
- *   video_model?: string
+ *   image_model?: 'gemini',
+ *   video_model?: 'runway'
  * }
  */
 app.post('/publish/product', async (c) => {
@@ -533,6 +546,12 @@ app.post('/publish/product', async (c) => {
   }>();
 
   if (!handle) return c.json({ error: 'handle is required' }, 400);
+  if (!isImageModel(image_model)) {
+    return c.json({ error: `Unsupported image_model: ${image_model}` }, 400);
+  }
+  if (!isVideoModel(video_model)) {
+    return c.json({ error: `Unsupported video_model: ${video_model}` }, 400);
+  }
 
   console.log(`[Publish] Starting for: ${handle}`);
   console.log(
@@ -553,7 +572,7 @@ app.post('/publish/product', async (c) => {
       category: product.productType,
       imageUrl: productImageUrl,
     },
-    image_model as any,
+    image_model,
   );
 
   let postUrl: string | undefined;
@@ -570,10 +589,10 @@ app.post('/publish/product', async (c) => {
   }
 
   if (types.includes('reel')) {
-    const result = await animateWithKling(
+    const result = await animateWithRunway(
       content.sceneImage,
       product.productType,
-      video_model as any,
+      video_model,
     );
     const videoPath = `/tmp/${video_model}-${Date.now()}.mp4`;
     await writeFile(videoPath, result.video);
@@ -800,8 +819,8 @@ app.post('/jobs/publish/next', async (c) => {
  * Body: {
  *   dry_run?: boolean,         // Generate content but don't post to social
  *   platforms?: ('instagram' | 'facebook')[],
- *   image_model?: string,
- *   video_model?: string
+ *   image_model?: 'gemini',
+ *   video_model?: 'runway'
  * }
  */
 app.post('/publish/next', async (c) => {
@@ -816,11 +835,24 @@ async function publishNext({
   dry_run = false,
   platforms = ['instagram', 'facebook'],
   image_model = 'gemini',
-  video_model = 'seedance',
+  video_model = 'runway',
 }: PublishNextOptions): Promise<{
-  status: 200 | 404;
+  status: 200 | 400 | 404;
   body: Record<string, unknown>;
 }> {
+  if (!isImageModel(image_model)) {
+    return {
+      status: 400,
+      body: { error: `Unsupported image_model: ${image_model}` },
+    };
+  }
+  if (!isVideoModel(video_model)) {
+    return {
+      status: 400,
+      body: { error: `Unsupported video_model: ${video_model}` },
+    };
+  }
+
   console.log(`[Publish/Next] Starting (dry_run: ${dry_run})`);
 
   // 1. Load all products + schedule state
@@ -858,7 +890,7 @@ async function publishNext({
       category: product.productType,
       imageUrl: productImageUrl,
     },
-    image_model as any,
+    image_model,
   );
 
   // Static post
@@ -870,10 +902,10 @@ async function publishNext({
   const postUpload = await uploadProductPost(handle, postImage);
 
   // Reel
-  const videoResult = await animateWithKling(
+  const videoResult = await animateWithRunway(
     content.sceneImage,
     product.productType,
-    video_model as any,
+    video_model,
   );
   const videoPath = `/tmp/${video_model}-${Date.now()}.mp4`;
   await writeFile(videoPath, videoResult.video);

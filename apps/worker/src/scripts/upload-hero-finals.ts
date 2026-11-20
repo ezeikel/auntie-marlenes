@@ -3,7 +3,7 @@
  * Upload all 6 final hero videos (hero-01 through hero-06) to R2 under
  * content/hero/final/ so they can be reviewed from any device.
  *
- * Run AFTER the Sora batch completes. Prints public URLs at the end.
+ * Run AFTER the hero video batch completes. Prints public URLs at the end.
  *
  * Usage:
  *   npx tsx --env-file=.env src/scripts/upload-hero-finals.ts
@@ -82,7 +82,7 @@ async function main() {
     console.log(`\n⚠️  ${missing.length} file(s) missing on disk:`);
     for (const m of missing) console.log(`  - ${m}`);
     console.log(
-      '\nRun the batch generator first: pnpm gen:hero-videos-sora --only=<ids>',
+      '\nRun the batch generator first: pnpm gen:hero-videos-runway-batch',
     );
     process.exit(1);
   }

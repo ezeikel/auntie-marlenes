@@ -33,8 +33,8 @@ const clip = (value: unknown, max = 500): string => {
 };
 
 /**
- * The HTTP status and response body of a provider SDK error (fal's ApiError
- * carries both), so a refusal such as a 403 shows its reason in Sentry. Null
+ * The HTTP status and response body of a provider SDK error that carries
+ * both, so a refusal such as a 403 shows its reason in Sentry. Null
  * for any other error.
  */
 export function providerErrorContext(

@@ -1,7 +1,7 @@
 /**
  * Hero video generation pipeline — Runway Gen-4.5 + ffmpeg slow-mo.
  *
- * Parallel to hero-videos.ts (Seedance) but using Runway Gen-4.5 via the
+ * Uses Runway Gen-4.5 via the
  * @runwayml/sdk, with a post-processing step that stretches 5s clips to ~7s
  * with frame interpolation for butter-smooth slow motion.
  *

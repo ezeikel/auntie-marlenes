@@ -1,7 +1,7 @@
 /**
  * Hero video generation pipeline — Runway Gen-4.5 batch (no ffmpeg slow-mo).
  *
- * Companion to hero-videos-sora.ts. Generates two Runway variants per scene
+ * Generates two Runway variants per scene
  * so they can be compared directly against the Sora finals and against each
  * other:
  *

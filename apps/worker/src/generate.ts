@@ -1,27 +1,26 @@
 /**
  * AI image and headline generation.
- * - Flux 2 Pro / Flux Kontext / Gemini for image generation
+ * - Gemini for image generation
  * - Claude for creative writing (headlines, copy)
  */
 
 import { anthropic } from '@ai-sdk/anthropic';
 import { google } from '@ai-sdk/google';
-import { fal } from '@fal-ai/client';
 import { generateText } from 'ai';
 import sharp from 'sharp';
 import { sonnet5NoThinking } from './model-options';
 import { buildHeadlinePrompt, buildImagePrompt } from './prompts';
-import { uploadFile } from './storage';
-
-// Configure fal.ai
-fal.config({ credentials: process.env.FAL_KEY! });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const geminiImage: any = google('gemini-3-pro-image-preview');
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const claude: any = anthropic('claude-sonnet-5');
 
-export type ImageModel = 'flux-kontext' | 'flux-2-pro' | 'gemini';
+export const IMAGE_MODELS = ['gemini'] as const;
+export type ImageModel = (typeof IMAGE_MODELS)[number];
+
+export const isImageModel = (value: unknown): value is ImageModel =>
+  (IMAGE_MODELS as readonly unknown[]).includes(value);
 
 export interface GeneratedContent {
   sceneImage: Buffer;
@@ -30,91 +29,7 @@ export interface GeneratedContent {
 }
 
 /**
- * Generate scene image using Flux Pro Kontext (reference image + prompt).
- * Best for: preserving product packaging text via reference image input.
- */
-async function generateWithFluxKontext(
-  prompt: string,
-  imageUrl: string,
-): Promise<Buffer> {
-  console.log('[Flux Kontext] Generating scene with reference image...');
-
-  // Upload reference image to R2 so Flux can access it
-  const imgRes = await fetch(imageUrl);
-  const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
-  const upload = await uploadFile(
-    `content/tmp/ref-${Date.now()}.jpg`,
-    imgBuffer,
-    'image/jpeg',
-  );
-
-  const result = await fal.subscribe('fal-ai/flux-pro/kontext', {
-    input: {
-      prompt: `Place this exact product in the following scene, keeping the product packaging, labels, and all text perfectly sharp and accurate. ${prompt}`,
-      image_url: upload.url,
-      aspect_ratio: '3:4',
-      output_format: 'jpeg',
-      safety_tolerance: '5',
-    },
-    logs: true,
-  });
-
-  const outputUrl = (result.data as any)?.images?.[0]?.url;
-  if (!outputUrl) throw new Error('Flux Kontext did not return an image');
-
-  const outputRes = await fetch(outputUrl);
-  const outputBuffer = Buffer.from(await outputRes.arrayBuffer());
-
-  return sharp(outputBuffer)
-    .resize(1080, 1350, { fit: 'cover' })
-    .jpeg({ quality: 95 })
-    .toBuffer();
-}
-
-/**
- * Generate scene image using Flux 2 Pro edit endpoint (reference images + prompt).
- * Best for: newest model with highest quality.
- */
-async function generateWithFlux2Pro(
-  prompt: string,
-  imageUrl: string,
-): Promise<Buffer> {
-  console.log('[Flux 2 Pro] Generating scene with reference image...');
-
-  // Upload reference image to R2
-  const imgRes = await fetch(imageUrl);
-  const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
-  const upload = await uploadFile(
-    `content/tmp/ref-${Date.now()}.jpg`,
-    imgBuffer,
-    'image/jpeg',
-  );
-
-  const result = await fal.subscribe('fal-ai/flux-2-pro/edit', {
-    input: {
-      prompt: `Place this exact product in the following scene, keeping the product packaging, labels, and all text perfectly sharp and accurate. ${prompt}`,
-      image_urls: [upload.url],
-      image_size: { width: 1080, height: 1350 },
-      output_format: 'jpeg',
-      safety_tolerance: '5',
-    },
-    logs: true,
-  });
-
-  const outputUrl = (result.data as any)?.images?.[0]?.url;
-  if (!outputUrl) throw new Error('Flux 2 Pro did not return an image');
-
-  const outputRes = await fetch(outputUrl);
-  const outputBuffer = Buffer.from(await outputRes.arrayBuffer());
-
-  return sharp(outputBuffer)
-    .resize(1080, 1350, { fit: 'cover' })
-    .jpeg({ quality: 95 })
-    .toBuffer();
-}
-
-/**
- * Generate scene image using Gemini (existing approach).
+ * Generate scene image using Gemini.
  */
 async function generateWithGemini(
   prompt: string,
@@ -180,24 +95,11 @@ export async function generateSceneImage(
     console.log(`[Generate] Reference image: ${product.imageUrl}`);
   }
 
-  let buffer: Buffer;
-
-  switch (model) {
-    case 'flux-kontext':
-      if (!product.imageUrl)
-        throw new Error('Flux Kontext requires a reference image');
-      buffer = await generateWithFluxKontext(prompt, product.imageUrl);
-      break;
-    case 'flux-2-pro':
-      if (!product.imageUrl)
-        throw new Error('Flux 2 Pro edit requires a reference image');
-      buffer = await generateWithFlux2Pro(prompt, product.imageUrl);
-      break;
-    case 'gemini':
-    default:
-      buffer = await generateWithGemini(prompt, product.imageUrl);
-      break;
+  if (!isImageModel(model)) {
+    throw new Error(`Unsupported image model: ${String(model)}`);
   }
+
+  const buffer = await generateWithGemini(prompt, product.imageUrl);
 
   console.log(`[Generate] Scene image created (${buffer.length} bytes)`);
   return buffer;

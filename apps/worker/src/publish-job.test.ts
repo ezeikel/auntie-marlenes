@@ -13,7 +13,7 @@ const setup = () => {
 
 const published: PublishOutcome = { status: 200, body: { success: true } };
 
-// Shaped like the fal client's ApiError: a status and the response body.
+// Shaped like a provider SDK error: a status and the response body.
 const providerRefusal = () =>
   Object.assign(new Error('Forbidden'), {
     status: 403,

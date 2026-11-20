@@ -165,7 +165,7 @@ Videos are not in `public/`: Workers static assets cap each file at 25 MiB.
 They live in the R2 bucket `auntie-marlenes-prod` under `videos/`, served at
 `https://assets.auntiemarlenes.com/videos/...` (see `lib/media.ts`). Add a new
 video with `wrangler r2 object put auntie-marlenes-prod/videos/<path> --file
-<file> --content-type video/mp4 --remote`. `apps/worker/src/hero-videos-ab.ts`
+<file> --content-type video/mp4 --remote`. `apps/worker/src/hero-videos-runway.ts`
 still writes hero candidates to `apps/web/public/videos/hero` locally; upload
 any keeper to R2 rather than committing it.
 
