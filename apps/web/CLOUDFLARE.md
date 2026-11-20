@@ -135,6 +135,9 @@ bearer; no production origin or public HTTP round-trip is involved.
 | `0 * * * *` | `/api/cron/abandoned-cart` | Local DB email eligibility/cleanup |
 | `0 10 * * *` | `/api/cron/restock-reminder` | Local DB reminder eligibility |
 
+**Parked on 20 November 2026: `triggers.crons` is empty, so none of these run** (nor the 09:00
+Slack daily summary). To resume, list the schedules above in `wrangler.jsonc` again.
+
 The daily product reel (`/api/cron/publish-next`, formerly `0 12 * * *`) is not scheduled: the
 social accounts are not posting. The route remains for a manual run.
 

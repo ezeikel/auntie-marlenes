@@ -83,8 +83,10 @@
     "APPLE_MOBILE_CLIENT_ID": "com.chewybytes.auntiemarlenes.app,com.chewybytes.auntiemarlenes.app.internal,com.chewybytes.auntiemarlenes.app.dev",
     "CONTENT_WORKER_URL": "http://content-worker.auntiemarlenes.com:3020"
   },
+  // Parked on 20 November 2026: no scheduled work runs. To resume, list the
+  // keys of CRON_ROUTES (lib/cron-schedule.ts) here again.
   "triggers": {
-    "crons": ["0 9 * * *", "0 * * * *", "0 10 * * *"]
+    "crons": []
   },
   "env": {
     "staging": {

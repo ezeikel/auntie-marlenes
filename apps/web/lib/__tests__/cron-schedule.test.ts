@@ -23,8 +23,10 @@ describe('Cloudflare crons', () => {
         paths.map((path) => ({ path, schedule })),
       ),
     ).toEqual(vercel.crons);
-    expect(config.triggers.crons).toEqual(Object.keys(CRON_ROUTES));
-    expect(config.triggers.crons).toHaveLength(3);
+    // Parked: production schedules nothing. On resume this becomes
+    // toEqual(Object.keys(CRON_ROUTES)).
+    expect(Object.keys(CRON_ROUTES)).toHaveLength(3);
+    expect(config.triggers.crons).toEqual([]);
   });
   it('keeps staging unscheduled and redeclares all bindings', () => {
     const staging = config.env.staging;
