@@ -40,52 +40,99 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: pnpm --filter @auntie-marlenes/db exec wrangler d1 migrations apply auntie-marlenes --remote
 
-  web:
-    if: vars.CLOUDFLARE_CUTOVER == 'true' && github.ref == 'refs/heads/main'
+  request-web-build:
+    if: vars.CLOUDFLARE_CUTOVER == 'true' && github.ref_name == 'main'
+    runs-on: ubuntu-slim
     needs: migrate
+    outputs:
+      build: ${{ steps.start.outputs.build }}
+      attempt: ${{ steps.start.outputs.attempt }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: apps/web/scripts/workers-builds
+      - run: python3 -m pip install --quiet --target "$RUNNER_TEMP/cc-python" boto3==1.42.97
+      - name: Start the exact commit on Workers Builds
+        id: start
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          FONTAWESOME_NPM_AUTH_TOKEN: "${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}"
+          NEXT_PUBLIC_APP_ENV: "production"
+          NEXT_PUBLIC_SITE_URL: "https://www.auntiemarlenes.com"
+          NEXT_PUBLIC_SANITY_PROJECT_ID: "zm0a7rrv"
+          NEXT_PUBLIC_SANITY_DATASET: "production"
+          NEXT_PUBLIC_SANITY_API_VERSION: "2026-01-01"
+          NEXT_PUBLIC_API_URL: "${{ vars.NEXT_PUBLIC_API_URL }}"
+          NEXT_PUBLIC_POSTHOG_KEY: "${{ vars.NEXT_PUBLIC_POSTHOG_KEY }}"
+          NEXT_PUBLIC_UMAMI_SCRIPT_URL: "/m/s"
+          NEXT_PUBLIC_UMAMI_WEBSITE_ID: "e24be54f-8d36-4d37-b2fc-a3a43bc60287"
+          NEXT_PUBLIC_POSTHOG_HOST: "${{ vars.NEXT_PUBLIC_POSTHOG_HOST || '/relay-hyx5' }}"
+          NEXT_PUBLIC_META_PIXEL_ID: "${{ vars.NEXT_PUBLIC_META_PIXEL_ID }}"
+          NEXT_PUBLIC_SENTRY_DSN: "${{ vars.NEXT_PUBLIC_SENTRY_DSN }}"
+          SHOPIFY_STOREFRONT_API_ENDPOINT: "https://afro-hair-and-beauty.myshopify.com/api/2024-01/graphql.json"
+          SHOPIFY_STOREFRONT_ACCESS_TOKEN: "${{ secrets.SHOPIFY_STOREFRONT_ACCESS_TOKEN }}"
+          SENTRY_AUTH_TOKEN: "${{ secrets.SENTRY_AUTH_TOKEN }}"
+          NEXT_AUTH_SECRET: "placeholder-build-only"
+          GOOGLE_CLIENT_ID: "placeholder"
+          GOOGLE_CLIENT_SECRET: "placeholder"
+          CLOUDFLARE_EMAIL_API_TOKEN: "placeholder-build-only-not-a-credential"
+        run: PYTHONPATH="$RUNNER_TEMP/cc-python" python3 apps/web/scripts/workers-builds/handoff.py start
+
+  wait-web-build:
+    needs: request-web-build
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
+    outputs:
+      digest: ${{ steps.wait.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: apps/web/scripts/workers-builds
+      - name: Verify Cloudflare finished the matching build
+        id: wait
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NATIVE_BUILD_ID: ${{ needs.request-web-build.outputs.build }}
+        run: python3 apps/web/scripts/workers-builds/handoff.py wait-short
+
+  web:
+    needs: [request-web-build, wait-web-build]
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 22
           cache: pnpm
       - name: Install dependencies
         env:
           FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
-        run: pnpm install --frozen-lockfile
-      - name: Generate Prisma clients
-        run: pnpm --filter @auntie-marlenes/db db:generate
-      - name: Unit tests
-        run: pnpm test --filter=@auntie-marlenes/web...
-      - name: Build and deploy web
-        # Only public build-time values here. Runtime secrets are Worker secrets
-        # loaded from 1Password (apps/web/.env.op), never baked into the bundle.
+        run: pnpm install --frozen-lockfile --filter @auntie-marlenes/web...
+      - run: python3 -m pip install --quiet --target "$RUNNER_TEMP/cc-python" boto3==1.42.97
+      - name: Finish verifying a longer Cloudflare build
+        if: needs.wait-web-build.outputs.digest == ''
+        id: late
         env:
-          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          NEXT_PUBLIC_APP_ENV: production
-          NEXT_PUBLIC_SITE_URL: https://www.auntiemarlenes.com
-          NEXT_PUBLIC_SANITY_PROJECT_ID: zm0a7rrv
-          NEXT_PUBLIC_SANITY_DATASET: production
-          NEXT_PUBLIC_SANITY_API_VERSION: '2026-01-01'
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_POSTHOG_KEY: ${{ vars.NEXT_PUBLIC_POSTHOG_KEY }}
-          NEXT_PUBLIC_UMAMI_SCRIPT_URL: /m/s
-          NEXT_PUBLIC_UMAMI_WEBSITE_ID: e24be54f-8d36-4d37-b2fc-a3a43bc60287
-          NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST || '/relay-hyx5' }}
-          NEXT_PUBLIC_META_PIXEL_ID: ${{ vars.NEXT_PUBLIC_META_PIXEL_ID }}
-          NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
-          SHOPIFY_STOREFRONT_API_ENDPOINT: https://afro-hair-and-beauty.myshopify.com/api/2024-01/graphql.json
-          SHOPIFY_STOREFRONT_ACCESS_TOKEN: ${{ secrets.SHOPIFY_STOREFRONT_ACCESS_TOKEN }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          # Page-data collection imports modules that check these exist. Build-only
-          # placeholders; the Worker reads the real values from its secrets.
-          NEXT_AUTH_SECRET: placeholder-build-only
-          GOOGLE_CLIENT_ID: placeholder
-          GOOGLE_CLIENT_SECRET: placeholder
-          CLOUDFLARE_EMAIL_API_TOKEN: placeholder-build-only-not-a-credential
-        run: pnpm --filter @auntie-marlenes/web run deploy
+          NATIVE_BUILD_ID: ${{ needs.request-web-build.outputs.build }}
+        run: python3 apps/web/scripts/workers-builds/handoff.py wait
+      - name: Restore and verify the Cloudflare build
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BUILD_ATTEMPT: ${{ needs.request-web-build.outputs.attempt }}
+          RELEASE_DIGEST: ${{ needs.wait-web-build.outputs.digest || steps.late.outputs.digest }}
+        run: PYTHONPATH="$RUNNER_TEMP/cc-python" python3 apps/web/scripts/workers-builds/handoff.py restore
+      - name: Publish the verified web bundle
+        working-directory: apps/web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
+        run: |
+          pnpm exec opennextjs-cloudflare deploy
