@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+import { execSync, spawnSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 /**
  * Releases a new mobile app version to BOTH iOS and Android from the same commit.
  *
@@ -11,8 +16,8 @@
  *   2. Drift check: last finished production iOS vs Android on EAS (warn only).
  *   3. Bump package.json version (patch | minor | major | X.Y.Z).
  *   4. Commit + tag mobile-vX.Y.Z and push to origin.
- *   5. eas build --profile production for iOS then Android (same commit).
- *   6. Optionally --auto-submit each platform to its store.
+ *   5. eas build --local --profile production for iOS then Android (same commit).
+ *   6. Submit each local artifact by path unless --no-submit is set.
  *
  * Usage (from apps/mobile, or via pnpm --filter @scope/mobile):
  *   pnpm release patch                  # 1.0.3 → 1.0.4
@@ -23,17 +28,13 @@
  *   pnpm release patch --ios-only       # only build iOS (resync later!)
  *   pnpm release patch --android-only   # only build Android
  *   pnpm release patch --no-submit      # build but don't auto-submit
- *   pnpm release patch --local          # local builds instead of EAS cloud
+ *   pnpm release patch --local          # local builds (default)
  *   pnpm release patch --dry-run        # show plan, change nothing
  *   pnpm release patch --skip-drift-check
  *
  * Non-main branch: FORCE=1 pnpm release patch
  */
-import { execSync, spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import process from 'node:process';
-import { fileURLToPath } from 'node:url';
+import { buildStore } from './build-store.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -73,11 +74,12 @@ function appDisplayName() {
 }
 
 function sh(cmd, opts = {}) {
-  return execSync(cmd, {
+  const output = execSync(cmd, {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
     ...opts,
-  }).trim();
+  });
+  return (output ?? '').trim();
 }
 
 function shStream(cmd, args, opts = {}) {
@@ -96,7 +98,7 @@ function parseArgs(argv) {
     noSubmit: false,
     dryRun: false,
     skipDriftCheck: false,
-    local: false,
+    local: true,
   };
 
   for (const arg of argv) {
@@ -112,11 +114,7 @@ function parseArgs(argv) {
       const header = readFileSync(__filename, 'utf8').match(
         /\/\*\*([\s\S]*?)\*\//,
       );
-      console.log(
-        (header?.[1] ?? '')
-          .replace(/^\s*\*\s?/gm, '')
-          .trim(),
-      );
+      console.log((header?.[1] ?? '').replace(/^\s*\*\s?/gm, '').trim());
       process.exit(0);
     } else {
       log.err(`Unknown arg: ${arg}`);
@@ -282,11 +280,7 @@ function commitAndTag(version, args) {
 }
 
 function buildPlatform(platform, args) {
-  const localBit = args.local ? ' --local' : '';
-  const submitBit = args.noSubmit ? '' : ' --auto-submit';
-  log.step(
-    `5. Build ${platform.toUpperCase()} (--profile production${localBit}${submitBit})`,
-  );
+  log.step(`5. Local production build for ${platform}`);
 
   if (args.dryRun) {
     log.warn(`--dry-run: skipping ${platform} build`);
@@ -301,10 +295,8 @@ function buildPlatform(platform, args) {
     platform,
     '--non-interactive',
   ];
-  if (args.local) easArgs.push('--local');
-  if (!args.noSubmit) easArgs.push('--auto-submit');
-
-  shStream('eas', easArgs, { cwd: APP_DIR });
+  easArgs.push('--local');
+  buildStore(platform, easArgs, args.noSubmit ? null : 'production');
   log.ok(`${platform} build finished`);
 }
 
